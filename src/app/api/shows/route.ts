@@ -1,0 +1,20 @@
+import { NextResponse } from "next/server";
+import { getCurrentUser } from "@/lib/auth";
+import { createShow } from "@/lib/live";
+
+export async function POST(req: Request) {
+  const user = await getCurrentUser();
+  if (!user) return NextResponse.json({ error: "Please log in to create a show." }, { status: 401 });
+
+  const body = await req.json().catch(() => ({}));
+  const title = typeof body.title === "string" ? body.title.trim().slice(0, 80) : "";
+  if (title.length < 3) return NextResponse.json({ error: "Give your show a title (at least 3 characters)." }, { status: 400 });
+
+  const shippingUsd = Number(body.shippingUsd ?? 7);
+  if (!Number.isFinite(shippingUsd) || shippingUsd < 0 || shippingUsd > 100) {
+    return NextResponse.json({ error: "Shipping must be between 0 and 100 USD." }, { status: 400 });
+  }
+
+  const show = createShow(user.id, title, Math.round(shippingUsd * 100));
+  return NextResponse.json({ show });
+}
