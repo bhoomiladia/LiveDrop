@@ -50,6 +50,7 @@ export type Bag = {
   }[];
   waiting: { item_id: string; title: string; position: number }[];
   shipping_cents: number;
+  invoice: { total_cents: number; payer_url: string | null; qr_png: string | null; expires_at: number } | null;
 };
 
 export type Toast = { id: number; text: string; tone: "paid" | "claim" | "info" };
@@ -60,7 +61,7 @@ type Snapshot = {
   messages: ChatMessage[];
   bag: Bag | null;
   viewer: { id: string; name: string } | null;
-  totals: { item_cents: number; shipping_cents: number; orders: number } | null; // seller only
+  totals: { item_cents: number; shipping_cents: number; refunded_cents: number; orders: number } | null; // seller only
 };
 
 // "You save 80%" against the typical price of similar new items.
@@ -81,6 +82,8 @@ export function useShow(showId: string) {
   const toastId = useRef(0);
   // Bumped when the viewer joins, so the live connection reopens knowing who they are.
   const [epoch, setEpoch] = useState(0);
+  // Bumped on money events, so panels like the seller's Orders list can reload.
+  const [moneyTick, setMoneyTick] = useState(0);
   const rejoin = useCallback(() => setEpoch((e) => e + 1), []);
 
   const pushToast = useCallback((text: string, tone: Toast["tone"]) => {
@@ -117,6 +120,7 @@ export function useShow(showId: string) {
     source.onerror = () => setConnected(false);
     source.onmessage = (e) => {
       const event = JSON.parse(e.data);
+      if (["paid", "refunded", "shipped", "invoices_sent", "agent_bought", "agent_undone"].includes(event.type)) setMoneyTick((t) => t + 1);
       switch (event.type) {
         case "item":
           setSnap((s) => {
@@ -152,6 +156,15 @@ export function useShow(showId: string) {
         case "bid_too_low":
           pushToast(`Bid at least ${money(event.minimum_cents)}`, "info");
           break;
+        case "shipped":
+          pushToast(`📦 Your order shipped: ${event.carrier} ${event.tracking_number}`, "paid");
+          break;
+        case "refunded":
+          pushToast(event.viewer_id ? `↩️ Refund of ${money(event.amount_cents)} sent to your PayPal` : "Refund sent", "info");
+          break;
+        case "invoices_sent":
+          void refreshBag();
+          break;
         case "agent_bought":
           pushToast(`🤖 ${event.name}'s agent bought ${event.title}`, "claim");
           break;
@@ -181,5 +194,5 @@ export function useShow(showId: string) {
     };
   }, [showId, refreshBag, pushToast, epoch]);
 
-  return { snap, setSnap, error, connected, viewers, toasts, pushToast, reload, refreshBag, rejoin };
+  return { snap, setSnap, error, connected, viewers, toasts, pushToast, reload, refreshBag, rejoin, moneyTick };
 }

@@ -182,13 +182,71 @@ export function refundCapture(captureId: string, amountCents: number | null, not
   );
 }
 
+const KNOWN_CARRIERS = new Set(["USPS", "UPS", "FEDEX", "DHL", "DHL_API", "ONTRAC", "LASERSHIP", "CANADA_POST", "ROYAL_MAIL", "AUSTRALIA_POST"]);
+
 export function addTracking(orderId: string, captureId: string, trackingNumber: string, carrier: string, requestId: string) {
+  const code = carrier.toUpperCase().replace(/[^A-Z]/g, "_");
+  const carrierFields = KNOWN_CARRIERS.has(code) ? { carrier: code } : { carrier: "OTHER", carrier_name_other: carrier.slice(0, 64) };
   return paypal<OrderResponse>(
     "POST",
     `/v2/checkout/orders/${encodeURIComponent(orderId)}/track`,
-    { capture_id: captureId, tracking_number: trackingNumber, carrier, notify_payer: true },
+    { capture_id: captureId, tracking_number: trackingNumber, ...carrierFields, notify_payer: true },
     requestId,
   );
+}
+
+// ---- Invoicing: one invoice per buyer after the show ----
+
+type Invoice = {
+  id: string;
+  status: string; // DRAFT | UNPAID | SENT | PAID | MARKED_AS_PAID | CANCELLED | ...
+  detail?: { metadata?: { recipient_view_url?: string } };
+  payments?: { transactions?: { payment_id?: string; amount?: { value: string } }[] };
+};
+
+export async function createInvoice(opts: { lines: BagLine[]; shippingCents: number; note: string; reference: string }) {
+  const created = await paypal<{ id?: string; href?: string }>(
+    "POST",
+    "/v2/invoicing/invoices",
+    {
+      detail: {
+        currency_code: "USD",
+        reference: opts.reference.slice(0, 120),
+        note: opts.note.slice(0, 4000),
+        payment_term: { term_type: "DUE_ON_RECEIPT" },
+      },
+      items: opts.lines.map((l) => ({ name: l.name.slice(0, 200), quantity: "1", unit_amount: usd(l.priceCents) })),
+      amount: { breakdown: { shipping: { amount: usd(opts.shippingCents) } } },
+    },
+    `inv-${opts.reference}`,
+  );
+  const id = created.id || created.href?.split("/").pop();
+  if (!id) throw new PayPalError(500, "INVOICE_ERROR", "PayPal didn't return an invoice id");
+  // Our buyers join with just a name, so PayPal doesn't email them: we show the link and a QR code.
+  await paypal("POST", `/v2/invoicing/invoices/${encodeURIComponent(id)}/send`, { send_to_recipient: false, send_to_invoicer: false }, `send-${opts.reference}`);
+  return getInvoice(id);
+}
+
+export function getInvoice(id: string): Promise<Invoice> {
+  return paypal<Invoice>("GET", `/v2/invoicing/invoices/${encodeURIComponent(id)}`);
+}
+
+export async function cancelInvoice(id: string) {
+  await paypal("POST", `/v2/invoicing/invoices/${encodeURIComponent(id)}/cancel`, { send_to_recipient: false, send_to_invoicer: false });
+}
+
+// PayPal returns the QR image as base64 inside a multipart body.
+export async function invoiceQrDataUrl(id: string): Promise<string | null> {
+  const token = await getAccessToken();
+  const res = await fetch(`${BASE}/v2/invoicing/invoices/${encodeURIComponent(id)}/generate-qr-code`, {
+    method: "POST",
+    headers: { Authorization: `Bearer ${token}`, "Content-Type": "application/json" },
+    body: JSON.stringify({ width: 240, height: 240 }),
+  });
+  if (!res.ok) return null;
+  const text = await res.text();
+  const base64 = text.match(/\r?\n\r?\n([A-Za-z0-9+/=\r\n]{100,})/)?.[1]?.replace(/\s+/g, "");
+  return base64 ? `data:image/png;base64,${base64}` : null;
 }
 
 // ---- Vault: save PayPal for an agent ----

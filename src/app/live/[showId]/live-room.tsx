@@ -127,6 +127,20 @@ export default function LiveRoom({ showId, paypalClientId }: { showId: string; p
                 ))}
               </ul>
             ) : null}
+            {bag?.invoice && (
+              <div className="mb-3 rounded-xl border border-black/10 p-3 flex gap-3 items-center">
+                {bag.invoice.qr_png && <img src={bag.invoice.qr_png} alt="Scan to pay with PayPal" className="w-24 h-24 shrink-0" />}
+                <div className="min-w-0 space-y-1.5">
+                  <p className="text-sm font-bold">Your PayPal invoice: {money(bag.invoice.total_cents)}</p>
+                  <p className="text-[11px] text-black/50">Everything you claimed, one shipping fee. Scan the code or tap below. Due by {new Date(bag.invoice.expires_at).toLocaleString(undefined, { weekday: "short", hour: "numeric", minute: "2-digit" })}.</p>
+                  {bag.invoice.payer_url && (
+                    <a href={bag.invoice.payer_url} target="_blank" rel="noreferrer" className="inline-flex h-9 px-4 rounded-full bg-[#ffc439] text-black text-sm font-semibold items-center">
+                      Pay invoice with PayPal
+                    </a>
+                  )}
+                </div>
+              </div>
+            )}
             {!bag?.lines.length ? (
               !bag?.waiting.length && <p className="text-sm text-black/60">Type <b>SOLD</b> in the chat when you see something you love.</p>
             ) : (
@@ -139,7 +153,13 @@ export default function LiveRoom({ showId, paypalClientId }: { showId: string; p
                         {l.size ? ` (${l.size})` : ""}
                       </span>
                       <span className={`text-right shrink-0 ${l.status === "paid" ? "text-emerald-600 font-medium" : ""}`}>
-                        {l.status === "paid" ? "Paid ✓" : l.status === "on_hold" ? `🤖 ${money(l.price_cents)} on hold` : money(l.price_cents)}
+                        {l.status === "paid"
+                          ? "Paid ✓"
+                          : l.status === "on_hold"
+                            ? `🤖 ${money(l.price_cents)} on hold`
+                            : l.status === "invoiced"
+                              ? `${money(l.price_cents)} · on invoice`
+                              : money(l.price_cents)}
                         {l.status === "on_hold" && l.order_id && l.undo_until && (
                           <UndoButton deadline={l.undo_until} onUndo={() => undo(l.order_id!)} />
                         )}

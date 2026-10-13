@@ -219,6 +219,34 @@ export function getDb(): DatabaseSync {
     CREATE INDEX IF NOT EXISTS idx_bids_item ON bids(item_id, amount_cents DESC);
   `);
 
+  // After the show: one PayPal invoice per buyer with unpaid items; tracking and refunds on orders.
+  dbInstance.exec(`
+    CREATE TABLE IF NOT EXISTS invoices (
+      id TEXT PRIMARY KEY,
+      show_id TEXT NOT NULL,
+      viewer_id TEXT NOT NULL,
+      viewer_name TEXT NOT NULL,
+      paypal_invoice_id TEXT UNIQUE,
+      status TEXT NOT NULL,          -- sent | paid | cancelled
+      item_cents INTEGER NOT NULL,
+      shipping_cents INTEGER NOT NULL,
+      payer_url TEXT,
+      qr_png TEXT,                   -- data URL
+      expires_at INTEGER NOT NULL,
+      created_at INTEGER NOT NULL,
+      updated_at INTEGER NOT NULL
+    );
+    CREATE INDEX IF NOT EXISTS idx_invoices_show ON invoices(show_id, viewer_id);
+    CREATE TABLE IF NOT EXISTS invoice_items (
+      invoice_id TEXT NOT NULL,
+      item_id TEXT NOT NULL,
+      PRIMARY KEY (invoice_id, item_id)
+    );
+  `);
+  addColumnIfMissing(dbInstance, "orders", "carrier", "TEXT");
+  addColumnIfMissing(dbInstance, "orders", "refunded_cents", "INTEGER NOT NULL DEFAULT 0");
+  addColumnIfMissing(dbInstance, "orders", "invoice_id", "TEXT");
+
   return dbInstance;
 }
 

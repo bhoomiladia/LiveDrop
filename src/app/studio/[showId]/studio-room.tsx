@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { Room, Track } from "livekit-client";
+import OrdersPanel from "@/components/live/orders-panel";
 import { money, savings, useShow, type LiveItem } from "@/components/live/use-show";
 
 // Minimal typing for the browser's speech recognition (Chrome exposes it as webkitSpeechRecognition).
@@ -20,7 +21,7 @@ type Recognition = {
 const AUTO_LIVE_SECONDS = 3;
 
 export default function StudioRoom({ showId }: { showId: string }) {
-  const { snap, setSnap, error, connected, viewers, toasts, pushToast } = useShow(showId);
+  const { snap, setSnap, error, connected, viewers, toasts, pushToast, moneyTick } = useShow(showId);
 
   // ---- camera
   const videoRef = useRef<HTMLVideoElement>(null);
@@ -330,8 +331,8 @@ export default function StudioRoom({ showId }: { showId: string }) {
             <Stat label="Item sales" value={money(snap.totals?.item_cents ?? stats.revenue)} />
             <Stat
               label="Collected via PayPal"
-              value={money((snap.totals?.item_cents ?? stats.revenue) + (snap.totals?.shipping_cents ?? 0))}
-              hint={`incl. ${money(snap.totals?.shipping_cents ?? 0)} shipping`}
+              value={money((snap.totals?.item_cents ?? stats.revenue) + (snap.totals?.shipping_cents ?? 0) - (snap.totals?.refunded_cents ?? 0))}
+              hint={`incl. ${money(snap.totals?.shipping_cents ?? 0)} shipping${snap.totals?.refunded_cents ? ` · −${money(snap.totals.refunded_cents)} refunds` : ""}`}
             />
           </div>
 
@@ -378,6 +379,15 @@ export default function StudioRoom({ showId }: { showId: string }) {
           </div>
         </aside>
       </main>
+
+      {/* After the show: orders, refunds, tracking, invoices. Re-loads whenever an item changes status. */}
+      <div className="max-w-7xl mx-auto px-4 md:px-6 pb-10">
+        <OrdersPanel
+          showId={showId}
+          refreshKey={`${moneyTick}-${snap.show.status}-${snap.items.map((i) => i.status).join(",")}`}
+          onToast={(m) => pushToast(m, "info")}
+        />
+      </div>
 
       <div className="fixed bottom-4 left-1/2 -translate-x-1/2 space-y-2 z-50 w-[min(92vw,420px)]">
         {toasts.map((t) => (
@@ -472,10 +482,15 @@ function StatusPill({ item }: { item: LiveItem }) {
 // A new listing: shows what plain code understood instantly, lets the seller fix it,
 // and goes live by itself after a short countdown.
 function DraftCard({ showId, item, isLive, onError }: { showId: string; item: LiveItem; isLive: boolean; onError: (m: string) => void }) {
-  const [title, setTitle] = useState(item.title);
-  const [size, setSize] = useState(item.size ?? "");
-  const [price, setPrice] = useState(item.price_cents ? String(item.price_cents / 100) : "");
-  const [editing, setEditing] = useState(!item.price_cents);
+  // Fields the seller hasn't touched keep following the item, so the AI's answers
+  // (title, size, a price it heard) show up even while the card is open for editing.
+  const [edits, setEdits] = useState<{ title?: string; size?: string; price?: string }>({});
+  const title = edits.title ?? item.title;
+  const size = edits.size ?? item.size ?? "";
+  const price = edits.price ?? (item.price_cents ? String(item.price_cents / 100) : "");
+  const [manualEdit, setManualEdit] = useState(false);
+  // Without a price the card can't go live, so it opens for editing until one is known.
+  const editing = manualEdit || !item.price_cents;
   const [countdown, setCountdown] = useState(AUTO_LIVE_SECONDS);
   const [busy, setBusy] = useState(false);
 
@@ -515,9 +530,9 @@ function DraftCard({ showId, item, isLive, onError }: { showId: string; item: Li
       <div className="flex-1 min-w-0 space-y-2">
         {editing ? (
           <div className="grid grid-cols-[1fr_64px_80px] gap-2">
-            <input value={title} onChange={(e) => setTitle(e.target.value)} className="h-9 rounded-lg border border-black/10 px-2 text-sm" />
-            <input value={size} onChange={(e) => setSize(e.target.value)} placeholder="Size" className="h-9 rounded-lg border border-black/10 px-2 text-sm" />
-            <input value={price} onChange={(e) => setPrice(e.target.value)} placeholder="Price" inputMode="decimal" className="h-9 rounded-lg border border-black/10 px-2 text-sm" />
+            <input value={title} onChange={(e) => setEdits((x) => ({ ...x, title: e.target.value }))} className="h-9 rounded-lg border border-black/10 px-2 text-sm" />
+            <input value={size} onChange={(e) => setEdits((x) => ({ ...x, size: e.target.value }))} placeholder="Size" className="h-9 rounded-lg border border-black/10 px-2 text-sm" />
+            <input value={price} onChange={(e) => setEdits((x) => ({ ...x, price: e.target.value }))} placeholder="Price" inputMode="decimal" className="h-9 rounded-lg border border-black/10 px-2 text-sm" />
           </div>
         ) : (
           <div>
@@ -536,13 +551,7 @@ function DraftCard({ showId, item, isLive, onError }: { showId: string; item: Li
           </button>
           {!editing && (
             <button
-              onClick={() => {
-                // Start editing from the latest values (the AI may have improved them).
-                setTitle(item.title);
-                setSize(item.size ?? "");
-                setPrice(item.price_cents ? String(item.price_cents / 100) : "");
-                setEditing(true);
-              }}
+              onClick={() => setManualEdit(true)}
               className="h-8 px-3 rounded-full border border-black/10 text-xs font-semibold">
               Fix it
             </button>

@@ -144,7 +144,12 @@ export type BagLineView = {
 };
 export type WaitingLineView = { item_id: string; title: string; position: number };
 
-export function getBag(showId: string, viewerId: string): { lines: BagLineView[]; waiting: WaitingLineView[]; shipping_cents: number } {
+export type BagInvoiceView = { total_cents: number; payer_url: string | null; qr_png: string | null; expires_at: number };
+
+export function getBag(
+  showId: string,
+  viewerId: string,
+): { lines: BagLineView[]; waiting: WaitingLineView[]; shipping_cents: number; invoice: BagInvoiceView | null } {
   ensureSweeper();
   const db = getDb();
   const show = getShow(showId);
@@ -176,7 +181,24 @@ export function getBag(showId: string, viewerId: string): { lines: BagLineView[]
        ORDER BY c.created_at`,
     )
     .all(showId, viewerId) as WaitingLineView[];
-  return { lines, waiting, shipping_cents: shippingDueCents(showId, viewerId) };
+  // After the show: the buyer's open PayPal invoice (link + QR code) replaces the checkout button.
+  const invoice = db
+    .prepare("SELECT id, item_cents, shipping_cents, payer_url, qr_png, expires_at FROM invoices WHERE show_id = ? AND viewer_id = ? AND status = 'sent' ORDER BY created_at DESC LIMIT 1")
+    .get(showId, viewerId) as
+    | { id: string; item_cents: number; shipping_cents: number; payer_url: string | null; qr_png: string | null; expires_at: number }
+    | undefined;
+  const invoicedIds = invoice
+    ? new Set((db.prepare("SELECT item_id FROM invoice_items WHERE invoice_id = ?").all(invoice.id) as { item_id: string }[]).map((r) => r.item_id))
+    : new Set<string>();
+  const shown = lines.map((l) => (invoicedIds.has(l.item_id) && l.status === "won" ? { ...l, status: "invoiced", pay_by: null } : l));
+  return {
+    lines: shown,
+    waiting,
+    shipping_cents: shippingDueCents(showId, viewerId),
+    invoice: invoice
+      ? { total_cents: invoice.item_cents + invoice.shipping_cents, payer_url: invoice.payer_url, qr_png: invoice.qr_png, expires_at: invoice.expires_at }
+      : null,
+  };
 }
 
 // Shipping is charged once per buyer per show: nothing more is due once it's been paid (or held by an agent).
@@ -212,10 +234,11 @@ function publicMessage(m: MessageRow) {
 export function paidTotals(showId: string) {
   return getDb()
     .prepare(
-      `SELECT COALESCE(SUM(item_cents), 0) AS item_cents, COALESCE(SUM(shipping_cents), 0) AS shipping_cents, COUNT(*) AS orders
-       FROM orders WHERE show_id = ? AND status = 'paid'`,
+      `SELECT COALESCE(SUM(item_cents), 0) AS item_cents, COALESCE(SUM(shipping_cents), 0) AS shipping_cents,
+         COALESCE(SUM(refunded_cents), 0) AS refunded_cents, COUNT(*) AS orders
+       FROM orders WHERE show_id = ? AND status IN ('paid', 'partially_refunded', 'refunded')`,
     )
-    .get(showId) as { item_cents: number; shipping_cents: number; orders: number };
+    .get(showId) as { item_cents: number; shipping_cents: number; refunded_cents: number; orders: number };
 }
 
 // ----------------------------------------------------------------- shows
@@ -248,6 +271,12 @@ export function setShowStatus(showId: string, status: "live" | "ended") {
     .prepare(`UPDATE shows SET status = ?, ${status === "live" ? "started_at" : "ended_at"} = ? WHERE id = ?`)
     .run(status, now, showId);
   publish(showId, { type: "show", status });
+  // After-show autopilot: one PayPal invoice per buyer with unpaid items.
+  if (status === "ended") {
+    void import("./aftershow")
+      .then((m) => m.sendAfterShowInvoices(showId))
+      .catch((err) => console.error("[aftershow] sending invoices failed", err));
+  }
 }
 
 // ----------------------------------------------------------------- listings
@@ -669,6 +698,9 @@ function ensureSweeper() {
     return releaseExpiredClaims();
   }; // always the latest code, even after a dev reload
   if (g.__liveDropSweeper) return;
+  // Keep checking open invoices and agent holds after restarts too.
+  void import("./aftershow").then((m) => m.ensureInvoiceSweeper());
+  void import("./agents").then((m) => m.ensureAgentSweeper());
   g.__liveDropSweeper = setInterval(() => {
     try {
       g.__liveDropRelease?.();
@@ -747,7 +779,8 @@ export async function startCheckout(showId: string, viewer: Viewer) {
   const unpaid = db
     .prepare(
       `SELECT i.* FROM claims c JOIN items i ON i.id = c.item_id
-       WHERE c.show_id = ? AND c.viewer_id = ? AND c.status = 'won' AND i.status = 'claimed'`,
+       WHERE c.show_id = ? AND c.viewer_id = ? AND c.status = 'won' AND i.status = 'claimed'
+         AND NOT EXISTS (SELECT 1 FROM invoice_items ii JOIN invoices v ON v.id = ii.invoice_id WHERE ii.item_id = i.id AND v.status = 'sent')`,
     )
     .all(showId, viewer.id) as ItemRow[];
   if (!unpaid.length) throw new Error("Your bag is empty");

@@ -3,6 +3,8 @@ import { subscribe, viewerCount, publish, type ShowEvent } from "@/lib/events";
 import { getShow } from "@/lib/live";
 import { getViewer, requireSeller } from "@/lib/viewer";
 
+const PRIVATE_EVENTS = new Set(["bag", "bid_too_low", "shipped", "refunded"]);
+
 // Server-Sent Events: one long-lived response per viewer that receives live updates.
 export async function GET(req: NextRequest, ctx: RouteContext<"/api/shows/[showId]/events">) {
   const { showId } = await ctx.params;
@@ -18,7 +20,8 @@ export async function GET(req: NextRequest, ctx: RouteContext<"/api/shows/[showI
       const send = (event: ShowEvent) => {
         // Seller-only drafts and private bag updates are filtered here, on the server.
         if (event.audience === "seller" && !isSeller) return;
-        if ((event.type === "bag" || event.type === "bid_too_low") && event.viewer_id !== viewer?.id) return;
+        // Private, per-buyer updates only go to that buyer.
+        if (PRIVATE_EVENTS.has(event.type) && event.viewer_id !== viewer?.id) return;
         controller.enqueue(encoder.encode(`data: ${JSON.stringify(event)}\n\n`));
       };
       const unsubscribe = subscribe(showId, send);

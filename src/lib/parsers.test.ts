@@ -1,7 +1,7 @@
 // Run with: npm test  (Node's built-in test runner, TypeScript via type stripping)
 import { test } from "node:test";
 import assert from "node:assert/strict";
-import { parsePrice, parseSize, parseTitle } from "./speech-parse.ts";
+import { parsePrice, parseSize, parseSpokenListing, parseTitle } from "./speech-parse.ts";
 import { classifyFast, parseBid } from "./claims.ts";
 
 test("price from spoken words", () => {
@@ -23,6 +23,19 @@ test("size from spoken words", () => {
   assert.equal(parseSize("size m"), "M");
   assert.equal(parseSize("small leather bag"), "S");
   assert.equal(parseSize("denim jacket forty dollars"), undefined);
+});
+
+test("typed shorthand", () => {
+  assert.deepEqual(parseSpokenListing("black hoodie L 25"), { price: 25, size: "L", title: "Black hoodie" });
+  assert.deepEqual(parseSpokenListing("Black Hoodie - Size M - 25$"), { price: 25, size: "M", title: "Black Hoodie" });
+  assert.deepEqual(parseSpokenListing("denim jacket, medium, 45"), { price: 45, size: "M", title: "Denim jacket" });
+  assert.equal(parsePrice("wool scarf 20"), 20);
+  assert.equal(parsePrice("hoodie large 25.50"), 25.5);
+  assert.equal(parsePrice("iphone 13 case"), undefined);
+  assert.equal(parsePrice("boots size 9"), undefined);
+  assert.equal(parsePrice("boots size 9 40"), 40);
+  assert.equal(parseSize("red dress XS 30 usd"), "XS");
+  assert.equal(parseSize("it's a nice coat"), undefined);
 });
 
 test("rough title from spoken words", () => {

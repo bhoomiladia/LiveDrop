@@ -51,7 +51,7 @@ export function parsePrice(text: string): number | undefined {
   const dollarSign = t.match(/\$\s*(\d+(?:\.\d{1,2})?)/);
   if (dollarSign) return Number(dollarSign[1]);
 
-  const digitsWithUnit = t.match(/(\d+(?:\.\d{1,2})?)\s*(?:dollars?|bucks?|usd)\b/);
+  const digitsWithUnit = t.match(/(\d+(?:\.\d{1,2})?)\s*(?:dollars?|bucks?|usd\b|\$)/);
   if (digitsWithUnit) return Number(digitsWithUnit[1]);
 
   // Number words directly before "dollars"/"bucks".
@@ -69,6 +69,11 @@ export function parsePrice(text: string): number | undefined {
   const cue = t.match(/\b(?:price(?: is)?|for|only|just)\s+(\d+(?:\.\d{1,2})?)\b/);
   if (cue) return Number(cue[1]);
 
+  // Typed shorthand ("black hoodie L 25", "wool scarf 20"): a plain number at the very end,
+  // unless it's a size ("size 9"). A number mid-name ("iphone 13 case") is not a price.
+  const trailing = t.match(/(?<!size\s)(?<![\d.])\b(\d+(?:\.\d{1,2})?)\s*[.!]*$/);
+  if (trailing && Number(trailing[1]) > 0) return Number(trailing[1]);
+
   return undefined;
 }
 
@@ -79,6 +84,9 @@ export function parseSize(text: string): string | undefined {
   const lettered = t.match(/\bsize\s+(xxl|xl|xs|s|m|l)\b/);
   if (lettered) return lettered[1].toUpperCase();
   for (const [re, size] of SIZE_WORDS) if (re.test(t)) return size;
+  // A letter size typed as its own word: "black hoodie L 25", "dress, XS, 30".
+  const token = text.split(/[\s,;/|-]+/).find((w) => /^(?:xxs|xs|s|m|l|xl|xxl|2xl|3xl)$/i.test(w));
+  if (token) return token.toUpperCase().replace(/^2XL$/, "XXL");
   return undefined;
 }
 
@@ -88,7 +96,7 @@ const FILLERS = /^(?:ok(?:ay)?|alright|so|next(?: one)?|next up|this(?: one)? is
 export function parseTitle(text: string): string | undefined {
   let t = text.trim();
   for (let i = 0; i < 4; i++) t = t.replace(FILLERS, "");
-  const cut = t.search(/,|\bsize\b|\$|\b\d|\b(?:for|only|just|price)\b|\b(?:small|medium|large|xs|xl|xxl)\b|\b(?:one|two|three|four|five|six|seven|eight|nine|ten|eleven|twelve|fifteen|twenty|thirty|forty|fifty|sixty|seventy|eighty|ninety|hundred)\b/i);
+  const cut = t.search(/,|\s-\s|\s(?:xxs|xs|s|m|l|xl|xxl|2xl|3xl)(?=[\s,]|$)|\bsize\b|\$|\b\d|\b(?:for|only|just|price)\b|\b(?:small|medium|large|xs|xl|xxl)\b|\b(?:one|two|three|four|five|six|seven|eight|nine|ten|eleven|twelve|fifteen|twenty|thirty|forty|fifty|sixty|seventy|eighty|ninety|hundred)\b/i);
   const head = (cut > 0 ? t.slice(0, cut) : t).replace(/[\s,.!-]+$/, "").trim();
   if (!head || head.split(/\s+/).length > 8) return undefined;
   return head.charAt(0).toUpperCase() + head.slice(1);
