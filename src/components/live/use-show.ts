@@ -42,6 +42,7 @@ type Snapshot = {
   messages: ChatMessage[];
   bag: Bag | null;
   viewer: { id: string; name: string } | null;
+  totals: { item_cents: number; shipping_cents: number; orders: number } | null; // seller only
 };
 
 export const money = (cents: number) => `$${(cents / 100).toFixed(cents % 100 === 0 ? 0 : 2)}`;
@@ -75,7 +76,7 @@ export function useShow(showId: string) {
     const res = await fetch(`/api/shows/${showId}`, { cache: "no-store" });
     if (res.ok) {
       const body = (await res.json()) as Snapshot;
-      setSnap((s) => (s ? { ...s, bag: body.bag, viewer: body.viewer } : body));
+      setSnap((s) => (s ? { ...s, bag: body.bag, viewer: body.viewer, totals: body.totals } : body));
     }
   }, [showId]);
 
@@ -116,6 +117,7 @@ export function useShow(showId: string) {
           break;
         case "paid":
           pushToast(`✅ ${event.name} paid ${money(event.total_cents)} with PayPal`, "paid");
+          void refreshBag(); // also refreshes the seller's totals
           break;
         case "bag":
           void refreshBag();

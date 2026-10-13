@@ -265,11 +265,18 @@ export default function StudioRoom({ showId }: { showId: string }) {
             <DraftCard key={d.id} showId={showId} item={d} isLive={isLive} onError={(m) => pushToast(m, "info")} />
           ))}
 
-          <div className="grid grid-cols-4 gap-2">
+          <div className="grid grid-cols-3 gap-2">
             <Stat label="Listed" value={stats.listed} />
             <Stat label="Claimed" value={stats.claimed} />
             <Stat label="Paid" value={stats.paid} />
-            <Stat label="Revenue" value={money(stats.revenue)} />
+          </div>
+          <div className="grid grid-cols-2 gap-2">
+            <Stat label="Item sales" value={money(snap.totals?.item_cents ?? stats.revenue)} />
+            <Stat
+              label="Collected via PayPal"
+              value={money((snap.totals?.item_cents ?? stats.revenue) + (snap.totals?.shipping_cents ?? 0))}
+              hint={`incl. ${money(snap.totals?.shipping_cents ?? 0)} shipping`}
+            />
           </div>
 
           <ul className="space-y-2">
@@ -324,11 +331,12 @@ export default function StudioRoom({ showId }: { showId: string }) {
   );
 }
 
-function Stat({ label, value }: { label: string; value: string | number }) {
+function Stat({ label, value, hint }: { label: string; value: string | number; hint?: string }) {
   return (
     <div className="bg-white rounded-2xl border border-black/5 p-3">
       <p className="text-[11px] uppercase tracking-wide text-black/40">{label}</p>
       <p className="text-lg font-extrabold">{value}</p>
+      {hint && <p className="text-[11px] text-black/40">{hint}</p>}
     </div>
   );
 }

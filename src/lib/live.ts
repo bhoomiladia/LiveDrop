@@ -143,19 +143,14 @@ function publicMessage(m: MessageRow) {
   return { id: m.id, name: m.viewer_name, text: m.text, kind: m.kind, item_id: m.item_id, created_at: m.created_at };
 }
 
-export function sellerStats(showId: string) {
-  const db = getDb();
-  const row = db
+// What PayPal actually collected for this show: item sales plus shipping. Seller-only.
+export function paidTotals(showId: string) {
+  return getDb()
     .prepare(
-      `SELECT
-         COUNT(*) FILTER (WHERE listed_at IS NOT NULL) AS listed,
-         COUNT(*) FILTER (WHERE status IN ('claimed')) AS claimed,
-         COUNT(*) FILTER (WHERE status IN ('paid', 'shipped')) AS paid,
-         COALESCE(SUM(price_cents) FILTER (WHERE status IN ('paid', 'shipped')), 0) AS revenue_cents
-       FROM items WHERE show_id = ?`,
+      `SELECT COALESCE(SUM(item_cents), 0) AS item_cents, COALESCE(SUM(shipping_cents), 0) AS shipping_cents, COUNT(*) AS orders
+       FROM orders WHERE show_id = ? AND status = 'paid'`,
     )
-    .get(showId) as { listed: number; claimed: number; paid: number; revenue_cents: number };
-  return row;
+    .get(showId) as { item_cents: number; shipping_cents: number; orders: number };
 }
 
 // ----------------------------------------------------------------- shows
