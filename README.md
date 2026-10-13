@@ -588,7 +588,7 @@ PayPal can't reach `localhost`. To receive webhooks while developing, use a tunn
 | Channel3 store prices: "Similar new items: $80+ in stores" and a "Save X%" badge, using a conservative price anchor | ✅ Done |
 | Unpaid claims pass to the next person in line (seller picks 1–30 min; extra time while paying; late payments refused) | ✅ Done |
 | RAG: "Ask the seller" bot and pricing memory | 🔲 Planned |
-| AI shopping agents (Vault, permission slips, holds, undo) | 🔲 Planned. Holds and undo verified in the sandbox; Vault waits on PayPal enabling it for our app |
+| AI shopping agents: saved PayPal (Vault), signed permission slip, limits checked in code, Gemini wish matching, human head start, money on hold with Undo, auto-complete, email undo link | ✅ Done. Purchase with saved PayPal verified in the sandbox |
 | Flash auctions | 🔲 Planned |
 | After-show autopilot (invoices, tracking, refunds, label reader) | 🔲 Planned. Tracking and refunds verified in the sandbox |
 | AG Studio control room and Show Producer | 🔲 Planned |

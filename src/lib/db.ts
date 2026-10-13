@@ -174,6 +174,32 @@ export function getDb(): DatabaseSync {
   addColumnIfMissing(dbInstance, "items", "retail_cents", "INTEGER");
   addColumnIfMissing(dbInstance, "items", "retail_sources", "TEXT"); // JSON: similar new products from Channel3
 
+  // AI shopping agents: one per viewer, with a signed permission slip and saved PayPal.
+  dbInstance.exec(`
+    CREATE TABLE IF NOT EXISTS agents (
+      id TEXT PRIMARY KEY,
+      viewer_id TEXT NOT NULL,
+      viewer_name TEXT NOT NULL,
+      email TEXT,
+      wish TEXT NOT NULL,
+      sizes TEXT,                         -- comma-separated, empty = any size
+      max_item_cents INTEGER NOT NULL,
+      weekly_budget_cents INTEGER NOT NULL,
+      undo_minutes INTEGER NOT NULL,
+      expires_at INTEGER NOT NULL,
+      status TEXT NOT NULL,               -- pending | active | paused | deleted
+      setup_token_id TEXT,
+      vault_id TEXT,
+      slip TEXT,                          -- signed permission slip (JWS)
+      return_show_id TEXT,
+      created_at INTEGER NOT NULL,
+      updated_at INTEGER NOT NULL
+    );
+    CREATE INDEX IF NOT EXISTS idx_agents_viewer ON agents(viewer_id, status);
+  `);
+  addColumnIfMissing(dbInstance, "orders", "agent_id", "TEXT");
+  addColumnIfMissing(dbInstance, "orders", "undo_until", "INTEGER");
+
   return dbInstance;
 }
 

@@ -32,7 +32,16 @@ export type ChatMessage = {
 };
 
 export type Bag = {
-  lines: { item_id: string; title: string; size: string | null; price_cents: number; status: string; pay_by: number | null }[];
+  lines: {
+    item_id: string;
+    title: string;
+    size: string | null;
+    price_cents: number;
+    status: string; // won | paid | on_hold (bought by your agent, undo still possible)
+    pay_by: number | null;
+    order_id?: string | null;
+    undo_until?: number | null;
+  }[];
   waiting: { item_id: string; title: string; position: number }[];
   shipping_cents: number;
 };
@@ -127,6 +136,12 @@ export function useShow(showId: string) {
         case "paid":
           pushToast(`✅ ${event.name} paid ${money(event.total_cents)} with PayPal`, "paid");
           void refreshBag(); // also refreshes the seller's totals
+          break;
+        case "agent_bought":
+          pushToast(`🤖 ${event.name}'s agent bought ${event.title}`, "claim");
+          break;
+        case "agent_undone":
+          pushToast(`↩️ ${event.name} undid an agent purchase`, "info");
           break;
         case "released":
           pushToast(

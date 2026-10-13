@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useMemo, useRef, useState } from "react";
+import AgentPanel from "@/components/live/agent-panel";
 import LiveVideo from "@/components/live/live-video";
 import PayPalCheckoutButton from "@/components/live/paypal-checkout-button";
 import { money, savings, useShow, type LiveItem } from "@/components/live/use-show";
@@ -38,6 +39,13 @@ export default function LiveRoom({ showId, paypalClientId }: { showId: string; p
     // Backup in case a live update is missed: re-check the bag after a claim.
     if (body.kind === "claim") void refreshBag();
     if (body.kind === "pending") setTimeout(() => void refreshBag(), 8000);
+  }
+
+  async function undo(orderId: string) {
+    const res = await fetch("/api/agents/undo", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ orderId }) });
+    const body = await res.json();
+    pushToast(res.ok ? "Undone. The hold was released, nothing was charged." : body.error, "info");
+    void refreshBag();
   }
 
   async function claim(itemId: string) {
@@ -131,7 +139,10 @@ export default function LiveRoom({ showId, paypalClientId }: { showId: string; p
                         {l.size ? ` (${l.size})` : ""}
                       </span>
                       <span className={`text-right shrink-0 ${l.status === "paid" ? "text-emerald-600 font-medium" : ""}`}>
-                        {l.status === "paid" ? "Paid ✓" : money(l.price_cents)}
+                        {l.status === "paid" ? "Paid ✓" : l.status === "on_hold" ? `🤖 ${money(l.price_cents)} on hold` : money(l.price_cents)}
+                        {l.status === "on_hold" && l.order_id && l.undo_until && (
+                          <UndoButton deadline={l.undo_until} onUndo={() => undo(l.order_id!)} />
+                        )}
                         {l.status === "won" && l.pay_by && <PayBy deadline={l.pay_by} />}
                       </span>
                     </li>
@@ -176,6 +187,8 @@ export default function LiveRoom({ showId, paypalClientId }: { showId: string; p
               </>
             )}
           </div>
+
+          <AgentPanel showId={showId} onToast={(m) => pushToast(m, "info")} />
 
           <div className="rounded-2xl bg-white/5 border border-white/10 flex flex-col h-[420px]">
             <div className="flex-1 overflow-y-auto p-3 space-y-1.5 text-sm">
@@ -232,6 +245,7 @@ export default function LiveRoom({ showId, paypalClientId }: { showId: string; p
 function statusLine(i: LiveItem) {
   if (i.status === "paid" || i.status === "shipped") return `Sold to ${i.winner_name ?? "a buyer"}`;
   if (i.status === "claimed") return `Claimed by ${i.winner_name}`;
+  if (i.status === "on_hold") return `Bought by ${i.winner_name}`;
   return money(i.price_cents);
 }
 
@@ -347,5 +361,23 @@ function PayBy({ deadline }: { deadline: number }) {
     <span className={`block text-[11px] font-semibold ${left < 60_000 ? "text-red-600" : "text-black/50"}`}>
       {left > 0 ? `pay within ${m}:${String(sec).padStart(2, "0")}` : "time's up…"}
     </span>
+  );
+}
+
+// Agent purchases can be undone until the undo window ends; then PayPal completes the payment.
+function UndoButton({ deadline, onUndo }: { deadline: number; onUndo: () => void }) {
+  const [now, setNow] = useState(() => Date.now());
+  useEffect(() => {
+    const t = setInterval(() => setNow(Date.now()), 1000);
+    return () => clearInterval(t);
+  }, []);
+  const left = Math.max(0, deadline - now);
+  if (!left) return <span className="block text-[11px] text-black/50">completing payment…</span>;
+  const m = Math.floor(left / 60_000);
+  const sec = Math.floor((left % 60_000) / 1000);
+  return (
+    <button onClick={onUndo} className="block ml-auto mt-0.5 text-[11px] font-semibold text-violet-700 underline">
+      Undo ({m}:{String(sec).padStart(2, "0")})
+    </button>
   );
 }

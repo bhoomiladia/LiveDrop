@@ -80,7 +80,7 @@ export function listShowsForSeller(sellerId: string): ShowRow[] {
   return getDb().prepare("SELECT * FROM shows WHERE seller_id = ? ORDER BY created_at DESC").all(sellerId) as ShowRow[];
 }
 
-function getItem(itemId: string): ItemRow | undefined {
+export function getItem(itemId: string): ItemRow | undefined {
   return getDb().prepare("SELECT * FROM items WHERE id = ?").get(itemId) as ItemRow | undefined;
 }
 
@@ -96,7 +96,7 @@ export type PublicItem = Omit<ItemRow, "transcript" | "winner_claim_id"> & {
   waiting_count: number;
 };
 
-function toPublicItem(item: ItemRow): PublicItem {
+export function toPublicItem(item: ItemRow): PublicItem {
   const db = getDb();
   const winner = item.winner_claim_id
     ? (db.prepare("SELECT viewer_name FROM claims WHERE id = ?").get(item.winner_claim_id) as { viewer_name: string } | undefined)
@@ -112,6 +112,8 @@ function toPublicItem(item: ItemRow): PublicItem {
 
 export type BagLineView = {
   item_id: string;
+  order_id?: string | null; // agent purchases: the held order (for Undo)
+  undo_until?: number | null;
   title: string;
   size: string | null;
   price_cents: number;
@@ -127,8 +129,14 @@ export function getBag(showId: string, viewerId: string): { lines: BagLineView[]
   const claimMs = (show?.claim_minutes ?? 5) * 60_000;
   const rows = db
     .prepare(
-      `SELECT i.id AS item_id, i.title, i.size, i.price_cents, c.status, c.won_at
+      `SELECT i.id AS item_id, i.title, i.size, i.price_cents,
+         CASE WHEN i.status = 'on_hold' AND c.status = 'won' THEN 'on_hold' ELSE c.status END AS status,
+         c.won_at, h.id AS order_id, h.undo_until
        FROM claims c JOIN items i ON i.id = c.item_id
+       LEFT JOIN (
+         SELECT o.id, o.undo_until, o.viewer_id, oi.item_id FROM orders o JOIN order_items oi ON oi.order_id = o.id
+         WHERE o.kind = 'agent' AND o.status = 'on_hold'
+       ) h ON h.item_id = i.id AND h.viewer_id = c.viewer_id
        WHERE c.show_id = ? AND c.viewer_id = ? AND c.status IN ('won', 'paid')
        ORDER BY c.won_at`,
     )
@@ -146,11 +154,16 @@ export function getBag(showId: string, viewerId: string): { lines: BagLineView[]
        ORDER BY c.created_at`,
     )
     .all(showId, viewerId) as WaitingLineView[];
-  // Shipping is charged once per buyer per show: nothing more is due once it's been paid.
-  const shippingPaid = db
-    .prepare("SELECT 1 FROM orders WHERE show_id = ? AND viewer_id = ? AND status = 'paid' AND shipping_cents > 0 LIMIT 1")
+  return { lines, waiting, shipping_cents: shippingDueCents(showId, viewerId) };
+}
+
+// Shipping is charged once per buyer per show: nothing more is due once it's been paid (or held by an agent).
+export function shippingDueCents(showId: string, viewerId: string): number {
+  const show = getShow(showId);
+  const alreadyCharged = getDb()
+    .prepare("SELECT 1 FROM orders WHERE show_id = ? AND viewer_id = ? AND status IN ('paid', 'on_hold') AND shipping_cents > 0 LIMIT 1")
     .get(showId, viewerId);
-  return { lines, waiting, shipping_cents: shippingPaid ? 0 : (show?.shipping_cents ?? 0) };
+  return alreadyCharged ? 0 : (show?.shipping_cents ?? 0);
 }
 
 export function showSnapshot(showId: string, viewerId?: string) {
@@ -348,6 +361,8 @@ export function goLive(itemId: string): ItemRow | null {
   getDb().prepare("UPDATE items SET status = 'listed', listed_at = ? WHERE id = ?").run(now, itemId);
   const updated = getItem(itemId)!;
   publish(updated.show_id, { type: "item", item: toPublicItem(updated), audience: "all" });
+  // AI shopping agents get a look after a short fair-play delay (dynamic import avoids a cycle).
+  void import("./agents").then((m) => m.scheduleAgentCheck(updated.id));
   return updated;
 }
 
@@ -455,7 +470,7 @@ export function releaseExpiredClaims(now = Date.now()): number {
   return released;
 }
 
-function passToNextInLine(claim: ClaimRow, now: number) {
+export function passToNextInLine(claim: ClaimRow, now: number) {
   const db = getDb();
   let next: ClaimRow | undefined;
   db.exec("BEGIN IMMEDIATE");
@@ -472,7 +487,7 @@ function passToNextInLine(claim: ClaimRow, now: number) {
       .get(claim.item_id) as ClaimRow | undefined;
     if (next) {
       db.prepare("UPDATE claims SET status = 'won', won_at = ? WHERE id = ?").run(now, next.id);
-      db.prepare("UPDATE items SET winner_claim_id = ? WHERE id = ?").run(next.id, claim.item_id);
+      db.prepare("UPDATE items SET status = 'claimed', winner_claim_id = ? WHERE id = ?").run(next.id, claim.item_id);
     } else {
       // Nobody waiting: the item is open again for anyone to claim.
       db.prepare("UPDATE items SET status = 'listed', winner_claim_id = NULL WHERE id = ?").run(claim.item_id);
@@ -569,11 +584,7 @@ export async function startCheckout(showId: string, viewer: Viewer) {
     .all(showId, viewer.id) as ItemRow[];
   if (!unpaid.length) throw new Error("Your bag is empty");
 
-  // One shipping fee per buyer per show: only charge it if no earlier order paid it.
-  const shippingPaid = db
-    .prepare("SELECT 1 FROM orders WHERE show_id = ? AND viewer_id = ? AND status = 'paid' AND shipping_cents > 0 LIMIT 1")
-    .get(showId, viewer.id);
-  const shippingCents = shippingPaid ? 0 : show.shipping_cents;
+  const shippingCents = shippingDueCents(showId, viewer.id);
   const itemCents = unpaid.reduce((s, i) => s + i.price_cents, 0);
   const orderId = crypto.randomUUID();
 
