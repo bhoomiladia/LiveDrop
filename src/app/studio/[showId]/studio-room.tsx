@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { Room, Track } from "livekit-client";
 import { money, useShow, type LiveItem } from "@/components/live/use-show";
 
 // Minimal typing for the browser's speech recognition (Chrome exposes it as webkitSpeechRecognition).
@@ -25,10 +26,16 @@ export default function StudioRoom({ showId }: { showId: string }) {
   const videoRef = useRef<HTMLVideoElement>(null);
   const [cameraOn, setCameraOn] = useState(false);
   const [cameraError, setCameraError] = useState<string | null>(null);
+  const streamRef = useRef<MediaStream | null>(null);
 
   async function startCamera() {
     try {
-      const stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: "environment", width: { ideal: 1280 } }, audio: false });
+      const video = { facingMode: "environment", width: { ideal: 1280 } };
+      // Camera + mic for viewers. If the mic is blocked, still go ahead with video only.
+      const stream = await navigator.mediaDevices
+        .getUserMedia({ video, audio: { echoCancellation: true, noiseSuppression: true } })
+        .catch(() => navigator.mediaDevices.getUserMedia({ video, audio: false }));
+      streamRef.current = stream;
       if (videoRef.current) {
         videoRef.current.srcObject = stream;
         await videoRef.current.play();
@@ -51,6 +58,42 @@ export default function StudioRoom({ showId }: { showId: string }) {
     canvas.getContext("2d")!.drawImage(video, 0, 0, canvas.width, canvas.height);
     return canvas.toDataURL("image/jpeg", 0.75);
   }
+
+  // ---- broadcast: publish the camera and mic to the show's LiveKit room while live
+  const showStatus = snap?.show.status;
+  const [broadcast, setBroadcast] = useState<"off" | "connecting" | "on" | "error">("off");
+  useEffect(() => {
+    const stream = streamRef.current;
+    if (!cameraOn || showStatus !== "live" || !stream) return;
+    let cancelled = false;
+    const room = new Room({ dynacast: true });
+    (async () => {
+      try {
+        setBroadcast("connecting");
+        const res = await fetch(`/api/shows/${showId}/video-token`, { cache: "no-store" });
+        const body = await res.json();
+        if (!res.ok) throw new Error(body.error);
+        await room.connect(body.url, body.token);
+        if (cancelled) return;
+        const [videoTrack] = stream.getVideoTracks();
+        const [audioTrack] = stream.getAudioTracks();
+        if (videoTrack) await room.localParticipant.publishTrack(videoTrack, { source: Track.Source.Camera, simulcast: true });
+        if (audioTrack) await room.localParticipant.publishTrack(audioTrack, { source: Track.Source.Microphone });
+        if (!cancelled) setBroadcast("on");
+      } catch (err) {
+        if (!cancelled) {
+          setBroadcast("error");
+          console.error("[live video]", err);
+        }
+      }
+    })();
+    return () => {
+      cancelled = true;
+      // Unpublish without stopping the tracks: the seller keeps the local preview.
+      void room.disconnect(false);
+      setBroadcast("off");
+    };
+  }, [cameraOn, showStatus, showId]);
 
   // ---- voice
   const recognition = useRef<Recognition | null>(null);
@@ -209,6 +252,19 @@ export default function StudioRoom({ showId }: { showId: string }) {
               </div>
             )}
             {isLive && <span className="absolute top-3 left-3 text-xs font-bold bg-red-600 text-white rounded px-2 py-0.5">LIVE</span>}
+            {cameraOn && (
+              <span className="absolute top-3 right-3 text-xs font-semibold bg-black/60 text-white rounded-full px-2.5 py-1">
+                {broadcast === "on"
+                  ? "📡 Viewers can see you"
+                  : broadcast === "connecting"
+                    ? "Connecting video…"
+                    : broadcast === "error"
+                      ? "⚠️ Video not reaching viewers"
+                      : isLive
+                        ? "Starting video…"
+                        : "Preview · go live to broadcast"}
+              </span>
+            )}
             {(heard || interim) && (
               <div className="absolute inset-x-3 bottom-3 rounded-xl bg-black/70 text-white text-sm p-2.5">
                 {heard} <span className="text-white/50">{interim}</span>

@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useMemo, useRef, useState } from "react";
+import LiveVideo from "@/components/live/live-video";
 import PayPalCheckoutButton from "@/components/live/paypal-checkout-button";
 import { money, useShow, type LiveItem } from "@/components/live/use-show";
 
@@ -77,6 +78,7 @@ export default function LiveRoom({ showId, paypalClientId }: { showId: string; p
 
       <main className="max-w-6xl mx-auto p-4 md:p-6 grid gap-4 lg:grid-cols-[1fr_360px]">
         <section className="space-y-4 min-w-0">
+          <LiveVideo showId={showId} live={isLive} />
           <CurrentItem item={current} isLive={isLive} mine={Boolean(current && snap.bag?.lines.some((l) => l.item_id === current.id))} onClaim={() => send("SOLD")} />
 
           {earlier.length > 0 && (

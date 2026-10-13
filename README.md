@@ -584,7 +584,7 @@ PayPal can't reach `localhost`. To receive webhooks while developing, use a tunn
 | Claim engine: first claim wins, waiting line, bags; rules first, Gemini for unclear messages | ✅ Done |
 | PayPal checkout: JS SDK v6 button, server-side order and capture, one shipping fee per show | ✅ Done. Order creation verified end to end; in-browser payment is the next check |
 | PayPal webhooks (signature-verified handler) | 🟡 Built, not yet connected to a webhook URL |
-| Live video to viewers (LiveKit) | 🔲 Planned. Viewers currently see each item's photo card |
+| Live video to viewers (LiveKit): seller's camera + mic, watch-only passes for viewers, tap-for-sound | ✅ Done |
 | Channel3 store prices | 🔲 Planned |
 | Unpaid claims pass to the next person in line (seller picks 1–30 min; extra time while paying; late payments refused) | ✅ Done |
 | RAG: "Ask the seller" bot and pricing memory | 🔲 Planned |
