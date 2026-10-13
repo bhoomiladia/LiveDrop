@@ -200,6 +200,25 @@ export function getDb(): DatabaseSync {
   addColumnIfMissing(dbInstance, "orders", "agent_id", "TEXT");
   addColumnIfMissing(dbInstance, "orders", "undo_until", "INTEGER");
 
+  // Flash auctions: bids from chat, highest bid wins when the timer ends.
+  addColumnIfMissing(dbInstance, "items", "auction_ends_at", "INTEGER");
+  addColumnIfMissing(dbInstance, "items", "auction_start_cents", "INTEGER");
+  addColumnIfMissing(dbInstance, "items", "auction_closed", "INTEGER NOT NULL DEFAULT 0");
+  addColumnIfMissing(dbInstance, "claims", "bid_cents", "INTEGER"); // price this buyer agreed to (auctions)
+  dbInstance.exec(`
+    CREATE TABLE IF NOT EXISTS bids (
+      id TEXT PRIMARY KEY,
+      show_id TEXT NOT NULL,
+      item_id TEXT NOT NULL,
+      viewer_id TEXT NOT NULL,
+      viewer_name TEXT NOT NULL,
+      amount_cents INTEGER NOT NULL,
+      message_id TEXT,
+      created_at INTEGER NOT NULL
+    );
+    CREATE INDEX IF NOT EXISTS idx_bids_item ON bids(item_id, amount_cents DESC);
+  `);
+
   return dbInstance;
 }
 
