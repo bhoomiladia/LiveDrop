@@ -14,6 +14,12 @@ export type LiveItem = {
   image_data: string | null;
   retail_hint: string | null;
   retail_cents: number | null;
+  auction_ends_at: number | null;
+  auction_start_cents: number | null;
+  auction_closed: number;
+  top_bid_cents: number | null;
+  top_bidder: string | null;
+  bid_count: number;
   retail_sources: string | null; // JSON: [{ title, brand, store, price_cents }]
   ai_status: "pending" | "done" | "failed" | "off";
   winner_name: string | null;
@@ -136,6 +142,15 @@ export function useShow(showId: string) {
         case "paid":
           pushToast(`✅ ${event.name} paid ${money(event.total_cents)} with PayPal`, "paid");
           void refreshBag(); // also refreshes the seller's totals
+          break;
+        case "auction_started":
+          pushToast(`⚡ Flash auction: ${event.title}! Type your bid in the chat`, "claim");
+          break;
+        case "auction_ended":
+          pushToast(event.winner ? `⚡ Sold to ${event.winner} for ${money(event.amount_cents)}` : `⚡ No bids on ${event.title}`, event.winner ? "claim" : "info");
+          break;
+        case "bid_too_low":
+          pushToast(`Bid at least ${money(event.minimum_cents)}`, "info");
           break;
         case "agent_bought":
           pushToast(`🤖 ${event.name}'s agent bought ${event.title}`, "claim");

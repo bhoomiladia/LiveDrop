@@ -22,5 +22,6 @@ export async function POST(req: NextRequest, ctx: RouteContext<"/api/shows/[show
   }
 
   const claim = claimItem(item.id, viewer, null, "human");
-  return NextResponse.json({ ok: true, status: claim?.status });
+  if (!claim) return NextResponse.json({ error: "An auction is running: type your bid in the chat." }, { status: 409 });
+  return NextResponse.json({ ok: true, status: claim.status });
 }

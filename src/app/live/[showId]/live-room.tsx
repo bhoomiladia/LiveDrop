@@ -87,7 +87,7 @@ export default function LiveRoom({ showId, paypalClientId }: { showId: string; p
       <main className="max-w-6xl mx-auto p-4 md:p-6 grid gap-4 lg:grid-cols-[1fr_360px]">
         <section className="space-y-4 min-w-0">
           <LiveVideo showId={showId} live={isLive} />
-          <CurrentItem item={current} isLive={isLive} mine={Boolean(current && snap.bag?.lines.some((l) => l.item_id === current.id))} onClaim={() => send("SOLD")} />
+          <CurrentItem item={current} isLive={isLive} mine={Boolean(current && snap.bag?.lines.some((l) => l.item_id === current.id))} onClaim={() => send("SOLD")} onBid={(cents) => send(`${cents / 100}`)} />
 
           {earlier.length > 0 && (
             <div>
@@ -249,7 +249,19 @@ function statusLine(i: LiveItem) {
   return money(i.price_cents);
 }
 
-function CurrentItem({ item, isLive, mine, onClaim }: { item?: LiveItem; isLive: boolean; mine: boolean; onClaim: () => void }) {
+function CurrentItem({
+  item,
+  isLive,
+  mine,
+  onClaim,
+  onBid,
+}: {
+  item?: LiveItem;
+  isLive: boolean;
+  mine: boolean;
+  onClaim: () => void;
+  onBid: (cents: number) => void;
+}) {
   if (!item) {
     return (
       <div className="rounded-3xl bg-gradient-to-br from-white/10 to-white/0 border border-white/10 aspect-video grid place-items-center text-center p-6">
@@ -260,7 +272,8 @@ function CurrentItem({ item, isLive, mine, onClaim }: { item?: LiveItem; isLive:
       </div>
     );
   }
-  const open = item.status === "listed";
+  const auction = item.status === "listed" && Boolean(item.auction_ends_at) && !item.auction_closed;
+  const open = item.status === "listed" && !auction;
   return (
     <div className="rounded-3xl overflow-hidden bg-white/5 border border-white/10 grid md:grid-cols-2">
       <div className="aspect-square md:aspect-auto bg-black/40 relative">
@@ -280,7 +293,7 @@ function CurrentItem({ item, isLive, mine, onClaim }: { item?: LiveItem; isLive:
           {item.ai_status === "pending" && <span className="px-2 py-1 rounded-full bg-white/5 text-white/50">✨ AI is adding details…</span>}
         </div>
         {item.description && <p className="text-white/70 text-sm mt-3">{item.description}</p>}
-        <p className="text-4xl font-black mt-4">{money(item.price_cents)}</p>
+        {!auction && <p className="text-4xl font-black mt-4">{money(item.price_cents)}</p>}
         {item.retail_hint && (
           <p className="text-sm text-emerald-300 mt-1">
             {item.retail_hint}
@@ -288,7 +301,9 @@ function CurrentItem({ item, isLive, mine, onClaim }: { item?: LiveItem; isLive:
           </p>
         )}
         <div className="mt-auto pt-5">
-          {open ? (
+          {auction ? (
+            <AuctionBox item={item} isLive={isLive} onBid={onBid} />
+          ) : open ? (
             <button onClick={onClaim} disabled={!isLive} className="w-full h-14 rounded-full bg-amber-400 hover:bg-amber-300 text-black text-lg font-black tracking-wide disabled:opacity-50">
               SOLD! Claim it
             </button>
@@ -303,7 +318,9 @@ function CurrentItem({ item, isLive, mine, onClaim }: { item?: LiveItem; isLive:
                   : `Claimed by ${item.winner_name}${item.waiting_count ? ` · ${item.waiting_count} in line` : ""}`}
             </div>
           )}
-          <p className="text-[11px] text-white/40 mt-2 text-center">Or type “SOLD” / “mine” / “lo quiero” in the chat. First claim wins.</p>
+          {!auction && (
+            <p className="text-[11px] text-white/40 mt-2 text-center">Or type “SOLD” / “mine” / “lo quiero” in the chat. First claim wins.</p>
+          )}
         </div>
       </div>
     </div>
@@ -379,5 +396,39 @@ function UndoButton({ deadline, onUndo }: { deadline: number; onUndo: () => void
     <button onClick={onUndo} className="block ml-auto mt-0.5 text-[11px] font-semibold text-violet-700 underline">
       Undo ({m}:{String(sec).padStart(2, "0")})
     </button>
+  );
+}
+
+// Flash auction: countdown, top bid, and quick bid buttons (bids also work by typing a number in chat).
+function AuctionBox({ item, isLive, onBid }: { item: LiveItem; isLive: boolean; onBid: (cents: number) => void }) {
+  const [now, setNow] = useState(() => Date.now());
+  useEffect(() => {
+    const t = setInterval(() => setNow(Date.now()), 250);
+    return () => clearInterval(t);
+  }, []);
+  const left = Math.max(0, (item.auction_ends_at ?? 0) - now);
+  const next = item.top_bid_cents ? item.top_bid_cents + 100 : (item.auction_start_cents ?? item.price_cents);
+  const secs = Math.ceil(left / 1000);
+  return (
+    <div className="rounded-2xl bg-gradient-to-br from-fuchsia-600 to-orange-500 p-4 space-y-3">
+      <div className="flex items-center justify-between">
+        <span className="text-xs font-black tracking-widest">⚡ FLASH AUCTION</span>
+        <span className={`text-2xl font-black tabular-nums ${secs <= 5 ? "animate-pulse" : ""}`}>{left ? `0:${String(secs).padStart(2, "0")}` : "Closing…"}</span>
+      </div>
+      <div>
+        <p className="text-xs text-white/80">{item.top_bid_cents ? `Top bid · ${item.top_bidder}` : "Starting bid"}</p>
+        <p className="text-4xl font-black">{money(item.top_bid_cents ?? item.auction_start_cents ?? item.price_cents)}</p>
+        <p className="text-[11px] text-white/70">{item.bid_count} bid{item.bid_count === 1 ? "" : "s"} · a bid in the last 5s adds 5s</p>
+      </div>
+      <div className="grid grid-cols-2 gap-2">
+        <button disabled={!isLive || !left} onClick={() => onBid(next)} className="h-12 rounded-full bg-white text-black font-black disabled:opacity-50">
+          Bid {money(next)}
+        </button>
+        <button disabled={!isLive || !left} onClick={() => onBid(next + 400)} className="h-12 rounded-full bg-black/30 font-bold disabled:opacity-50">
+          Bid {money(next + 400)}
+        </button>
+      </div>
+      <p className="text-[11px] text-white/70 text-center">Or type a number in the chat, like “25” or “I&apos;ll go 30”.</p>
+    </div>
   );
 }

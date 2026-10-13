@@ -589,7 +589,7 @@ PayPal can't reach `localhost`. To receive webhooks while developing, use a tunn
 | Unpaid claims pass to the next person in line (seller picks 1–30 min; extra time while paying; late payments refused) | ✅ Done |
 | RAG: "Ask the seller" bot and pricing memory | 🔲 Planned |
 | AI shopping agents: saved PayPal (Vault), signed permission slip, limits checked in code, Gemini wish matching, human head start, money on hold with Undo, auto-complete, email undo link | ✅ Done. Purchase with saved PayPal verified in the sandbox |
-| Flash auctions | 🔲 Planned |
+| Flash auctions: bids from chat (or AI for phrases like "I'll go thirty-five"), quick-bid buttons, anti-sniping, next-highest bidder at their own bid | ✅ Done |
 | After-show autopilot (invoices, tracking, refunds, label reader) | 🔲 Planned. Tracking and refunds verified in the sandbox |
 | AG Studio control room and Show Producer | 🔲 Planned |
 | Judge mode | 🔲 Planned |

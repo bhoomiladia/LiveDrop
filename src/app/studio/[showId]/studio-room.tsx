@@ -350,7 +350,12 @@ export default function StudioRoom({ showId }: { showId: string }) {
                     {i.retail_cents ? ` · new ${money(i.retail_cents)}+` : ""}
                   </p>
                 </div>
-                <StatusPill item={i} />
+                <div className="flex flex-col items-end gap-1">
+                  <StatusPill item={i} />
+                  {isLive && i.status === "listed" && !i.auction_ends_at && (
+                    <AuctionButton showId={showId} item={i} onError={(m) => pushToast(m, "info")} />
+                  )}
+                </div>
               </li>
             ))}
             {listed.length === 0 && <li className="text-sm text-black/50 p-2">Items you put live appear here.</li>}
@@ -426,6 +431,28 @@ function Stat({ label, value, hint }: { label: string; value: string | number; h
   );
 }
 
+// Starts a flash auction on an open item: bids come from the chat.
+function AuctionButton({ showId, item, onError }: { showId: string; item: LiveItem; onError: (m: string) => void }) {
+  const [busy, setBusy] = useState(false);
+  async function start() {
+    const input = prompt("Starting bid in USD (30-second auction):", String(Math.max(1, Math.round(item.price_cents / 100))));
+    if (input === null) return;
+    setBusy(true);
+    const res = await fetch(`/api/shows/${showId}/items/${item.id}/auction`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ startUsd: Number(input), seconds: 30 }),
+    });
+    setBusy(false);
+    if (!res.ok) onError((await res.json()).error);
+  }
+  return (
+    <button onClick={start} disabled={busy} className="text-[11px] font-bold px-2.5 py-1 rounded-full bg-fuchsia-600 text-white disabled:opacity-50">
+      ⚡ Auction
+    </button>
+  );
+}
+
 function StatusPill({ item }: { item: LiveItem }) {
   const map: Record<string, [string, string]> = {
     listed: ["Open", "bg-blue-50 text-blue-700"],
@@ -435,7 +462,10 @@ function StatusPill({ item }: { item: LiveItem }) {
     on_hold: ["Agent hold", "bg-purple-50 text-purple-700"],
     refunded: ["Refunded", "bg-black/5 text-black/60"],
   };
-  const [text, cls] = map[item.status] ?? [item.status, "bg-black/5"];
+  const auctioning = item.status === "listed" && item.auction_ends_at && !item.auction_closed;
+  const [text, cls] = auctioning
+    ? [item.top_bid_cents ? `⚡ ${money(item.top_bid_cents)} · ${item.top_bidder}` : "⚡ Auction · no bids yet", "bg-fuchsia-50 text-fuchsia-700"]
+    : (map[item.status] ?? [item.status, "bg-black/5"]);
   return <span className={`text-xs font-semibold px-2.5 py-1 rounded-full whitespace-nowrap max-w-[140px] truncate ${cls}`}>{text}</span>;
 }
 

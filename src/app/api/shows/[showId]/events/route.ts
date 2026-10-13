@@ -18,7 +18,7 @@ export async function GET(req: NextRequest, ctx: RouteContext<"/api/shows/[showI
       const send = (event: ShowEvent) => {
         // Seller-only drafts and private bag updates are filtered here, on the server.
         if (event.audience === "seller" && !isSeller) return;
-        if (event.type === "bag" && event.viewer_id !== viewer?.id) return;
+        if ((event.type === "bag" || event.type === "bid_too_low") && event.viewer_id !== viewer?.id) return;
         controller.enqueue(encoder.encode(`data: ${JSON.stringify(event)}\n\n`));
       };
       const unsubscribe = subscribe(showId, send);

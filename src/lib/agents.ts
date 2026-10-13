@@ -204,7 +204,8 @@ function sizeOk(agent: AgentRow, item: ItemRow): boolean {
 
 async function runAgents(itemId: string) {
   let item = getItem(itemId);
-  if (!item || item.status !== "listed") return; // a person got it first
+  // A person got it first, or it's being auctioned (agents only buy at fixed prices).
+  if (!item || item.status !== "listed" || item.auction_ends_at) return;
   const show = getShow(item.show_id)!;
   const now = Date.now();
 
@@ -224,7 +225,7 @@ async function runAgents(itemId: string) {
   const matches = await matchWishes(item, agents);
   for (const agent of agents.filter((a) => matches.has(a.id))) {
     item = getItem(itemId);
-    if (!item || item.status !== "listed") return;
+    if (!item || item.status !== "listed" || item.auction_ends_at) return;
     if (!(await slipAllows(agent))) {
       console.warn("[agents] permission slip check failed for", agent.id);
       continue;
