@@ -3,7 +3,7 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import LiveVideo from "@/components/live/live-video";
 import PayPalCheckoutButton from "@/components/live/paypal-checkout-button";
-import { money, useShow, type LiveItem } from "@/components/live/use-show";
+import { money, savings, useShow, type LiveItem } from "@/components/live/use-show";
 
 export default function LiveRoom({ showId, paypalClientId }: { showId: string; paypalClientId: string }) {
   const { snap, error, connected, viewers, toasts, pushToast, refreshBag, rejoin } = useShow(showId);
@@ -267,7 +267,12 @@ function CurrentItem({ item, isLive, mine, onClaim }: { item?: LiveItem; isLive:
         </div>
         {item.description && <p className="text-white/70 text-sm mt-3">{item.description}</p>}
         <p className="text-4xl font-black mt-4">{money(item.price_cents)}</p>
-        {item.retail_hint && <p className="text-sm text-emerald-300 mt-1">{item.retail_hint}</p>}
+        {item.retail_hint && (
+          <p className="text-sm text-emerald-300 mt-1">
+            {item.retail_hint}
+            {savings(item) !== null && <span className="ml-2 rounded-full bg-emerald-400 text-black font-bold px-2 py-0.5 text-xs">Save {savings(item)}%</span>}
+          </p>
+        )}
         <div className="mt-auto pt-5">
           {open ? (
             <button onClick={onClaim} disabled={!isLive} className="w-full h-14 rounded-full bg-amber-400 hover:bg-amber-300 text-black text-lg font-black tracking-wide disabled:opacity-50">

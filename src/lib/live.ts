@@ -6,6 +6,7 @@ import { parseSpokenListing } from "./speech-parse";
 import { classifyFast, type MessageKind } from "./claims";
 import { aiEnabled, generateJson, Type } from "./gemini";
 import { captureOrder, createBagOrder, firstCapture } from "./paypal";
+import { channel3Enabled, findRetailPrices } from "./channel3";
 
 // ----------------------------------------------------------------- types
 
@@ -35,6 +36,8 @@ export type ItemRow = {
   transcript: string | null;
   image_data: string | null;
   retail_hint: string | null;
+  retail_cents: number | null; // typical price of similar NEW items (Channel3)
+  retail_sources: string | null; // JSON list of those items
   ai_status: "pending" | "done" | "failed" | "off";
   winner_claim_id: string | null;
   created_at: number;
@@ -248,6 +251,8 @@ export function createListing(showId: string, transcript: string, imageDataUrl: 
     transcript,
     image_data: imageDataUrl,
     retail_hint: null,
+    retail_cents: null,
+    retail_sources: null,
     ai_status: aiEnabled() ? "pending" : "off",
     winner_claim_id: null,
     created_at: Date.now(),
@@ -260,7 +265,9 @@ export function createListing(showId: string, transcript: string, imageDataUrl: 
 
   const view = toPublicItem(item);
   publish(showId, { type: "item", item: view, audience: "seller" });
-  if (aiEnabled()) void enrichListing(item.id, transcript, imageDataUrl);
+  // Store prices are looked up after the AI has named the item (better search), or right away without AI.
+  if (aiEnabled()) void enrichListing(item.id, transcript, imageDataUrl).finally(() => void addRetailPrices(item.id));
+  else void addRetailPrices(item.id);
   return view;
 }
 
@@ -300,6 +307,28 @@ async function enrichListing(itemId: string, transcript: string, imageDataUrl: s
   const updated = getItem(itemId)!;
   publish(updated.show_id, { type: "item", item: toPublicItem(updated), audience: updated.listed_at ? "all" : "seller" });
 }
+
+// "New in stores: typically $98": what similar new items cost, from Channel3.
+async function addRetailPrices(itemId: string) {
+  if (!channel3Enabled()) return;
+  const item = getItem(itemId);
+  if (!item || /^Item #\d+$/.test(item.title)) return;
+  try {
+    // Title only: adding the AI's wordy description pulls in premium/designer results.
+    const result = await findRetailPrices(item.title);
+    if (!result) return;
+    const hint = `Similar new items: ${formatUsd(Math.round(result.anchor_cents / 100) * 100)}+ in stores`;
+    getDb()
+      .prepare("UPDATE items SET retail_hint = ?, retail_cents = ?, retail_sources = ? WHERE id = ?")
+      .run(hint, result.anchor_cents, JSON.stringify(result.sources), itemId);
+    const updated = getItem(itemId)!;
+    publish(updated.show_id, { type: "item", item: toPublicItem(updated), audience: updated.listed_at ? "all" : "seller" });
+  } catch (err) {
+    console.warn("[channel3] lookup failed", (err as Error).message);
+  }
+}
+
+const formatUsd = (cents: number) => "$" + (cents / 100).toFixed(cents % 100 === 0 ? 0 : 2);
 
 export function updateDraft(itemId: string, edits: { title?: string; size?: string | null; price_cents?: number }) {
   const item = getItem(itemId);

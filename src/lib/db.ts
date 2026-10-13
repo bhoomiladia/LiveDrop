@@ -169,7 +169,17 @@ export function getDb(): DatabaseSync {
     );
   `);
 
+  // Columns added after the first release. CREATE TABLE IF NOT EXISTS doesn't add
+  // columns to an existing table, so add any that are missing.
+  addColumnIfMissing(dbInstance, "items", "retail_cents", "INTEGER");
+  addColumnIfMissing(dbInstance, "items", "retail_sources", "TEXT"); // JSON: similar new products from Channel3
+
   return dbInstance;
+}
+
+function addColumnIfMissing(db: DatabaseSync, table: string, column: string, type: string) {
+  const columns = db.prepare(`PRAGMA table_info(${table})`).all() as { name: string }[];
+  if (!columns.some((c) => c.name === column)) db.exec(`ALTER TABLE ${table} ADD COLUMN ${column} ${type}`);
 }
 
 export type UserRecord = {

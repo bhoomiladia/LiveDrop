@@ -13,6 +13,8 @@ export type LiveItem = {
   status: "draft" | "listed" | "claimed" | "paid" | "on_hold" | "shipped" | "refunded";
   image_data: string | null;
   retail_hint: string | null;
+  retail_cents: number | null;
+  retail_sources: string | null; // JSON: [{ title, brand, store, price_cents }]
   ai_status: "pending" | "done" | "failed" | "off";
   winner_name: string | null;
   waiting_count: number;
@@ -45,6 +47,12 @@ type Snapshot = {
   viewer: { id: string; name: string } | null;
   totals: { item_cents: number; shipping_cents: number; orders: number } | null; // seller only
 };
+
+// "You save 80%" against the typical price of similar new items.
+export function savings(item: Pick<LiveItem, "price_cents" | "retail_cents">): number | null {
+  if (!item.retail_cents || item.price_cents <= 0 || item.price_cents >= item.retail_cents) return null;
+  return Math.round((1 - item.price_cents / item.retail_cents) * 100);
+}
 
 export const money = (cents: number) => `$${(cents / 100).toFixed(cents % 100 === 0 ? 0 : 2)}`;
 

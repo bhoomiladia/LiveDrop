@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { Room, Track } from "livekit-client";
-import { money, useShow, type LiveItem } from "@/components/live/use-show";
+import { money, savings, useShow, type LiveItem } from "@/components/live/use-show";
 
 // Minimal typing for the browser's speech recognition (Chrome exposes it as webkitSpeechRecognition).
 type Recognition = {
@@ -345,7 +345,10 @@ export default function StudioRoom({ showId }: { showId: string }) {
                   <p className="font-semibold truncate">
                     #{i.seq} {i.title} {i.size && <span className="text-black/50 font-normal">· {i.size}</span>}
                   </p>
-                  <p className="text-xs text-black/50">{money(i.price_cents)}</p>
+                  <p className="text-xs text-black/50">
+                    {money(i.price_cents)}
+                    {i.retail_cents ? ` · new ${money(i.retail_cents)}+` : ""}
+                  </p>
                 </div>
                 <StatusPill item={i} />
               </li>
@@ -384,6 +387,32 @@ export default function StudioRoom({ showId }: { showId: string }) {
         ))}
       </div>
     </div>
+  );
+}
+
+// Seller view of Channel3 results: what similar new items cost, and where.
+function RetailHint({ item }: { item: LiveItem }) {
+  if (!item.retail_cents) return null;
+  let sources: { title: string; brand: string | null; store: string; price_cents: number }[] = [];
+  try {
+    sources = JSON.parse(item.retail_sources ?? "[]");
+  } catch {}
+  const save = savings(item);
+  return (
+    <details className="text-xs text-black/60">
+      <summary className="cursor-pointer select-none">
+        🏷️ Similar new items: <b>{money(item.retail_cents)}+</b> in stores
+        {save !== null && <span className="text-emerald-700 font-semibold"> · your price is {save}% less</span>}
+      </summary>
+      <ul className="mt-1 space-y-0.5 pl-4 list-disc">
+        {sources.map((s, i) => (
+          <li key={i}>
+            {money(s.price_cents)} · {s.brand ? `${s.brand} · ` : ""}
+            {s.title} <span className="text-black/40">({s.store})</span>
+          </li>
+        ))}
+      </ul>
+    </details>
   );
 }
 
@@ -470,6 +499,7 @@ function DraftCard({ showId, item, isLive, onError }: { showId: string; item: Li
             </p>
           </div>
         )}
+        <RetailHint item={item} />
         <div className="flex items-center gap-2">
           <button onClick={goLive} disabled={busy || !isLive} className="h-8 px-3 rounded-full bg-red-600 text-white text-xs font-bold disabled:opacity-40">
             {!isLive ? "Go live first" : busy ? "…" : editing ? "Save & put live" : `Live in ${countdown}s · now`}

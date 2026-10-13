@@ -585,7 +585,7 @@ PayPal can't reach `localhost`. To receive webhooks while developing, use a tunn
 | PayPal checkout: JS SDK v6 button, server-side order and capture, one shipping fee per show | ✅ Done. Order creation verified end to end; in-browser payment is the next check |
 | PayPal webhooks (signature-verified handler) | 🟡 Built, not yet connected to a webhook URL |
 | Live video to viewers (LiveKit): seller's camera + mic, watch-only passes for viewers, tap-for-sound | ✅ Done |
-| Channel3 store prices | 🔲 Planned |
+| Channel3 store prices: "Similar new items: $80+ in stores" and a "Save X%" badge, using a conservative price anchor | ✅ Done |
 | Unpaid claims pass to the next person in line (seller picks 1–30 min; extra time while paying; late payments refused) | ✅ Done |
 | RAG: "Ask the seller" bot and pricing memory | 🔲 Planned |
 | AI shopping agents (Vault, permission slips, holds, undo) | 🔲 Planned. Holds and undo verified in the sandbox; Vault waits on PayPal enabling it for our app |
