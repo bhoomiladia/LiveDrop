@@ -39,6 +39,18 @@ export default function LiveRoom({ showId, paypalClientId }: { showId: string; p
     if (body.kind === "pending") setTimeout(() => void refreshBag(), 8000);
   }
 
+  async function claim(itemId: string) {
+    const res = await fetch(`/api/shows/${showId}/claim`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ itemId }),
+    });
+    const body = await res.json();
+    if (!res.ok) return pushToast(body.error || "Couldn't claim that.", "info");
+    pushToast(body.status === "won" ? "It's yours! Pay in your bag." : "You're in line for it.", "claim");
+    void refreshBag();
+  }
+
   const bag = snap.bag;
   const unpaid = bag?.lines.filter((l) => l.status === "won") ?? [];
   const unpaidTotal = unpaid.reduce((s, l) => s + l.price_cents, 0);
@@ -78,6 +90,11 @@ export default function LiveRoom({ showId, paypalClientId }: { showId: string; p
                     </div>
                     <p className="text-xs font-medium truncate">{i.title}</p>
                     <p className="text-[11px] text-white/50">{statusLine(i)}</p>
+                    {isLive && i.status === "listed" && (
+                      <button onClick={() => claim(i.id)} className="mt-1.5 w-full h-7 rounded-full bg-amber-400 text-black text-[11px] font-bold">
+                        Up for grabs · Claim
+                      </button>
+                    )}
                   </div>
                 ))}
               </div>
@@ -91,8 +108,17 @@ export default function LiveRoom({ showId, paypalClientId }: { showId: string; p
               <h2 className="font-bold">Your bag</h2>
               <span className="text-xs text-black/50">Hi, {snap.viewer.name}</span>
             </div>
+            {bag?.waiting.length ? (
+              <ul className="mb-3 space-y-1">
+                {bag.waiting.map((w) => (
+                  <li key={w.item_id} className="text-xs rounded-lg bg-amber-50 text-amber-800 px-2.5 py-1.5">
+                    You&apos;re <b>#{w.position}</b> in line for {w.title}. If the buyer doesn&apos;t pay in time, it&apos;s yours.
+                  </li>
+                ))}
+              </ul>
+            ) : null}
             {!bag?.lines.length ? (
-              <p className="text-sm text-black/60">Type <b>SOLD</b> in the chat when you see something you love.</p>
+              !bag?.waiting.length && <p className="text-sm text-black/60">Type <b>SOLD</b> in the chat when you see something you love.</p>
             ) : (
               <>
                 <ul className="space-y-1.5 mb-3">
@@ -102,8 +128,9 @@ export default function LiveRoom({ showId, paypalClientId }: { showId: string; p
                         {l.title}
                         {l.size ? ` (${l.size})` : ""}
                       </span>
-                      <span className={l.status === "paid" ? "text-emerald-600 font-medium" : ""}>
+                      <span className={`text-right shrink-0 ${l.status === "paid" ? "text-emerald-600 font-medium" : ""}`}>
                         {l.status === "paid" ? "Paid ✓" : money(l.price_cents)}
+                        {l.status === "won" && l.pay_by && <PayBy deadline={l.pay_by} />}
                       </span>
                     </li>
                   ))}
@@ -297,4 +324,21 @@ function NamePrompt({ onDone }: { onDone: () => void }) {
 
 function Centered({ children }: { children: React.ReactNode }) {
   return <div className="min-h-screen bg-[#0b0d12] text-white grid place-items-center p-6 text-center">{children}</div>;
+}
+
+// "Pay within 4:12": unpaid claims pass to the next person in line when this hits zero.
+function PayBy({ deadline }: { deadline: number }) {
+  const [now, setNow] = useState(() => Date.now());
+  useEffect(() => {
+    const t = setInterval(() => setNow(Date.now()), 1000);
+    return () => clearInterval(t);
+  }, []);
+  const left = Math.max(0, deadline - now);
+  const m = Math.floor(left / 60_000);
+  const sec = Math.floor((left % 60_000) / 1000);
+  return (
+    <span className={`block text-[11px] font-semibold ${left < 60_000 ? "text-red-600" : "text-black/50"}`}>
+      {left > 0 ? `pay within ${m}:${String(sec).padStart(2, "0")}` : "time's up…"}
+    </span>
+  );
 }

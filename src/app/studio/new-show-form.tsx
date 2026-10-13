@@ -7,6 +7,7 @@ export default function NewShowForm() {
   const router = useRouter();
   const [title, setTitle] = useState("");
   const [shipping, setShipping] = useState("7");
+  const [claimMinutes, setClaimMinutes] = useState("5");
   const [err, setErr] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
 
@@ -20,7 +21,7 @@ export default function NewShowForm() {
         const res = await fetch("/api/shows", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ title, shippingUsd: Number(shipping) }),
+          body: JSON.stringify({ title, shippingUsd: Number(shipping), claimMinutes: Number(claimMinutes) }),
         });
         const body = await res.json();
         setBusy(false);
@@ -42,6 +43,20 @@ export default function NewShowForm() {
           inputMode="decimal"
           className="w-16 h-11 rounded-xl border border-black/10 px-2 outline-none focus:ring-2 focus:ring-black/10"
         />
+      </label>
+      <label className="flex items-center gap-2 text-sm text-black/60" title="Unpaid claims pass to the next person in line after this">
+        Pay within
+        <select
+          value={claimMinutes}
+          onChange={(e) => setClaimMinutes(e.target.value)}
+          className="h-11 rounded-xl border border-black/10 px-2 bg-white outline-none focus:ring-2 focus:ring-black/10"
+        >
+          {[1, 2, 3, 5, 10, 15, 30].map((m) => (
+            <option key={m} value={m}>
+              {m} min
+            </option>
+          ))}
+        </select>
       </label>
       <button disabled={busy} className="h-11 px-5 rounded-full bg-black text-white font-semibold disabled:opacity-50">
         {busy ? "Creating…" : "Create show"}

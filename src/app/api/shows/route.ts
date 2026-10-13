@@ -15,6 +15,11 @@ export async function POST(req: Request) {
     return NextResponse.json({ error: "Shipping must be between 0 and 100 USD." }, { status: 400 });
   }
 
-  const show = createShow(user.id, title, Math.round(shippingUsd * 100));
+  const claimMinutes = Number(body.claimMinutes ?? 5);
+  if (!Number.isInteger(claimMinutes) || claimMinutes < 1 || claimMinutes > 30) {
+    return NextResponse.json({ error: "Time to pay must be 1 to 30 minutes." }, { status: 400 });
+  }
+
+  const show = createShow(user.id, title, Math.round(shippingUsd * 100), claimMinutes);
   return NextResponse.json({ show });
 }

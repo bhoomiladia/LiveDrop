@@ -30,7 +30,8 @@ export type ChatMessage = {
 };
 
 export type Bag = {
-  lines: { item_id: string; title: string; size: string | null; price_cents: number; status: string }[];
+  lines: { item_id: string; title: string; size: string | null; price_cents: number; status: string; pay_by: number | null }[];
+  waiting: { item_id: string; title: string; position: number }[];
   shipping_cents: number;
 };
 
@@ -118,6 +119,12 @@ export function useShow(showId: string) {
         case "paid":
           pushToast(`✅ ${event.name} paid ${money(event.total_cents)} with PayPal`, "paid");
           void refreshBag(); // also refreshes the seller's totals
+          break;
+        case "released":
+          pushToast(
+            event.to ? `⏱️ ${event.from} didn't pay in time. ${event.title} goes to ${event.to}` : `⏱️ ${event.title} is up for grabs again`,
+            "info",
+          );
           break;
         case "bag":
           void refreshBag();

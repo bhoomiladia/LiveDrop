@@ -5,6 +5,7 @@ import { GoogleGenAI, Type, type Schema } from "@google/genai";
 // of free models and gives up after a time budget. Callers must never block the
 // live show on this — AI results arrive later and update the UI.
 
+const PER_MODEL_TIMEOUT_MS = 25_000;
 const DEFAULT_MODELS = ["gemini-3.5-flash", "gemini-3.1-flash-lite", "gemini-flash-lite-latest", "gemini-flash-latest"];
 
 export function aiModels(): string[] {
@@ -37,8 +38,9 @@ export async function generateJson<T>(call: JsonCall): Promise<{ data: T; model:
   for (const model of aiModels()) {
     const remaining = deadline - Date.now();
     if (remaining < 1_000) break;
+    // Cap each model so one slow or stuck model can't use up the whole budget.
     const controller = new AbortController();
-    const timer = setTimeout(() => controller.abort(), remaining);
+    const timer = setTimeout(() => controller.abort(), Math.min(remaining, PER_MODEL_TIMEOUT_MS));
     try {
       const res = await ai().models.generateContent({
         model,

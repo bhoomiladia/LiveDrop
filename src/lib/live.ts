@@ -107,20 +107,47 @@ function toPublicItem(item: ItemRow): PublicItem {
   return { ...rest, winner_name: winner?.viewer_name ?? null, waiting_count: waiting.n };
 }
 
-export type BagLineView = { item_id: string; title: string; size: string | null; price_cents: number; status: string };
+export type BagLineView = {
+  item_id: string;
+  title: string;
+  size: string | null;
+  price_cents: number;
+  status: string;
+  pay_by: number | null; // unpaid claims pass to the next person after this time
+};
+export type WaitingLineView = { item_id: string; title: string; position: number };
 
-export function getBag(showId: string, viewerId: string): { lines: BagLineView[]; shipping_cents: number } {
+export function getBag(showId: string, viewerId: string): { lines: BagLineView[]; waiting: WaitingLineView[]; shipping_cents: number } {
+  ensureSweeper();
   const db = getDb();
   const show = getShow(showId);
-  const lines = db
+  const claimMs = (show?.claim_minutes ?? 5) * 60_000;
+  const rows = db
     .prepare(
-      `SELECT i.id AS item_id, i.title, i.size, i.price_cents, c.status
+      `SELECT i.id AS item_id, i.title, i.size, i.price_cents, c.status, c.won_at
        FROM claims c JOIN items i ON i.id = c.item_id
        WHERE c.show_id = ? AND c.viewer_id = ? AND c.status IN ('won', 'paid')
        ORDER BY c.won_at`,
     )
-    .all(showId, viewerId) as BagLineView[];
-  return { lines, shipping_cents: show?.shipping_cents ?? 0 };
+    .all(showId, viewerId) as (Omit<BagLineView, "pay_by"> & { won_at: number })[];
+  const lines = rows.map(({ won_at, ...line }) => ({
+    ...line,
+    pay_by: line.status === "won" && show?.status === "live" ? won_at + claimMs : null,
+  }));
+  const waiting = db
+    .prepare(
+      `SELECT c.item_id, i.title,
+         (SELECT COUNT(*) FROM claims w WHERE w.item_id = c.item_id AND w.status = 'waiting' AND w.created_at <= c.created_at) AS position
+       FROM claims c JOIN items i ON i.id = c.item_id
+       WHERE c.show_id = ? AND c.viewer_id = ? AND c.status = 'waiting'
+       ORDER BY c.created_at`,
+    )
+    .all(showId, viewerId) as WaitingLineView[];
+  // Shipping is charged once per buyer per show: nothing more is due once it's been paid.
+  const shippingPaid = db
+    .prepare("SELECT 1 FROM orders WHERE show_id = ? AND viewer_id = ? AND status = 'paid' AND shipping_cents > 0 LIMIT 1")
+    .get(showId, viewerId);
+  return { lines, waiting, shipping_cents: shippingPaid ? 0 : (show?.shipping_cents ?? 0) };
 }
 
 export function showSnapshot(showId: string, viewerId?: string) {
@@ -155,7 +182,7 @@ export function paidTotals(showId: string) {
 
 // ----------------------------------------------------------------- shows
 
-export function createShow(sellerId: string, title: string, shippingCents: number): ShowRow {
+export function createShow(sellerId: string, title: string, shippingCents: number, claimMinutes = 5): ShowRow {
   const show: ShowRow = {
     id: crypto.randomBytes(5).toString("hex"),
     seller_id: sellerId,
@@ -163,7 +190,7 @@ export function createShow(sellerId: string, title: string, shippingCents: numbe
     status: "scheduled",
     shipping_cents: shippingCents,
     agent_delay_seconds: 5,
-    claim_minutes: 5,
+    claim_minutes: claimMinutes,
     created_at: Date.now(),
     started_at: null,
     ended_at: null,
@@ -361,7 +388,98 @@ export function claimItem(itemId: string, viewer: Viewer, messageId: string | nu
   publish(item.show_id, { type: "item", item: toPublicItem(updated), audience: "all" });
   publish(item.show_id, { type: "claim", item_id: itemId, viewer_id: viewer.id, name: viewer.name, status: claim.status });
   if (wins) publish(item.show_id, { type: "bag", viewer_id: viewer.id });
+  ensureSweeper();
   return claim;
+}
+
+// ----------------------------------------------------------------- unpaid claims
+
+// A buyer who is in the PayPal window right now gets this much extra time.
+const CHECKOUT_GRACE_MS = 3 * 60_000;
+
+// Every few seconds: claims that weren't paid in time pass to the next person in line.
+// Only while the show is live; after the show, unpaid bags are handled by invoices.
+export function releaseExpiredClaims(now = Date.now()): number {
+  const db = getDb();
+  const expired = db
+    .prepare(
+      `SELECT c.* FROM claims c
+       JOIN items i ON i.id = c.item_id
+       JOIN shows s ON s.id = c.show_id
+       WHERE c.status = 'won' AND i.status = 'claimed' AND s.status = 'live'
+         AND c.won_at + s.claim_minutes * 60000 <= ?`,
+    )
+    .all(now) as ClaimRow[];
+
+  let released = 0;
+  for (const claim of expired) {
+    const checkingOut = db
+      .prepare(
+        `SELECT 1 FROM orders o JOIN order_items oi ON oi.order_id = o.id
+         WHERE oi.item_id = ? AND o.viewer_id = ? AND o.status = 'created' AND o.created_at > ? LIMIT 1`,
+      )
+      .get(claim.item_id, claim.viewer_id, now - CHECKOUT_GRACE_MS);
+    if (checkingOut) continue;
+    passToNextInLine(claim, now);
+    released++;
+  }
+  return released;
+}
+
+function passToNextInLine(claim: ClaimRow, now: number) {
+  const db = getDb();
+  let next: ClaimRow | undefined;
+  db.exec("BEGIN IMMEDIATE");
+  try {
+    // Re-check inside the transaction: the buyer may have just paid.
+    const still = db.prepare("SELECT status FROM claims WHERE id = ?").get(claim.id) as { status: string } | undefined;
+    if (still?.status !== "won") {
+      db.exec("ROLLBACK");
+      return;
+    }
+    db.prepare("UPDATE claims SET status = 'released' WHERE id = ?").run(claim.id);
+    next = db
+      .prepare("SELECT * FROM claims WHERE item_id = ? AND status = 'waiting' ORDER BY created_at LIMIT 1")
+      .get(claim.item_id) as ClaimRow | undefined;
+    if (next) {
+      db.prepare("UPDATE claims SET status = 'won', won_at = ? WHERE id = ?").run(now, next.id);
+      db.prepare("UPDATE items SET winner_claim_id = ? WHERE id = ?").run(next.id, claim.item_id);
+    } else {
+      // Nobody waiting: the item is open again for anyone to claim.
+      db.prepare("UPDATE items SET status = 'listed', winner_claim_id = NULL WHERE id = ?").run(claim.item_id);
+    }
+    db.exec("COMMIT");
+  } catch (err) {
+    db.exec("ROLLBACK");
+    throw err;
+  }
+
+  const item = getItem(claim.item_id)!;
+  publish(claim.show_id, { type: "item", item: toPublicItem(item), audience: "all" });
+  publish(claim.show_id, {
+    type: "released",
+    item_id: claim.item_id,
+    title: item.title,
+    from: claim.viewer_name,
+    to: next?.viewer_name ?? null,
+  });
+  publish(claim.show_id, { type: "bag", viewer_id: claim.viewer_id });
+  if (next) publish(claim.show_id, { type: "bag", viewer_id: next.viewer_id });
+}
+
+// One timer per server process, kept on globalThis so dev reloads don't start duplicates.
+function ensureSweeper() {
+  const g = globalThis as unknown as { __liveDropSweeper?: NodeJS.Timeout; __liveDropRelease?: () => number };
+  g.__liveDropRelease = () => releaseExpiredClaims(); // always the latest code, even after a dev reload
+  if (g.__liveDropSweeper) return;
+  g.__liveDropSweeper = setInterval(() => {
+    try {
+      g.__liveDropRelease?.();
+    } catch (err) {
+      console.error("[live] releasing unpaid claims failed", err);
+    }
+  }, 5_000);
+  g.__liveDropSweeper.unref?.();
 }
 
 // Unclear messages ("lo quiero", "je le prends") are batched and checked by Gemini.
@@ -456,6 +574,20 @@ export async function completeCheckout(paypalOrderId: string, viewerId: string |
   if (!order) throw new Error("Order not found");
   if (viewerId && order.viewer_id !== viewerId) throw new Error("This order belongs to someone else");
   if (order.status === "paid") return order;
+
+  // Never take money for an item that has already passed to someone else.
+  const lost = db
+    .prepare(
+      `SELECT i.title FROM order_items oi
+       JOIN items i ON i.id = oi.item_id
+       LEFT JOIN claims c ON c.item_id = oi.item_id AND c.viewer_id = ? AND c.status = 'won'
+       WHERE oi.order_id = ? AND (c.id IS NULL OR i.status != 'claimed')`,
+    )
+    .all(order.viewer_id, order.id) as { title: string }[];
+  if (lost.length) {
+    db.prepare("UPDATE orders SET status = 'failed', updated_at = ? WHERE id = ?").run(Date.now(), order.id);
+    throw new Error(`Time ran out for: ${lost.map((l) => l.title).join(", ")}. Nothing was charged. Check your bag and try again.`);
+  }
 
   const result = await captureOrder(paypalOrderId, `capture-${order.id}`);
   const capture = firstCapture(result);

@@ -586,7 +586,7 @@ PayPal can't reach `localhost`. To receive webhooks while developing, use a tunn
 | PayPal webhooks (signature-verified handler) | 🟡 Built, not yet connected to a webhook URL |
 | Live video to viewers (LiveKit) | 🔲 Planned. Viewers currently see each item's photo card |
 | Channel3 store prices | 🔲 Planned |
-| Unpaid claims passing to the next person in line | 🔲 Planned |
+| Unpaid claims pass to the next person in line (seller picks 1–30 min; extra time while paying; late payments refused) | ✅ Done |
 | RAG: "Ask the seller" bot and pricing memory | 🔲 Planned |
 | AI shopping agents (Vault, permission slips, holds, undo) | 🔲 Planned. Holds and undo verified in the sandbox; Vault waits on PayPal enabling it for our app |
 | Flash auctions | 🔲 Planned |
