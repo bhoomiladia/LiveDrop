@@ -1,6 +1,11 @@
 import { NextResponse } from "next/server";
 import { getCurrentUser } from "@/lib/auth";
-import { createShow } from "@/lib/live";
+import { createShow, listPublicShows } from "@/lib/live";
+
+// Public: shows that are live, starting soon, or just ended (for the home page).
+export async function GET() {
+  return NextResponse.json(listPublicShows(), { headers: { "Cache-Control": "no-store" } });
+}
 
 export async function POST(req: Request) {
   const user = await getCurrentUser();

@@ -115,6 +115,8 @@ export interface OnwardSummitTemplateProps {
   glyph?: OwsGlyph
   /** Called with the form's fields. Return (or resolve to) `false`, or throw, to show an error. */
   onRegister?: (data: OwsRegistration) => unknown
+  /** Live Drop: extra content shown first in the page body (e.g. shows that are live now). */
+  topSection?: React.ReactNode
   /** Minimum height of the hero. A definite length, so it survives any host layout. */
   height?: string
   className?: string
@@ -1198,6 +1200,7 @@ export default function OnwardSummitTemplate({
   palette = "cobalt",
   glyph = "arrow",
   onRegister,
+  topSection,
   height = "100svh",
   className = "",
 }: OnwardSummitTemplateProps) {
@@ -1434,6 +1437,11 @@ export default function OnwardSummitTemplate({
       </section>
 
       <main className="ows-main">
+        {topSection && (
+          <section className="ows-sec ows-wrap" data-sec="shows" id="shows">
+            {topSection}
+          </section>
+        )}
         {/* ---------------- expect ---------------- */}
         {expect && (
           <section className="ows-sec ows-wrap" data-sec="expect">

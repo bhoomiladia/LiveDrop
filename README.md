@@ -561,7 +561,7 @@ PayPal can't reach `localhost`. To receive webhooks while developing, use a tunn
 
 | Page | Who uses it | What it's for |
 |---|---|---|
-| `/` | Everyone | Home: the next show's countdown and "Send your agent" |
+| `/` | Everyone | Home: shows that are **live now** (refreshes itself), starting soon, and recently ended |
 | `/live/[showId]` | Viewers | Watch, chat, claim, and pay |
 | `/studio/[showId]` | Sellers | Go live, plus the control room and the Show Producer |
 | `/agent` | Buyers | Set up your agent and its permission slip |
@@ -577,7 +577,7 @@ PayPal can't reach `localhost`. To receive webhooks while developing, use a tunn
 | Part | Status |
 |---|---|
 | Accounts: email and password, Google sign-in, email verification, password reset | ✅ Done |
-| Home page, rebranded for Live Drop | ✅ Done |
+| Home page, rebranded for Live Drop, with "Live now", "Starting soon" and "Recently ended" shows | ✅ Done |
 | Seller studio: create a show, go live, camera, voice, draft cards that go live after a countdown | ✅ Done |
 | Speak to list: instant price/size/title parsing (unit-tested), then Gemini polishes the listing from the photo | ✅ Done |
 | Live room for viewers: real-time updates (Server-Sent Events), chat, join with just a name | ✅ Done |

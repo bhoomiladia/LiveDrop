@@ -1,7 +1,7 @@
 import "server-only";
 import crypto from "node:crypto";
 import { getDb } from "./db";
-import { publish } from "./events";
+import { publish, viewerCount } from "./events";
 import { parseSpokenListing } from "./speech-parse";
 import { classifyFast, type MessageKind } from "./claims";
 import { aiEnabled, generateJson, Type } from "./gemini";
@@ -242,6 +242,64 @@ export function paidTotals(showId: string) {
 }
 
 // ----------------------------------------------------------------- shows
+
+export type PublicShow = {
+  id: string;
+  title: string;
+  status: ShowRow["status"];
+  seller_name: string;
+  started_at: number | null;
+  ended_at: number | null;
+  created_at: number;
+  item_count: number;
+  sold_count: number;
+  watching: number;
+  now_showing: { title: string; price_cents: number; image_data: string | null; status: string } | null;
+};
+
+// For the home page: what's live now, what's starting soon, and what just ended.
+export function listPublicShows(): { live: PublicShow[]; upcoming: PublicShow[]; recent: PublicShow[] } {
+  const db = getDb();
+  const rows = db
+    .prepare(
+      `SELECT s.*, u.name AS seller_name,
+         (SELECT COUNT(*) FROM items i WHERE i.show_id = s.id AND i.listed_at IS NOT NULL) AS item_count,
+         (SELECT COUNT(*) FROM items i WHERE i.show_id = s.id AND i.status IN ('paid', 'shipped', 'on_hold')) AS sold_count
+       FROM shows s JOIN users u ON u.id = s.seller_id
+       WHERE s.status = 'live'
+          OR (s.status = 'scheduled' AND s.created_at > ?)
+          OR (s.status = 'ended' AND s.ended_at > ?)
+       ORDER BY COALESCE(s.started_at, s.created_at) DESC
+       LIMIT 40`,
+    )
+    .all(Date.now() - 14 * 86_400_000, Date.now() - 3 * 86_400_000) as (ShowRow & { seller_name: string; item_count: number; sold_count: number })[];
+
+  const toPublic = (r: (typeof rows)[number]): PublicShow => {
+    const current = currentItem(r.id);
+    return {
+      id: r.id,
+      title: r.title,
+      status: r.status,
+      seller_name: r.seller_name.split(" ")[0],
+      started_at: r.started_at,
+      ended_at: r.ended_at,
+      created_at: r.created_at,
+      item_count: r.item_count,
+      sold_count: r.sold_count,
+      watching: r.status === "live" ? viewerCount(r.id) : 0,
+      now_showing: current
+        ? { title: current.title, price_cents: current.price_cents, image_data: current.image_data, status: current.status }
+        : null,
+    };
+  };
+  // A show still "live" after 12 hours was almost certainly left running by mistake.
+  const stale = (r: (typeof rows)[number]) => r.status === "live" && (r.started_at ?? r.created_at) < Date.now() - 12 * 3_600_000;
+  return {
+    live: rows.filter((r) => r.status === "live" && !stale(r)).map(toPublic),
+    upcoming: rows.filter((r) => r.status === "scheduled").slice(0, 6).map(toPublic),
+    recent: rows.filter((r) => (r.status === "ended" || stale(r)) && r.item_count > 0).slice(0, 6).map(toPublic),
+  };
+}
 
 export function createShow(sellerId: string, title: string, shippingCents: number, claimMinutes = 5): ShowRow {
   const show: ShowRow = {

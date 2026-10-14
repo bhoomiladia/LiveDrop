@@ -1,10 +1,14 @@
-"use client";
-
+import ShowsSection from "@/components/home/shows-section";
 import OnwardSummitTemplate from "@/components/ui/onward-summit-template";
+import { listPublicShows } from "@/lib/live";
+
+// Rendered per request so "Live now" is always current (it also refreshes itself in the browser).
+export const dynamic = "force-dynamic";
 
 export default function Home() {
   return (
     <OnwardSummitTemplate
+      topSection={<ShowsSection initial={listPublicShows()} />}
       brand="Live Drop"
       title="Live Drop"
       tagline={"Go live. Say the price.\nGet paid with PayPal."}
