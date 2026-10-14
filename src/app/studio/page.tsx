@@ -4,6 +4,7 @@ import { getCurrentUser } from "@/lib/auth";
 import { listShowsForSeller } from "@/lib/live";
 import LogoutButton from "@/components/dashboard/logout-button";
 import NewShowForm from "./new-show-form";
+import ShopInfoForm from "./shop-info-form";
 
 export const metadata = { title: "Your shows · Live Drop" };
 export const dynamic = "force-dynamic";
@@ -28,6 +29,7 @@ export default async function StudioHome() {
           <p className="text-black/60 text-sm">Create a show, go live, and hold items up to the camera. Live Drop does the rest.</p>
         </div>
         <NewShowForm />
+        <ShopInfoForm />
         <ul className="space-y-2">
           {shows.map((s) => (
             <li key={s.id} className="bg-white rounded-2xl border border-black/5 p-4 flex items-center justify-between gap-4">

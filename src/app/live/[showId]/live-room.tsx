@@ -2,6 +2,7 @@
 
 import { useEffect, useMemo, useRef, useState } from "react";
 import AgentPanel from "@/components/live/agent-panel";
+import ChatLine from "@/components/live/chat-line";
 import LiveVideo from "@/components/live/live-video";
 import PayPalCheckoutButton from "@/components/live/paypal-checkout-button";
 import { money, savings, useShow, type LiveItem } from "@/components/live/use-show";
@@ -214,12 +215,7 @@ export default function LiveRoom({ showId, paypalClientId }: { showId: string; p
             <div className="flex-1 overflow-y-auto p-3 space-y-1.5 text-sm">
               {snap.messages.length === 0 && <p className="text-white/40 text-center mt-8">Chat is quiet. Say hi!</p>}
               {snap.messages.map((m) => (
-                <div key={m.id} className="leading-snug">
-                  <span className="font-semibold text-white/70">{m.name}</span>{" "}
-                  <span className={m.kind === "claim" ? "text-amber-300 font-semibold" : "text-white/90"}>{m.text}</span>
-                  {m.kind === "claim" && <span className="ml-1 text-[10px] uppercase text-amber-300/80">claim</span>}
-                  {m.kind === "pending" && <span className="ml-1 text-[10px] text-white/40">checking…</span>}
-                </div>
+                <ChatLine key={m.id} m={m} dark replyTo={m.reply_to ? snap.messages.find((x) => x.id === m.reply_to) : undefined} />
               ))}
               <div ref={chatEnd} />
             </div>
@@ -235,7 +231,7 @@ export default function LiveRoom({ showId, paypalClientId }: { showId: string; p
                 onChange={(e) => setText(e.target.value)}
                 disabled={!isLive || sending}
                 maxLength={280}
-                placeholder={isLive ? 'Say hi, ask, or type "SOLD"' : "Chat opens when the show is live"}
+                placeholder={isLive ? 'Ask a question, or type "SOLD"' : "Chat opens when the show is live"}
                 className="flex-1 min-w-0 h-10 rounded-full bg-white/10 px-4 text-sm placeholder:text-white/40 outline-none focus:ring-2 focus:ring-white/30"
               />
               <button disabled={!isLive || sending || !text.trim()} className="h-10 px-4 rounded-full bg-white text-black text-sm font-semibold disabled:opacity-40">

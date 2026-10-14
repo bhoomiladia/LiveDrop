@@ -1,12 +1,23 @@
 import { NextResponse, type NextRequest } from "next/server";
 import { getShow, postMessage } from "@/lib/live";
-import { getViewer } from "@/lib/viewer";
+import { sellerReply } from "@/lib/rag";
+import { getViewer, requireSeller } from "@/lib/viewer";
 
 // Simple per-viewer rate limit so one person can't flood the chat.
 const lastMessageAt = new Map<string, number>();
 
 export async function POST(req: NextRequest, ctx: RouteContext<"/api/shows/[showId]/chat">) {
   const { showId } = await ctx.params;
+
+  // The seller can chat too, e.g. answering a question the shop assistant couldn't.
+  const seller = await requireSeller(showId);
+  if (seller) {
+    const { text, replyTo } = await req.json().catch(() => ({}));
+    if (typeof text !== "string" || !text.trim()) return NextResponse.json({ error: "Empty message." }, { status: 400 });
+    const msg = await sellerReply(showId, seller.userId, text.trim(), typeof replyTo === "string" ? replyTo : null);
+    return NextResponse.json({ ok: true, kind: msg.kind });
+  }
+
   const viewer = await getViewer();
   if (!viewer) return NextResponse.json({ error: "Pick a name first." }, { status: 401 });
 

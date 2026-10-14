@@ -68,28 +68,35 @@ export async function generateJson<T>(call: JsonCall): Promise<{ data: T; model:
   return null;
 }
 
-const EMBED_MODELS = ["gemini-embedding-2", "gemini-embedding-001"];
+// One fixed embedding model: vectors from different models can't be compared,
+// so stored vectors remember which model made them (see rag.ts).
+export const EMBED_MODEL = process.env.GEMINI_EMBED_MODEL || "gemini-embedding-2";
+const EMBED_DIMENSIONS = 768; // smaller vectors, plenty for a shop's worth of text
 
+// Returns one normalized vector per text, or null if the embedding service didn't answer.
 export async function embed(texts: string[], kind: "document" | "query"): Promise<number[][] | null> {
-  for (const model of EMBED_MODELS) {
-    try {
-      const vectors: number[][] = [];
-      for (const text of texts) {
-        const res = await ai().models.embedContent({
-          model,
-          contents: text,
-          config: { taskType: kind === "document" ? "RETRIEVAL_DOCUMENT" : "RETRIEVAL_QUERY" },
-        });
-        const values = res.embeddings?.[0]?.values;
-        if (!values) throw new Error("no embedding");
-        vectors.push(values);
-      }
-      return vectors;
-    } catch {
-      continue;
+  try {
+    const vectors: number[][] = [];
+    for (const text of texts) {
+      const res = await ai().models.embedContent({
+        model: EMBED_MODEL,
+        contents: text.slice(0, 2000),
+        config: {
+          taskType: kind === "document" ? "RETRIEVAL_DOCUMENT" : "RETRIEVAL_QUERY",
+          outputDimensionality: EMBED_DIMENSIONS,
+          abortSignal: AbortSignal.timeout(15_000),
+        },
+      });
+      const values = res.embeddings?.[0]?.values;
+      if (!values?.length) return null;
+      const norm = Math.hypot(...values) || 1;
+      vectors.push(values.map((v) => v / norm));
     }
+    return vectors;
+  } catch (err) {
+    if (process.env.NODE_ENV !== "production") console.warn("[gemini] embedding failed", (err as Error).message);
+    return null;
   }
-  return null;
 }
 
 export { Type };

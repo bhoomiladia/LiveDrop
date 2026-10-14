@@ -247,6 +247,34 @@ export function getDb(): DatabaseSync {
   addColumnIfMissing(dbInstance, "orders", "refunded_cents", "INTEGER NOT NULL DEFAULT 0");
   addColumnIfMissing(dbInstance, "orders", "invoice_id", "TEXT");
 
+  // RAG: the seller's shop info and past answers, split into pieces with embeddings.
+  dbInstance.exec(`
+    CREATE TABLE IF NOT EXISTS shop_info (
+      seller_id TEXT PRIMARY KEY,
+      shipping TEXT,
+      returns TEXT,
+      sizing TEXT,
+      other TEXT,
+      updated_at INTEGER NOT NULL
+    );
+    CREATE TABLE IF NOT EXISTS knowledge_chunks (
+      id TEXT PRIMARY KEY,
+      seller_id TEXT NOT NULL,
+      show_id TEXT,                  -- set for item details (only relevant in that show)
+      source TEXT NOT NULL,          -- shipping | returns | sizing | other | answer | item:<id>
+      label TEXT NOT NULL,           -- shown to viewers as the source
+      text TEXT NOT NULL,
+      model TEXT NOT NULL,           -- embedding model that made the vector
+      vector BLOB NOT NULL,          -- Float32Array
+      created_at INTEGER NOT NULL
+    );
+    CREATE INDEX IF NOT EXISTS idx_chunks_seller ON knowledge_chunks(seller_id, source);
+  `);
+  addColumnIfMissing(dbInstance, "messages", "reply_to", "TEXT");
+  addColumnIfMissing(dbInstance, "messages", "sources", "TEXT"); // JSON labels for assistant answers
+  addColumnIfMissing(dbInstance, "messages", "needs_seller", "INTEGER NOT NULL DEFAULT 0");
+  addColumnIfMissing(dbInstance, "items", "memory_hint", "TEXT"); // pricing memory, for the seller
+
   return dbInstance;
 }
 

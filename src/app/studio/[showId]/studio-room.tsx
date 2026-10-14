@@ -3,7 +3,9 @@
 import Link from "next/link";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { Room, Track } from "livekit-client";
+import ChatLine from "@/components/live/chat-line";
 import OrdersPanel from "@/components/live/orders-panel";
+import type { ChatMessage } from "@/components/live/use-show";
 import { money, savings, useShow, type LiveItem } from "@/components/live/use-show";
 
 // Minimal typing for the browser's speech recognition (Chrome exposes it as webkitSpeechRecognition).
@@ -154,6 +156,9 @@ export default function StudioRoom({ showId }: { showId: string }) {
     wantListening.current = false;
     recognition.current?.stop();
   }, []);
+
+  // ---- chat: the seller can reply, e.g. to questions the shop assistant flagged
+  const [replyTo, setReplyTo] = useState<ChatMessage | null>(null);
 
   // ---- listing
   const [typed, setTyped] = useState("");
@@ -368,15 +373,17 @@ export default function StudioRoom({ showId }: { showId: string }) {
           <h2 className="font-semibold px-4 pt-3 pb-2 border-b border-black/5">Chat</h2>
           <div className="flex-1 overflow-y-auto p-3 space-y-1.5 text-sm">
             {snap.messages.map((m) => (
-              <div key={m.id}>
-                <span className="font-semibold">{m.name}</span>{" "}
-                <span className={m.kind === "claim" ? "text-amber-600 font-semibold" : m.kind === "question" ? "text-blue-600" : ""}>{m.text}</span>
-                {m.kind !== "other" && m.kind !== "pending" && <span className="ml-1 text-[10px] uppercase text-black/40">{m.kind}</span>}
-                {m.kind === "pending" && <span className="ml-1 text-[10px] text-black/40">AI checking…</span>}
-              </div>
+              <ChatLine
+                key={m.id}
+                m={m}
+                dark={false}
+                replyTo={m.reply_to ? snap.messages.find((x) => x.id === m.reply_to) : undefined}
+                onReply={setReplyTo}
+              />
             ))}
             {snap.messages.length === 0 && <p className="text-black/40 text-center mt-8">No messages yet.</p>}
           </div>
+          <SellerChatBox showId={showId} replyTo={replyTo} onClearReply={() => setReplyTo(null)} onError={(m) => pushToast(m, "info")} />
         </aside>
       </main>
 
@@ -428,6 +435,64 @@ function RetailHint({ item }: { item: LiveItem }) {
         ))}
       </ul>
     </details>
+  );
+}
+
+// The seller's chat box. Replies to flagged questions also teach the shop assistant.
+function SellerChatBox({
+  showId,
+  replyTo,
+  onClearReply,
+  onError,
+}: {
+  showId: string;
+  replyTo: ChatMessage | null;
+  onClearReply: () => void;
+  onError: (m: string) => void;
+}) {
+  const [text, setText] = useState("");
+  const [busy, setBusy] = useState(false);
+  return (
+    <form
+      className="p-2 border-t border-black/5 space-y-1.5"
+      onSubmit={async (e) => {
+        e.preventDefault();
+        if (!text.trim()) return;
+        setBusy(true);
+        const res = await fetch(`/api/shows/${showId}/chat`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ text, replyTo: replyTo?.id ?? null }),
+        });
+        setBusy(false);
+        if (!res.ok) return onError((await res.json()).error);
+        setText("");
+        onClearReply();
+      }}
+    >
+      {replyTo && (
+        <p className="text-[11px] text-black/50 flex justify-between gap-2">
+          <span className="truncate">
+            ↳ Replying to {replyTo.name}: {replyTo.text}
+          </span>
+          <button type="button" onClick={onClearReply} className="underline shrink-0">
+            cancel
+          </button>
+        </p>
+      )}
+      <div className="flex gap-2">
+        <input
+          value={text}
+          onChange={(e) => setText(e.target.value)}
+          maxLength={280}
+          placeholder={replyTo ? "Your answer (your assistant will remember it)" : "Say something to viewers"}
+          className="flex-1 min-w-0 h-9 rounded-full border border-black/10 px-3 text-sm outline-none focus:ring-2 focus:ring-black/10"
+        />
+        <button disabled={busy || !text.trim()} className="h-9 px-4 rounded-full bg-black text-white text-sm font-semibold disabled:opacity-40">
+          Send
+        </button>
+      </div>
+    </form>
   );
 }
 
@@ -545,6 +610,7 @@ function DraftCard({ showId, item, isLive, onError }: { showId: string; item: Li
           </div>
         )}
         <RetailHint item={item} />
+        {item.memory_hint && <p className="text-xs text-indigo-700">🧠 Pricing memory: {item.memory_hint}</p>}
         <div className="flex items-center gap-2">
           <button onClick={goLive} disabled={busy || !isLive} className="h-8 px-3 rounded-full bg-red-600 text-white text-xs font-bold disabled:opacity-40">
             {!isLive ? "Go live first" : busy ? "…" : editing ? "Save & put live" : `Live in ${countdown}s · now`}

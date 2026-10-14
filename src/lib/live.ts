@@ -38,6 +38,7 @@ export type ItemRow = {
   retail_hint: string | null;
   retail_cents: number | null; // typical price of similar NEW items (Channel3)
   retail_sources: string | null; // JSON list of those items
+  memory_hint: string | null; // pricing memory: how this seller's similar items sold
   auction_ends_at: number | null; // flash auction: bidding closes at this time
   auction_start_cents: number | null;
   auction_closed: number; // 1 once the auction has been settled
@@ -61,15 +62,18 @@ type ClaimRow = {
   bid_cents?: number | null; // auctions: the price this buyer bid
 };
 
-type MessageRow = {
+export type MessageRow = {
   id: string;
   show_id: string;
   viewer_id: string;
   viewer_name: string;
   text: string;
-  kind: MessageKind | "pending";
+  kind: MessageKind | "pending" | "answer" | "seller"; // answer = shop assistant (RAG), seller = the seller replying
   item_id: string | null;
   created_at: number;
+  reply_to?: string | null;
+  sources?: string | null; // JSON list of source labels (assistant answers)
+  needs_seller?: number; // 1 = the assistant couldn't answer and asked the seller
 };
 
 export type Viewer = { id: string; name: string };
@@ -226,8 +230,22 @@ export function showSnapshot(showId: string, viewerId?: string) {
   };
 }
 
-function publicMessage(m: MessageRow) {
-  return { id: m.id, name: m.viewer_name, text: m.text, kind: m.kind, item_id: m.item_id, created_at: m.created_at };
+export function publicMessage(m: MessageRow) {
+  let sources: string[] = [];
+  try {
+    sources = m.sources ? JSON.parse(m.sources) : [];
+  } catch {}
+  return {
+    id: m.id,
+    name: m.viewer_name,
+    text: m.text,
+    kind: m.kind,
+    item_id: m.item_id,
+    created_at: m.created_at,
+    reply_to: m.reply_to ?? null,
+    sources,
+    needs_seller: Boolean(m.needs_seller),
+  };
 }
 
 // What PayPal actually collected for this show: item sales plus shipping. Seller-only.
@@ -378,6 +396,7 @@ export function createListing(showId: string, transcript: string, imageDataUrl: 
     auction_ends_at: null,
     auction_start_cents: null,
     auction_closed: 0,
+    memory_hint: null,
     ai_status: aiEnabled() ? "pending" : "off",
     winner_claim_id: null,
     created_at: Date.now(),
@@ -391,7 +410,12 @@ export function createListing(showId: string, transcript: string, imageDataUrl: 
   const view = toPublicItem(item);
   publish(showId, { type: "item", item: view, audience: "seller" });
   // Store prices are looked up after the AI has named the item (better search), or right away without AI.
-  if (aiEnabled()) void enrichListing(item.id, transcript, imageDataUrl).finally(() => void addRetailPrices(item.id));
+  // After the AI names the item: store prices (Channel3), then RAG indexing + pricing memory.
+  const afterNaming = async () => {
+    await addRetailPrices(item.id);
+    await import("./rag").then((m) => m.indexItem(item.id)).catch((err) => console.warn("[rag] indexing item failed", err));
+  };
+  if (aiEnabled()) void enrichListing(item.id, transcript, imageDataUrl).finally(() => void afterNaming());
   else void addRetailPrices(item.id);
   return view;
 }
@@ -507,7 +531,15 @@ export function postMessage(showId: string, viewer: Viewer, rawText: string) {
   if (kind === "claim" && item) claimItem(item.id, viewer, msg.id, "human");
   if (kind === "bid" && item && fast.kind === "bid" && fast.bid !== undefined) placeBid(item.id, viewer, Math.round(fast.bid * 100), msg.id);
   if (kind === "pending") queueForAi(msg);
+  if (kind === "question") askAssistant(msg.id);
   return msg;
+}
+
+// Viewer questions go to the shop assistant (RAG over the seller's shop info and items).
+function askAssistant(messageId: string) {
+  void import("./rag")
+    .then((m) => m.answerQuestion(messageId))
+    .catch((err) => console.warn("[rag] answering failed", err));
 }
 
 // First valid claim wins. Everyone after joins the waiting line.
@@ -823,6 +855,7 @@ async function flushAi(showId: string) {
     publish(showId, { type: "message", message: publicMessage({ ...msg, kind }) });
     const who = { id: msg.viewer_id, name: msg.viewer_name };
     if (kind === "claim" && msg.item_id) claimItem(msg.item_id, who, msg.id, "human");
+    if (kind === "question") askAssistant(msg.id);
     // A late AI answer only counts if the auction is still running.
     if (kind === "bid" && msg.item_id && r?.bid_usd) placeBid(msg.item_id, who, Math.round(r.bid_usd * 100), msg.id);
   }

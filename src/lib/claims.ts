@@ -6,6 +6,8 @@ export type FastResult = { kind: MessageKind; bid?: number } | { kind: "unclear"
 
 const CLAIM_EXACT = /^(?:sold|sold!+|mine|mine!+|claim|claimed|dibs|me|me!+|me please|i'?ll take it|i will take it|i want it|want it|take it|yes please|yes|yess+)[\s!.🙋‍♀️🙋‍♂️🙋🙌✋👋]*$/iu;
 const CLAIM_START = /^(?:sold|mine|claim|dibs)\b/i;
+// Questions typed without a "?": "do you ship to canada", "how big is the medium".
+const QUESTION_START = /^(?:do|does|did|is|are|can|could|what|how|when|where|which|will|would|who|why|any)\b.{6,}/i;
 // Words that hint at buying intent in other languages or phrasings — worth asking the AI.
 const MAYBE_CLAIM = /\b(?:quiero|lo quiero|la quiero|prends|je le prends|je la prends|nehme|ich nehme|chahiye|lena|voglio|prendo|eu quero|want|take|buy|grab|need)\b/i;
 // Prompt-injection-looking text is never a claim; it's just text.
@@ -38,7 +40,7 @@ export function classifyFast(text: string, mode: "fixed" | "auction"): FastResul
   }
 
   if (CLAIM_EXACT.test(t)) return { kind: "claim" };
-  if (t.includes("?")) return { kind: "question" };
+  if (t.includes("?") || QUESTION_START.test(t)) return { kind: "question" };
   if (CLAIM_START.test(t) && t.length <= 40) return { kind: "claim" };
   if (MAYBE_CLAIM.test(t) && t.length <= 80) return { kind: "unclear" };
   if (mode === "auction" && /\b(?:twenty|thirty|forty|fifty|sixty|seventy|eighty|ninety|hundred)\b/i.test(t)) return { kind: "unclear" };

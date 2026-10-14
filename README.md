@@ -587,7 +587,7 @@ PayPal can't reach `localhost`. To receive webhooks while developing, use a tunn
 | Live video to viewers (LiveKit): seller's camera + mic, watch-only passes for viewers, tap-for-sound | ✅ Done |
 | Channel3 store prices: "Similar new items: $80+ in stores" and a "Save X%" badge, using a conservative price anchor | ✅ Done |
 | Unpaid claims pass to the next person in line (seller picks 1–30 min; extra time while paying; late payments refused) | ✅ Done |
-| RAG: "Ask the seller" bot and pricing memory | 🔲 Planned |
+| RAG: shop info form, "Ask the seller" bot answering from the shop info and item details with sources, questions it can't answer flagged for the seller, seller replies remembered as knowledge, pricing memory | ✅ Done |
 | AI shopping agents: saved PayPal (Vault), signed permission slip, limits checked in code, Gemini wish matching, human head start, money on hold with Undo, auto-complete, email undo link | ✅ Done. Purchase with saved PayPal verified in the sandbox |
 | Flash auctions: bids from chat (or AI for phrases like "I'll go thirty-five"), quick-bid buttons, anti-sniping, next-highest bidder at their own bid | ✅ Done |
 | After-show autopilot: one PayPal invoice per buyer (link + QR) when the show ends, automatic paid/expired detection, Orders panel with per-item refunds, tracking (sent to PayPal), AI label reader | ✅ Done |

@@ -21,6 +21,7 @@ export type LiveItem = {
   top_bidder: string | null;
   bid_count: number;
   retail_sources: string | null; // JSON: [{ title, brand, store, price_cents }]
+  memory_hint: string | null; // seller: how similar items sold before
   ai_status: "pending" | "done" | "failed" | "off";
   winner_name: string | null;
   waiting_count: number;
@@ -32,9 +33,12 @@ export type ChatMessage = {
   id: string;
   name: string;
   text: string;
-  kind: "claim" | "bid" | "question" | "other" | "pending";
+  kind: "claim" | "bid" | "question" | "other" | "pending" | "answer" | "seller"; // answer = shop assistant
   item_id: string | null;
   created_at: number;
+  reply_to: string | null;
+  sources: string[]; // where the shop assistant found its answer
+  needs_seller: boolean; // the assistant couldn't answer and asked the seller
 };
 
 export type Bag = {
