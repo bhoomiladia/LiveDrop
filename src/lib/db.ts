@@ -274,6 +274,7 @@ export function getDb(): DatabaseSync {
   addColumnIfMissing(dbInstance, "messages", "sources", "TEXT"); // JSON labels for assistant answers
   addColumnIfMissing(dbInstance, "messages", "needs_seller", "INTEGER NOT NULL DEFAULT 0");
   addColumnIfMissing(dbInstance, "items", "memory_hint", "TEXT"); // pricing memory, for the seller
+  addColumnIfMissing(dbInstance, "items", "category", "TEXT"); // from the AI listing builder (e.g. "Jackets")
 
   return dbInstance;
 }

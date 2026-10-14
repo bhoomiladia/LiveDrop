@@ -12,6 +12,8 @@
   "dependencies": {
     "@google/genai": "^2.29.1",
     "@paypal/paypal-js": "^11.2.2",
+    "ag-studio": "^3.0.0",
+    "ag-studio-react": "^3.0.0",
     "bcryptjs": "^3.0.3",
     "jose": "^6.2.12",
     "livekit-client": "^2.22.4",

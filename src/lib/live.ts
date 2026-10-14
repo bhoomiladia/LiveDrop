@@ -39,6 +39,7 @@ export type ItemRow = {
   retail_cents: number | null; // typical price of similar NEW items (Channel3)
   retail_sources: string | null; // JSON list of those items
   memory_hint: string | null; // pricing memory: how this seller's similar items sold
+  category: string | null; // e.g. "Jackets", from the AI listing builder
   auction_ends_at: number | null; // flash auction: bidding closes at this time
   auction_start_cents: number | null;
   auction_closed: number; // 1 once the auction has been settled
@@ -397,6 +398,7 @@ export function createListing(showId: string, transcript: string, imageDataUrl: 
     auction_start_cents: null,
     auction_closed: 0,
     memory_hint: null,
+    category: null,
     ai_status: aiEnabled() ? "pending" : "off",
     winner_claim_id: null,
     created_at: Date.now(),
@@ -443,13 +445,14 @@ async function enrichListing(itemId: string, transcript: string, imageDataUrl: s
     const autoTitle = parseSpokenListing(transcript).title || `Item #${item.seq}`;
     const sellerEdited = item.title !== autoTitle;
     getDb()
-      .prepare("UPDATE items SET title = ?, size = ?, condition = ?, description = ?, price_cents = ?, ai_status = 'done' WHERE id = ?")
+      .prepare("UPDATE items SET title = ?, size = ?, condition = ?, description = ?, price_cents = ?, category = ?, ai_status = 'done' WHERE id = ?")
       .run(
         sellerEdited ? item.title : ai.title.slice(0, 80) || item.title,
         item.size || ai.size || null,
         ai.condition,
         ai.description.slice(0, 200),
         priceCents,
+        normalizeCategory(ai.category),
         itemId,
       );
   }
@@ -478,6 +481,12 @@ async function addRetailPrices(itemId: string) {
 }
 
 const formatUsd = (cents: number) => "$" + (cents / 100).toFixed(cents % 100 === 0 ? 0 : 2);
+
+// "jackets & coats" -> "Jackets & coats": keep categories consistent for charts.
+function normalizeCategory(raw: string | undefined): string | null {
+  const c = (raw ?? "").trim().replace(/\s+/g, " ").slice(0, 40);
+  return c ? c.charAt(0).toUpperCase() + c.slice(1).toLowerCase() : null;
+}
 
 export function updateDraft(itemId: string, edits: { title?: string; size?: string | null; price_cents?: number }) {
   const item = getItem(itemId);
@@ -735,6 +744,20 @@ export function releaseExpiredClaims(now = Date.now()): number {
     released++;
   }
   return released;
+}
+
+// Seller (or the Show Producer, with the seller's approval) releases every unpaid claim now.
+export function releaseUnpaidNow(showId: string): number {
+  const unpaid = getDb()
+    .prepare(
+      `SELECT c.* FROM claims c JOIN items i ON i.id = c.item_id
+       WHERE c.show_id = ? AND c.status = 'won' AND i.status = 'claimed'
+         AND NOT EXISTS (SELECT 1 FROM invoice_items ii JOIN invoices v ON v.id = ii.invoice_id WHERE ii.item_id = i.id AND v.status = 'sent')`,
+    )
+    .all(showId) as ClaimRow[];
+  const now = Date.now();
+  for (const claim of unpaid) passToNextInLine(claim, now);
+  return unpaid.length;
 }
 
 export function passToNextInLine(claim: ClaimRow, now: number) {

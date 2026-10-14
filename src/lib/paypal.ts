@@ -249,6 +249,37 @@ export async function invoiceQrDataUrl(id: string): Promise<string | null> {
   return base64 ? `data:image/png;base64,${base64}` : null;
 }
 
+// ---- Transaction Search: PayPal's own record of payments (bookkeeping) ----
+
+export async function searchTransactions(from: Date, to: Date): Promise<{ id: string; amount: number; fee: number; status: string; date: string }[]> {
+  const out: { id: string; amount: number; fee: number; status: string; date: string }[] = [];
+  const fmt = (d: Date) => d.toISOString().replace(/\.\d{3}Z$/, "-0000");
+  // The API allows at most 31 days per request.
+  for (let start = from.getTime(); start < to.getTime(); start += 31 * 86_400_000) {
+    const end = Math.min(start + 31 * 86_400_000 - 1000, to.getTime());
+    let page = 1;
+    for (;;) {
+      const res = await paypal<{
+        transaction_details?: { transaction_info: { transaction_id: string; transaction_amount?: { value: string }; fee_amount?: { value: string }; transaction_status?: string; transaction_initiation_date?: string } }[];
+        total_pages?: number;
+      }>("GET", `/v1/reporting/transactions?start_date=${encodeURIComponent(fmt(new Date(start)))}&end_date=${encodeURIComponent(fmt(new Date(end)))}&fields=transaction_info&page_size=500&page=${page}`);
+      for (const d of res.transaction_details ?? []) {
+        const t = d.transaction_info;
+        out.push({
+          id: t.transaction_id,
+          amount: Number(t.transaction_amount?.value ?? 0),
+          fee: Number(t.fee_amount?.value ?? 0),
+          status: t.transaction_status ?? "",
+          date: t.transaction_initiation_date ?? "",
+        });
+      }
+      if (!res.total_pages || page >= res.total_pages) break;
+      page++;
+    }
+  }
+  return out;
+}
+
 // ---- Vault: save PayPal for an agent ----
 
 export function createSetupToken(returnUrl: string, cancelUrl: string) {

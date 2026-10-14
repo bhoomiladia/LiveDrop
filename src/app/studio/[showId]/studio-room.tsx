@@ -226,6 +226,9 @@ export default function StudioRoom({ showId }: { showId: string }) {
         <div className="flex items-center gap-2 text-sm shrink-0">
           <span className={`w-2 h-2 rounded-full ${connected ? "bg-emerald-500" : "bg-amber-400"}`} />
           <span className="text-black/50 hidden sm:inline">👀 {Math.max(0, viewers - 1)} watching</span>
+          <Link href={`/studio/${showId}/control`} className="h-9 px-3 rounded-full border border-black/10 grid place-items-center">
+            📊 Control room
+          </Link>
           <button
             onClick={() => navigator.clipboard.writeText(viewerUrl).then(() => pushToast("Viewer link copied", "info"))}
             className="h-9 px-3 rounded-full border border-black/10"

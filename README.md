@@ -583,6 +583,7 @@ PayPal can't reach `localhost`. To receive webhooks while developing, use a tunn
 | Live room for viewers: real-time updates (Server-Sent Events), chat, join with just a name | ✅ Done |
 | Claim engine: first claim wins, waiting line, bags; rules first, Gemini for unclear messages | ✅ Done |
 | PayPal checkout: JS SDK v6 button, server-side order and capture, one shipping fee per show | ✅ Done. Order creation verified end to end; in-browser payment is the next check |
+| Bookkeeping: reconcile sales with PayPal Transaction Search (gross, fees, net) | ✅ Done |
 | PayPal webhooks (signature-verified handler) | 🟡 Built, not yet connected to a webhook URL |
 | Live video to viewers (LiveKit): seller's camera + mic, watch-only passes for viewers, tap-for-sound | ✅ Done |
 | Channel3 store prices: "Similar new items: $80+ in stores" and a "Save X%" badge, using a conservative price anchor | ✅ Done |
@@ -591,7 +592,7 @@ PayPal can't reach `localhost`. To receive webhooks while developing, use a tunn
 | AI shopping agents: saved PayPal (Vault), signed permission slip, limits checked in code, Gemini wish matching, human head start, money on hold with Undo, auto-complete, email undo link | ✅ Done. Purchase with saved PayPal verified in the sandbox |
 | Flash auctions: bids from chat (or AI for phrases like "I'll go thirty-five"), quick-bid buttons, anti-sniping, next-highest bidder at their own bid | ✅ Done |
 | After-show autopilot: one PayPal invoice per buyer (link + QR) when the show ends, automatic paid/expired detection, Orders panel with per-item refunds, tracking (sent to PayPal), AI label reader | ✅ Done |
-| AG Studio control room and Show Producer | 🔲 Planned |
+| AG Studio control room: dashboards over all shows (Show recap, Buyers & orders) + Show Producer agent on Gemini (custom adapter) with PayPal tools (status, invoices, release, refund, reconcile) behind seller approval | ✅ Built. Gemini tool-calling verified; please test in the browser |
 | Judge mode | 🔲 Planned |
 | Deployment on Render | 🔲 Planned |
 
