@@ -224,7 +224,14 @@ export function showSnapshot(showId: string, viewerId?: string) {
     db.prepare("SELECT * FROM messages WHERE show_id = ? ORDER BY created_at DESC LIMIT 60").all(showId) as MessageRow[]
   ).reverse();
   return {
-    show: { id: show.id, title: show.title, status: show.status, shipping_cents: show.shipping_cents, claim_minutes: show.claim_minutes },
+    show: {
+      id: show.id,
+      title: show.title,
+      status: show.status,
+      shipping_cents: show.shipping_cents,
+      claim_minutes: show.claim_minutes,
+      is_demo: show.seller_id === "demo-seller", // judge mode: simulated seller (see demo.ts)
+    },
     items,
     messages: messages.map(publicMessage),
     bag: viewerId ? getBag(showId, viewerId) : null,
@@ -461,7 +468,7 @@ async function enrichListing(itemId: string, transcript: string, imageDataUrl: s
 }
 
 // "New in stores: typically $98": what similar new items cost, from Channel3.
-async function addRetailPrices(itemId: string) {
+export async function addRetailPrices(itemId: string) {
   if (!channel3Enabled()) return;
   const item = getItem(itemId);
   if (!item || /^Item #\d+$/.test(item.title)) return;

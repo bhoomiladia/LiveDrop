@@ -449,15 +449,17 @@ Streaming live video to many viewers with little delay is hard to build from scr
 
 ## Try it in 2 minutes
 
-> **Judges:** you don't need to install anything or go live yourself.
+> **Judges:** open **`/judge`** on the live demo. Nothing to install, and you don't have to go live yourself.
 
-1. Open the live demo: _link coming soon_.
-2. Click **Judge mode**. A recorded seller show starts, and our AI lists the items live, exactly as it would in a real show. Simulated viewers fill the chat.
-3. When an item appears, type **SOLD** in the chat.
-4. Click **Pay with PayPal** and log in with the **sandbox buyer account** shown on the judge page. It's a PayPal test account, so no real money moves.
-5. Watch "✅ paid" appear on the stream.
-6. Click **Seller view** to open the control room. Every sale shows its PayPal order ID. Ask the Show Producer: "Who hasn't paid yet?"
-7. Optional: click **Send your agent**, set its limits, approve saving PayPal (sandbox), restart the demo show, and watch your agent buy something.
+A demo show is always running there. **Rosa, the seller, is simulated**: a new item goes live every ~45 seconds, with a ⚡ flash auction every 4th item. **Ava, Leo and Sam are simulated viewers**: they chat, ask questions, and sometimes claim items, but they **never pay**. So after the 2-minute pay timer, an item they claimed passes to you if you're in line. Everything else is real: PayPal sandbox payments, Gemini AI, Channel3 store prices, AG Studio dashboards.
+
+1. **Watch and buy:** open the demo show, pick a name, tap **SOLD! Claim it**, and pay with the **sandbox buyer login shown on `/judge`**. Everyone watching sees "✅ … paid".
+2. **Ask a question** in chat, like "do you ship to canada?". The shop assistant answers from the shop's info and names its source (RAG).
+3. **Send an AI agent:** tap **🤖 Send your AI agent**, wish "hat", max $20, undo window 1 min. It buys the next matching item with money on hold; undo it or let it complete.
+4. **See the seller's side:** **Open Rosa's studio** signs you in as the demo seller. Try the Orders panel (refunds, tracking, PayPal invoices) and **📊 Control room** (AG Studio + the Show Producer: ask "Check with PayPal").
+5. **Go live yourself:** sign up, create a show, turn on your camera, and say an item and its price.
+
+To save the free AI quota, the demo seller only lists items while someone is watching.
 
 ---
 
@@ -566,7 +568,7 @@ PayPal can't reach `localhost`. To receive webhooks while developing, use a tunn
 | `/studio/[showId]` | Sellers | Go live, plus the control room and the Show Producer |
 | `/agent` | Buyers | Set up your agent and its permission slip |
 | `/bag` | Buyers | Your claimed items, payments, and invoices |
-| `/judge` | Judges | The demo show and test logins |
+| `/judge` | Judges | Try it in 2 minutes: the always-on demo show, sandbox buyer login, one-click seller view |
 | `/login`, `/signup`, `/verify-email`, `/forgot-password`, `/reset-password` | Everyone | Accounts (already built) |
 | `/dashboard` | Signed-in users | Your account (already built) |
 
@@ -593,7 +595,7 @@ PayPal can't reach `localhost`. To receive webhooks while developing, use a tunn
 | Flash auctions: bids from chat (or AI for phrases like "I'll go thirty-five"), quick-bid buttons, anti-sniping, next-highest bidder at their own bid | ✅ Done |
 | After-show autopilot: one PayPal invoice per buyer (link + QR) when the show ends, automatic paid/expired detection, Orders panel with per-item refunds, tracking (sent to PayPal), AI label reader | ✅ Done |
 | AG Studio control room: dashboards over all shows (Show recap, Buyers & orders) + Show Producer agent on Gemini (custom adapter) with PayPal tools (status, invoices, release, refund, reconcile) behind seller approval | ✅ Built. Gemini tool-calling verified; please test in the browser |
-| Judge mode | 🔲 Planned |
+| Judge mode: `/judge` page, always-on demo show with a simulated seller and viewers, one-click demo seller sign-in, sandbox buyer login shown | ✅ Done |
 | Deployment on Render | 🔲 Planned |
 
 ---

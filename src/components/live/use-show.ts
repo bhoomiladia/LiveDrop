@@ -60,7 +60,7 @@ export type Bag = {
 export type Toast = { id: number; text: string; tone: "paid" | "claim" | "info" };
 
 type Snapshot = {
-  show: { id: string; title: string; status: "scheduled" | "live" | "ended"; shipping_cents: number; claim_minutes: number };
+  show: { id: string; title: string; status: "scheduled" | "live" | "ended"; shipping_cents: number; claim_minutes: number; is_demo?: boolean };
   items: LiveItem[];
   messages: ChatMessage[];
   bag: Bag | null;

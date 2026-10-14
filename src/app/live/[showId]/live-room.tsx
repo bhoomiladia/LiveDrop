@@ -87,7 +87,7 @@ export default function LiveRoom({ showId, paypalClientId }: { showId: string; p
 
       <main className="max-w-6xl mx-auto p-4 md:p-6 grid gap-4 lg:grid-cols-[1fr_360px]">
         <section className="space-y-4 min-w-0">
-          <LiveVideo showId={showId} live={isLive} />
+          {snap.show.is_demo ? <DemoStage image={current?.image_data ?? null} /> : <LiveVideo showId={showId} live={isLive} />}
           <CurrentItem item={current} isLive={isLive} mine={Boolean(current && snap.bag?.lines.some((l) => l.item_id === current.id))} onClaim={() => send("SOLD")} onBid={(cents) => send(`${cents / 100}`)} />
 
           {earlier.length > 0 && (
@@ -445,6 +445,26 @@ function AuctionBox({ item, isLive, onBid }: { item: LiveItem; isLive: boolean; 
         </button>
       </div>
       <p className="text-[11px] text-white/70 text-center">Or type a number in the chat, like “25” or “I&apos;ll go 30”.</p>
+    </div>
+  );
+}
+
+// Judge mode: there's no seller camera, so explain what's going on instead of an empty video box.
+function DemoStage({ image }: { image: string | null }) {
+  return (
+    <div className="relative rounded-3xl overflow-hidden bg-black aspect-video border border-white/10">
+      {image && <img src={image} alt="" className="absolute inset-0 w-full h-full object-cover opacity-40 blur-sm scale-110" />}
+      <div className="absolute inset-0 grid place-items-center text-center p-6">
+        <div className="max-w-md">
+          <p className="text-xs font-bold tracking-widest text-red-400">🎬 DEMO SHOW</p>
+          <p className="text-xl font-extrabold mt-1">Rosa is a simulated seller</p>
+          <p className="text-sm text-white/70 mt-2">
+            In a real show this is the seller&apos;s live camera. Here, a new item goes live every ~45 seconds. Ava, Leo and Sam are simulated viewers who
+            chat and sometimes claim, but never pay. Claim something and pay with PayPal (sandbox).
+          </p>
+        </div>
+      </div>
+      <span className="absolute top-3 left-3 text-xs font-bold bg-red-600 rounded px-2 py-0.5">LIVE</span>
     </div>
   );
 }

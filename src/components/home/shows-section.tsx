@@ -44,9 +44,14 @@ export default function ShowsSection({ initial }: { initial: Shows }) {
               "Nobody's live right now"
             )}
           </h2>
-          <Link href="/studio" className="text-sm font-semibold underline underline-offset-4">
-            Go live yourself →
-          </Link>
+          <div className="flex gap-4">
+            <Link href="/judge" className="text-sm font-semibold underline underline-offset-4 text-red-600">
+              Judges: try it in 2 minutes →
+            </Link>
+            <Link href="/studio" className="text-sm font-semibold underline underline-offset-4">
+              Go live yourself →
+            </Link>
+          </div>
         </div>
         {shows.live.length ? (
           <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
