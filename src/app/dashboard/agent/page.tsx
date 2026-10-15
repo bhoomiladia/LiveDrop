@@ -53,7 +53,7 @@ export default async function AgentPage() {
           <ol className="px-5 pb-5 space-y-4">
             {HOW.map(([title, text], i) => (
               <li key={title} className="flex gap-3">
-                <span className="w-6 h-6 rounded-full bg-tint text-ember text-xs font-medium grid place-items-center shrink-0">{i + 1}</span>
+                <span className="w-6 h-6 rounded-full bg-tint text-brand text-xs font-medium grid place-items-center shrink-0">{i + 1}</span>
                 <div>
                   <p className="text-sm font-medium">{title}</p>
                   <p className="text-[13px] text-muted mt-0.5 leading-relaxed">{text}</p>

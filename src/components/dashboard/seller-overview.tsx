@@ -25,7 +25,7 @@ export default function SellerOverview({ user }: { user: Account }) {
         description="Your sales, what needs a reply, and what to ship next."
         actions={
           o.liveShow ? (
-            <ButtonLink href={`/studio/${o.liveShow.id}`} variant="ember">
+            <ButtonLink href={`/studio/${o.liveShow.id}`} variant="brand">
               <IconBroadcast size={16} /> Return to studio
             </ButtonLink>
           ) : (
@@ -37,7 +37,7 @@ export default function SellerOverview({ user }: { user: Account }) {
       />
 
       {o.liveShow && (
-        <Card className="mb-6 p-5 flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-ember-light bg-tint">
+        <Card className="mb-6 p-5 flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-brand-light bg-tint">
           <div className="flex items-center gap-3 min-w-0">
             <LiveBadge />
             <p className="font-medium truncate">{o.liveShow.title} is live right now</p>
@@ -84,7 +84,7 @@ export default function SellerOverview({ user }: { user: Account }) {
           <CardHeader
             title="Recent orders"
             action={
-              <Link href="/dashboard/orders" className="text-[13px] font-medium text-ember hover:text-ink">
+              <Link href="/dashboard/orders" className="text-[13px] font-medium text-brand hover:text-ink">
                 All orders
               </Link>
             }

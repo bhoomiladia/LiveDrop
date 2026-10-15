@@ -171,7 +171,7 @@ function OrderCard({
         </p>
         <p className="text-sm font-medium tabular-nums shrink-0 text-right">
           {money(total)}
-          {order.refunded_cents > 0 && <span className="block text-[11px] text-ember">−{money(order.refunded_cents)} refunded</span>}
+          {order.refunded_cents > 0 && <span className="block text-[11px] text-brand">−{money(order.refunded_cents)} refunded</span>}
         </p>
       </div>
       <ul className="text-[13px] space-y-1">
@@ -182,7 +182,7 @@ function OrderCard({
               {i.size ? ` (${i.size})` : ""} · {money(i.price_cents)}
             </span>
             {refundable && i.status !== "refunded" && order.items.length > 1 && (
-              <button onClick={() => onRefund(order, i)} className="text-xs font-medium text-ember hover:text-ink">
+              <button onClick={() => onRefund(order, i)} className="text-xs font-medium text-brand hover:text-ink">
                 Refund item
               </button>
             )}
@@ -216,7 +216,7 @@ function OrderCard({
       )}
 
       {refundable && (
-        <button onClick={() => onRefund(order, null)} className="text-xs font-medium text-ember hover:text-ink">
+        <button onClick={() => onRefund(order, null)} className="text-xs font-medium text-brand hover:text-ink">
           Refund {order.items.length > 1 ? "everything left" : "order"}
         </button>
       )}

@@ -68,7 +68,7 @@ export default function ForgotPasswordPage() {
       </form>
       <p className="text-center text-[13px] text-muted mt-6">
         Remembered it?{" "}
-        <Link href="/login" className="text-ember font-medium hover:text-ink">
+        <Link href="/login" className="text-brand font-medium hover:text-ink">
           Sign in
         </Link>
       </p>

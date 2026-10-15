@@ -19,24 +19,28 @@ const POINTS = [
   ["Paid with PayPal", "One-tap checkout, invoices, tracking and refunds."],
 ];
 
-// Sign-in pages: the landing page's ember palette and arrow field on a flat panel, the form on white.
+// Sign-in pages: the landing page's brand palette and arrow field on a flat panel, the form on white.
 export default function AuthShell({ children, kicker, title, subtitle, navAction = { label: "Create account", href: "/signup" } }: AuthShellProps) {
-  const ember = PALETTES.ember;
+  const brand = PALETTES.cobalt;
 
   return (
     <div className="min-h-screen bg-paper text-ink lg:grid lg:grid-cols-[minmax(0,1fr)_minmax(0,1.05fr)]">
       {/* Brand panel */}
-      <section className="relative hidden lg:flex flex-col justify-between overflow-hidden isolate bg-ember-deep text-paper p-12 xl:p-16">
-        <GlyphField mode="band" glyph="arrow" light={ember.glyphLight} dark={ember.glyphDark} reduced={false} cell={15} />
-        <BrandLogo size="md" theme="light" className="relative" />
-        <div className="relative max-w-[460px]">
-          <span className="text-[12px] font-semibold uppercase tracking-[0.08em] text-ember-light">{kicker}</span>
+      <section className="relative hidden lg:flex lg:sticky lg:top-0 lg:h-screen flex-col justify-between overflow-hidden isolate bg-brand-deep text-paper p-12 xl:p-16">
+        {/* The landing page's arrow field, covering the whole panel and dimmed so the copy stays readable. */}
+        <div className="auth-glyphs absolute inset-0 z-0 opacity-30 pointer-events-none" aria-hidden="true">
+          <style>{`.auth-glyphs .ows-field{position:absolute;inset:0;overflow:hidden}.auth-glyphs .ows-canvas{position:absolute;left:0;top:0;display:block;max-width:none}`}</style>
+          <GlyphField mode="band" glyph="arrow" light={brand.glyphLight} dark={brand.glyphDark} reduced={false} cell={15} />
+        </div>
+        <BrandLogo size="md" theme="light" className="relative z-10" />
+        <div className="relative z-10 max-w-[460px]">
+          <span className="text-[12px] font-semibold uppercase tracking-[0.08em] text-brand-light">{kicker}</span>
           <h1 className="mt-3 text-[48px] xl:text-[56px] font-semibold tracking-[-0.045em] leading-[1.02]">{title}</h1>
           <p className="mt-5 text-[15px] text-paper/75 leading-relaxed">{subtitle}</p>
           <ul className="mt-10 pt-8 border-t border-paper/15 grid gap-5">
             {POINTS.map(([h, t]) => (
               <li key={h} className="grid grid-cols-[18px_1fr] gap-3">
-                <svg width="14" height="12" viewBox="0 0 17 14" className="mt-1 text-ember-light" aria-hidden="true">
+                <svg width="14" height="12" viewBox="0 0 17 14" className="mt-1 text-brand-light" aria-hidden="true">
                   <path d="M1 13.2c4.6-.4 8.4-2.6 11-6.4L15.6 1M9.6 1.4h6v6" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
                 </svg>
                 <div>
@@ -47,21 +51,21 @@ export default function AuthShell({ children, kicker, title, subtitle, navAction
             ))}
           </ul>
         </div>
-        <p className="relative text-xs text-paper/50">PayPal Sandbox only. No real money moves.</p>
+        <p className="relative z-10 text-xs text-paper/60">PayPal Sandbox only. No real money moves.</p>
       </section>
 
       {/* Form side */}
       <section className="min-h-screen lg:min-h-0 flex flex-col">
         <header className="h-16 px-5 sm:px-10 flex items-center justify-between">
           <BrandLogo size="sm" className="lg:invisible" />
-          <Link href={navAction.href} className="text-[13px] font-medium text-ink-soft hover:text-ember">
+          <Link href={navAction.href} className="text-[13px] font-medium text-ink-soft hover:text-brand">
             {navAction.label}
           </Link>
         </header>
         <div className="flex-1 flex items-center justify-center px-5 sm:px-10 py-10">
           <div className="w-full max-w-[400px]">
             <div className="lg:hidden mb-8">
-              <span className="text-[11.5px] font-semibold uppercase tracking-[0.08em] text-ember">{kicker}</span>
+              <span className="text-[11.5px] font-semibold uppercase tracking-[0.08em] text-brand">{kicker}</span>
               <p className="mt-2 text-[15px] text-muted leading-relaxed">{subtitle}</p>
             </div>
             {children}
@@ -112,7 +116,7 @@ export function PasswordInput({
         autoComplete={autoComplete}
         value={value}
         onChange={(e) => onChange(e.target.value)}
-        className="w-full h-10 px-3 pr-14 rounded-[6px] bg-paper text-sm text-ink shadow-[inset_0_0_0_1px_var(--line-strong)] outline-none transition-shadow hover:shadow-[inset_0_0_0_1px_#c7bab3] focus:shadow-[inset_0_0_0_1.5px_var(--ember),0_0_0_4px_rgba(210,73,28,.12)]"
+        className="w-full h-10 px-3 pr-14 rounded-[6px] bg-paper text-sm text-ink shadow-[inset_0_0_0_1px_var(--line-strong)] outline-none transition-shadow hover:shadow-[inset_0_0_0_1px_#b4bdcc] focus:shadow-[inset_0_0_0_1.5px_var(--brand),0_0_0_4px_rgba(38,89,217,.14)]"
       />
       {onToggle && (
         <button

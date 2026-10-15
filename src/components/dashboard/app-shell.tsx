@@ -50,7 +50,7 @@ export default function AppShell({ role, user, children }: { role: Role; user: {
                 active(href) ? "bg-tint text-ink font-medium" : "text-ink-soft hover:bg-canvas",
               )}
             >
-              <span className={active(href) ? "text-ember" : "text-muted"}>
+              <span className={active(href) ? "text-brand" : "text-muted"}>
                 <Icon size={18} />
               </span>
               {label}
@@ -89,7 +89,7 @@ export default function AppShell({ role, user, children }: { role: Role; user: {
             key={href}
             href={href}
             aria-current={active(href) ? "page" : undefined}
-            className={cx("h-16 flex flex-col items-center justify-center gap-1 text-[10.5px]", active(href) ? "text-ember font-medium" : "text-muted")}
+            className={cx("h-16 flex flex-col items-center justify-center gap-1 text-[10.5px]", active(href) ? "text-brand font-medium" : "text-muted")}
           >
             <Icon size={20} />
             <span className="truncate max-w-full px-1">{label.split(" ")[0]}</span>
@@ -109,7 +109,7 @@ export function Avatar({ name, size = 36 }: { name: string; size?: number }) {
     .toUpperCase();
   return (
     <span
-      className="shrink-0 rounded-full bg-tint text-ember font-semibold grid place-items-center"
+      className="shrink-0 rounded-full bg-tint text-brand font-semibold grid place-items-center"
       style={{ width: size, height: size, fontSize: size * 0.36 }}
       aria-hidden="true"
     >

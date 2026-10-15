@@ -12,7 +12,7 @@ export default function ToastStack({ toasts }: { toasts: Toast[] }) {
           key={t.id}
           className={cx(
             "rounded-[8px] px-4 py-3 text-sm font-medium shadow-[0_12px_32px_-12px_rgba(20,12,9,.45)] flex items-center gap-2.5",
-            t.tone === "paid" ? "bg-success text-paper" : t.tone === "claim" ? "bg-ember text-paper" : "bg-ink text-paper",
+            t.tone === "paid" ? "bg-success text-paper" : t.tone === "claim" ? "bg-brand text-paper" : "bg-ink text-paper",
           )}
         >
           {t.tone === "paid" && <IconCheck size={16} className="shrink-0" />}

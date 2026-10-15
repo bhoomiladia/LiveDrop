@@ -167,6 +167,12 @@ export function getShowStats(showIds: string[]) {
 
 // ----------------------------------------------------------------- buyer activity
 
+// node:sqlite rows have a null prototype, which React can't pass from server to client
+// components. This copies a result into plain objects.
+function plain<T>(value: T): T {
+  return JSON.parse(JSON.stringify(value)) as T;
+}
+
 export type BuyerShowBag = {
   show: Pick<ShowRow, "id" | "title" | "status" | "shipping_cents"> & { seller_name: string };
   bag: ReturnType<typeof getBag>;
@@ -198,7 +204,10 @@ export function getBuyerBags(buyerId: string): BuyerShowBag[] {
        WHERE c.viewer_id = ? GROUP BY s.id ORDER BY last_at DESC LIMIT 20`,
     )
     .all(buyerId) as (BuyerShowBag["show"] & { last_at: number })[];
-  return shows.map((s) => ({ show: { id: s.id, title: s.title, status: s.status, shipping_cents: s.shipping_cents, seller_name: s.seller_name }, bag: getBag(s.id, buyerId) }));
+  return shows.map((s) => ({
+    show: { id: s.id, title: s.title, status: s.status, shipping_cents: s.shipping_cents, seller_name: s.seller_name },
+    bag: plain(getBag(s.id, buyerId)),
+  }));
 }
 
 export function getBuyerOrders(buyerId: string): BuyerOrder[] {
@@ -211,5 +220,6 @@ export function getBuyerOrders(buyerId: string): BuyerOrder[] {
        WHERE o.viewer_id = ? AND o.status NOT IN ('created', 'failed')
        ORDER BY o.created_at DESC LIMIT 50`,
     )
-    .all(buyerId) as BuyerOrder[];
+    .all(buyerId)
+    .map((r) => ({ ...r })) as BuyerOrder[];
 }

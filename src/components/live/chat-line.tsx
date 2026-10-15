@@ -15,8 +15,8 @@ export default function ChatLine({ m, replyTo, onReply }: { m: ChatMessage; repl
             Replying to {replyTo.name}: {replyTo.text}
           </p>
         )}
-        <span className={cx("font-medium", assistant ? "text-ink" : "text-ember")}>{m.name}</span>
-        {!assistant && <span className="ml-1.5 text-[10px] font-semibold uppercase tracking-[0.08em] text-ember">Seller</span>}{" "}
+        <span className={cx("font-medium", assistant ? "text-ink" : "text-brand")}>{m.name}</span>
+        {!assistant && <span className="ml-1.5 text-[10px] font-semibold uppercase tracking-[0.08em] text-brand">Seller</span>}{" "}
         <span>{m.text}</span>
         {m.sources.length > 0 && <p className="text-[11px] text-muted mt-1">Source: {m.sources.join(" · ")}</p>}
       </div>
@@ -26,14 +26,14 @@ export default function ChatLine({ m, replyTo, onReply }: { m: ChatMessage; repl
   return (
     <div className="leading-snug px-1">
       <span className="font-medium">{m.name}</span>{" "}
-      <span className={m.kind === "claim" ? "text-ember font-medium" : m.kind === "bid" ? "font-medium" : "text-ink-soft"}>{m.text}</span>
+      <span className={m.kind === "claim" ? "text-brand font-medium" : m.kind === "bid" ? "font-medium" : "text-ink-soft"}>{m.text}</span>
       {(m.kind === "claim" || m.kind === "bid" || m.kind === "question") && (
         <span className="ml-1.5 text-[10px] font-semibold uppercase tracking-[0.08em] text-muted">{m.kind}</span>
       )}
       {m.kind === "pending" && <span className="ml-1.5 text-[11px] text-muted">checking…</span>}
       {m.needs_seller &&
         (onReply ? (
-          <button onClick={() => onReply(m)} className="ml-1.5 text-[11px] font-semibold text-ember underline underline-offset-2">
+          <button onClick={() => onReply(m)} className="ml-1.5 text-[11px] font-semibold text-brand underline underline-offset-2">
             Needs your answer · Reply
           </button>
         ) : (

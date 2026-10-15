@@ -93,14 +93,14 @@ function LoginContent() {
       <AuthHeading title="Sign in" text="Sellers land in their studio dashboard, buyers in their bag and orders." />
 
       {error && (
-        <Notice tone={needsVerification ? "ember" : "error"} className="mb-5">
+        <Notice tone={needsVerification ? "brand" : "error"} className="mb-5">
           <p className="font-medium">{error}</p>
           {needsVerification && (
             <button
               type="button"
               onClick={handleResendVerification}
               disabled={resending || resendSuccess}
-              className="mt-1.5 text-[13px] font-medium text-ember underline underline-offset-2 disabled:no-underline disabled:text-success"
+              className="mt-1.5 text-[13px] font-medium text-brand underline underline-offset-2 disabled:no-underline disabled:text-success"
             >
               {resending ? "Sending…" : resendSuccess ? "Verification link sent. Check your inbox." : "Resend the verification email"}
             </button>
@@ -117,7 +117,7 @@ function LoginContent() {
             <label htmlFor="password" className="text-[13px] font-medium">
               Password
             </label>
-            <Link href="/forgot-password" className="text-xs font-medium text-ember hover:text-ink">
+            <Link href="/forgot-password" className="text-xs font-medium text-brand hover:text-ink">
               Forgot password?
             </Link>
           </div>
@@ -133,7 +133,7 @@ function LoginContent() {
 
       <p className="text-center text-[13px] text-muted mt-6">
         New to Live Drop?{" "}
-        <Link href="/signup" className="text-ember font-medium hover:text-ink">
+        <Link href="/signup" className="text-brand font-medium hover:text-ink">
           Create an account
         </Link>
       </p>

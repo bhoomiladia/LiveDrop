@@ -40,7 +40,7 @@ export default function BuyerOrders({ bags, orders, paypalClientId }: { bags: Bu
                     title={
                       <span className="flex items-center gap-2.5">
                         {show.status === "live" && <LiveBadge />}
-                        <Link href={`/live/${show.id}`} className="hover:text-ember">
+                        <Link href={`/live/${show.id}`} className="hover:text-brand">
                           {show.title}
                         </Link>
                       </span>
@@ -186,7 +186,7 @@ export default function BuyerOrders({ bags, orders, paypalClientId }: { bags: Bu
                     <OrderStatus status={o.status} shipped={Boolean(o.tracking_number)} />
                     <span className="text-sm font-medium tabular-nums w-16 text-right">
                       {money(o.item_cents + o.shipping_cents)}
-                      {o.refunded_cents > 0 && <span className="block text-[11px] text-ember font-normal">−{money(o.refunded_cents)}</span>}
+                      {o.refunded_cents > 0 && <span className="block text-[11px] text-brand font-normal">−{money(o.refunded_cents)}</span>}
                     </span>
                   </div>
                 </li>
@@ -218,7 +218,7 @@ function clock(left: number) {
 export function PayBy({ deadline }: { deadline: number }) {
   const left = Math.max(0, deadline - useNow(1000));
   return (
-    <span className={cx("inline-flex items-center gap-1 text-xs tabular-nums", left < 60_000 ? "text-ember font-medium" : "text-muted")}>
+    <span className={cx("inline-flex items-center gap-1 text-xs tabular-nums", left < 60_000 ? "text-brand font-medium" : "text-muted")}>
       <IconClock size={13} />
       {left > 0 ? `pay within ${clock(left)}` : "time's up"}
     </span>
@@ -230,7 +230,7 @@ export function UndoButton({ deadline, onUndo }: { deadline: number; onUndo: () 
   const left = Math.max(0, deadline - useNow(1000));
   if (!left) return <span className="text-xs text-muted">completing payment…</span>;
   return (
-    <button onClick={onUndo} className="inline-flex items-center gap-1 text-xs font-medium text-ember hover:text-ink tabular-nums">
+    <button onClick={onUndo} className="inline-flex items-center gap-1 text-xs font-medium text-brand hover:text-ink tabular-nums">
       <IconUndo size={13} /> Undo ({clock(left)})
     </button>
   );

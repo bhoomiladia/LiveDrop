@@ -121,7 +121,7 @@ export default function LiveRoom({ showId, paypalClientId }: { showId: string; p
                     <p className="text-[13px] font-medium truncate px-0.5">{i.title}</p>
                     <p className="text-xs text-muted px-0.5">{statusLine(i)}</p>
                     {isLive && canShop && i.status === "listed" && (
-                      <Button onClick={() => claim(i.id)} variant="ember" size="sm" className="mt-2 w-full">
+                      <Button onClick={() => claim(i.id)} variant="brand" size="sm" className="mt-2 w-full">
                         Still available · Claim
                       </Button>
                     )}
@@ -139,7 +139,7 @@ export default function LiveRoom({ showId, paypalClientId }: { showId: string; p
             <Card className="p-5">
               <div className="flex items-center justify-between mb-3">
                 <h2 className="text-[15px] font-semibold flex items-center gap-2">
-                  <IconBag size={18} className="text-ember" /> Your bag
+                  <IconBag size={18} className="text-brand" /> Your bag
                 </h2>
                 <Link href="/dashboard/orders" className="text-xs text-muted hover:text-ink truncate max-w-[50%]">
                   {snap.viewer!.name}
@@ -339,7 +339,7 @@ function SignInCard({ account, here, isDemo }: { account: Account; here: string;
         <ButtonLink href={`/signup?role=buyer&callbackUrl=${next}`}>Create account</ButtonLink>
       </div>
       {isDemo && (
-        <a href="/api/judge/buyer" className="mt-3 block text-center text-[13px] font-medium text-ember hover:text-ink">
+        <a href="/api/judge/buyer" className="mt-3 block text-center text-[13px] font-medium text-brand hover:text-ink">
           Judging? Continue as a demo buyer
         </a>
       )}
@@ -382,7 +382,7 @@ function CurrentItem({
         <span className="absolute top-3 left-3 h-[22px] px-2 rounded-[4px] bg-paper/90 text-[11px] font-medium grid place-items-center tabular-nums">#{item.seq}</span>
       </div>
       <div className="p-5 md:p-6 flex flex-col">
-        <span className="text-[11.5px] font-semibold uppercase tracking-[0.08em] text-ember">On screen now</span>
+        <span className="text-[11.5px] font-semibold uppercase tracking-[0.08em] text-brand">On screen now</span>
         <h1 className="text-[26px] md:text-[30px] font-[450] tracking-[-0.03em] leading-[1.1] mt-1.5">{item.title}</h1>
         <div className="flex flex-wrap gap-1.5 mt-3">
           {item.size && <Badge>Size {item.size}</Badge>}
@@ -406,11 +406,11 @@ function CurrentItem({
             <AuctionBox item={item} isLive={isLive && canShop} onBid={onBid} />
           ) : open ? (
             canShop ? (
-              <Button onClick={onClaim} disabled={!isLive} variant="ember" size="lg" className="w-full text-base">
+              <Button onClick={onClaim} disabled={!isLive} variant="brand" size="lg" className="w-full text-base">
                 Claim it
               </Button>
             ) : (
-              <ButtonLink href={signInHref} variant="ember" size="lg" className="w-full text-base">
+              <ButtonLink href={signInHref} variant="brand" size="lg" className="w-full text-base">
                 Sign in to claim
               </ButtonLink>
             )
@@ -449,10 +449,10 @@ function AuctionBox({ item, isLive, onBid }: { item: LiveItem; isLive: boolean; 
   return (
     <div className="rounded-[10px] bg-ink text-paper p-4 space-y-3">
       <div className="flex items-center justify-between">
-        <span className="inline-flex items-center gap-1.5 text-[11.5px] font-semibold tracking-[0.08em] text-ember-light">
+        <span className="inline-flex items-center gap-1.5 text-[11.5px] font-semibold tracking-[0.08em] text-brand-light">
           <IconBolt size={14} /> FLASH AUCTION
         </span>
-        <span className={cx("text-2xl font-[450] tabular-nums", secs <= 5 && "text-ember-light animate-pulse")}>{left ? `0:${String(secs).padStart(2, "0")}` : "Closing…"}</span>
+        <span className={cx("text-2xl font-[450] tabular-nums", secs <= 5 && "text-brand-light animate-pulse")}>{left ? `0:${String(secs).padStart(2, "0")}` : "Closing…"}</span>
       </div>
       <div>
         <p className="text-xs text-paper/70">{item.top_bid_cents ? `Top bid · ${item.top_bidder}` : "Starting bid"}</p>
@@ -462,7 +462,7 @@ function AuctionBox({ item, isLive, onBid }: { item: LiveItem; isLive: boolean; 
         </p>
       </div>
       <div className="grid grid-cols-2 gap-2">
-        <Button disabled={!isLive || !left} onClick={() => onBid(next)} variant="ember" size="lg">
+        <Button disabled={!isLive || !left} onClick={() => onBid(next)} variant="brand" size="lg">
           Bid {money(next)}
         </Button>
         <button
@@ -488,7 +488,7 @@ function DemoStage({ image }: { image: string | null }) {
       )}
       <div className="absolute inset-0 grid place-items-center text-center p-6 text-paper">
         <div className="max-w-md">
-          <span className="text-[11.5px] font-semibold uppercase tracking-[0.08em] text-ember-light">Demo show</span>
+          <span className="text-[11.5px] font-semibold uppercase tracking-[0.08em] text-brand-light">Demo show</span>
           <p className="text-2xl font-[450] tracking-[-0.02em] mt-2">Rosa is a simulated seller</p>
           <p className="text-sm text-paper/70 mt-2 leading-relaxed">
             In a real show this is the seller&apos;s live camera. Here, a new item goes live every 45 seconds or so. Ava, Leo and Sam are simulated viewers who

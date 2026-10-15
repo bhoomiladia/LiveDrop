@@ -21,7 +21,7 @@ export default function ShowCard({ show }: { show: PublicShow }) {
         )}
       </div>
       <div className="p-4">
-        <p className="font-medium truncate group-hover:text-ember transition-colors">{show.title}</p>
+        <p className="font-medium truncate group-hover:text-brand transition-colors">{show.title}</p>
         <p className="text-[13px] text-muted mt-0.5">by {show.seller_name}</p>
         <p className="text-[13px] mt-3 truncate">
           {live && item ? (

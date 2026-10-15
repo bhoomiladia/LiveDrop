@@ -25,10 +25,10 @@ export default function RoleChoice({ value, onChange, compact }: { value: Role |
             onClick={() => onChange(o.value)}
             className={cx(
               "text-left rounded-[8px] p-4 transition-shadow",
-              on ? "bg-tint shadow-[inset_0_0_0_1.5px_var(--ember)]" : "bg-paper shadow-[inset_0_0_0_1px_var(--line-strong)] hover:shadow-[inset_0_0_0_1px_var(--ink)]",
+              on ? "bg-tint shadow-[inset_0_0_0_1.5px_var(--brand)]" : "bg-paper shadow-[inset_0_0_0_1px_var(--line-strong)] hover:shadow-[inset_0_0_0_1px_var(--ink)]",
             )}
           >
-            <span className={cx("block mb-3", on ? "text-ember" : "text-muted")}>{o.icon}</span>
+            <span className={cx("block mb-3", on ? "text-brand" : "text-muted")}>{o.icon}</span>
             <span className="block text-sm font-medium">{o.title}</span>
             {!compact && <span className="block text-xs text-muted mt-1 leading-relaxed">{o.text}</span>}
           </button>

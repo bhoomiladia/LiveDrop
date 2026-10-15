@@ -106,7 +106,7 @@ export default function AgentPanel({
       <Card className="p-5 space-y-4">
         <div className="flex items-center justify-between gap-3">
           <h2 className="text-[15px] font-semibold flex items-center gap-2">
-            <span className="text-ember">
+            <span className="text-brand">
               <IconAgent size={18} />
             </span>
             Your AI agent
@@ -134,7 +134,7 @@ export default function AgentPanel({
             <span>{money(left)} left</span>
           </div>
           <div className="h-1.5 rounded-full bg-canvas shadow-[inset_0_0_0_1px_var(--line)] overflow-hidden">
-            <div className="h-full bg-ember" style={{ width: `${used}%` }} />
+            <div className="h-full bg-brand" style={{ width: `${used}%` }} />
           </div>
         </div>
         {full && (
@@ -160,7 +160,7 @@ export default function AgentPanel({
     return (
       <button onClick={() => setOpen(true)} className="w-full text-left bg-paper rounded-[10px] border border-line p-5 hover:border-line-strong transition-colors">
         <p className="text-[15px] font-semibold flex items-center gap-2">
-          <span className="text-ember">
+          <span className="text-brand">
             <IconAgent size={18} />
           </span>
           Send your AI agent
@@ -177,7 +177,7 @@ export default function AgentPanel({
       <form onSubmit={create} className="space-y-4">
         <div>
           <h2 className="text-[15px] font-semibold flex items-center gap-2">
-            <span className="text-ember">
+            <span className="text-brand">
               <IconAgent size={18} />
             </span>
             Set up your agent

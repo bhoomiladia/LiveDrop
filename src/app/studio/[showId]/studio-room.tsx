@@ -245,7 +245,7 @@ export default function StudioRoom({ showId }: { showId: string }) {
             <IconCopy size={15} /> <span className="hidden sm:inline">Viewer link</span>
           </Button>
           {snap.show.status === "scheduled" && (
-            <Button onClick={() => setStatus("live")} variant="ember" size="sm">
+            <Button onClick={() => setStatus("live")} variant="live" size="sm">
               <IconBroadcast size={15} /> Go live
             </Button>
           )}
@@ -277,7 +277,7 @@ export default function StudioRoom({ showId }: { showId: string }) {
               <span
                 className={cx(
                   "absolute top-3 right-3 text-xs font-medium rounded-[4px] px-2 h-[22px] inline-flex items-center",
-                  broadcast === "error" ? "bg-ember text-paper" : "bg-ink/70 text-paper",
+                  broadcast === "error" ? "bg-brand text-paper" : "bg-ink/70 text-paper",
                 )}
               >
                 {broadcast === "on"
@@ -314,7 +314,7 @@ export default function StudioRoom({ showId }: { showId: string }) {
               ) : (
                 <span className="text-[13px] text-muted">Voice needs Chrome. Type below instead.</span>
               )}
-              <Button onClick={() => listIt(heard || interim)} disabled={listing || !(heard || interim)} variant="ember">
+              <Button onClick={() => listIt(heard || interim)} disabled={listing || !(heard || interim)} variant="brand">
                 {listing ? "Listing…" : "List it"}
               </Button>
             </div>
@@ -515,14 +515,14 @@ function AuctionButton({ showId, item, onError }: { showId: string; item: LiveIt
     if (!res.ok) onError((await res.json()).error);
   }
   return (
-    <button onClick={start} disabled={busy} className="inline-flex items-center gap-1 text-[11.5px] font-medium text-ember hover:text-ink disabled:opacity-50">
+    <button onClick={start} disabled={busy} className="inline-flex items-center gap-1 text-[11.5px] font-medium text-brand hover:text-ink disabled:opacity-50">
       <IconBolt size={13} /> Auction
     </button>
   );
 }
 
 function StatusPill({ item }: { item: LiveItem }) {
-  const map: Record<string, [string, "neutral" | "warn" | "success" | "ember" | "outline"]> = {
+  const map: Record<string, [string, "neutral" | "warn" | "success" | "brand" | "outline"]> = {
     listed: ["Open", "neutral"],
     claimed: [`Claimed · ${item.winner_name}`, "warn"],
     paid: [`Paid · ${item.winner_name}`, "success"],
@@ -532,7 +532,7 @@ function StatusPill({ item }: { item: LiveItem }) {
   };
   const auctioning = item.status === "listed" && item.auction_ends_at && !item.auction_closed;
   const [text, tone] = auctioning
-    ? ([item.top_bid_cents ? `Auction · ${money(item.top_bid_cents)} ${item.top_bidder}` : "Auction · no bids yet", "ember"] as const)
+    ? ([item.top_bid_cents ? `Auction · ${money(item.top_bid_cents)} ${item.top_bidder}` : "Auction · no bids yet", "brand"] as const)
     : (map[item.status] ?? [item.status, "neutral"]);
   return (
     <Badge tone={tone} className="max-w-[150px]">
@@ -584,10 +584,10 @@ function DraftCard({ showId, item, isLive, onError }: { showId: string; item: Li
   }, [countdown, editing, isLive, busy, goLive]);
 
   return (
-    <Card className="p-4 flex gap-4 border-ember-light shadow-[inset_0_0_0_1px_var(--ember-light)]">
+    <Card className="p-4 flex gap-4 border-brand-light shadow-[inset_0_0_0_1px_var(--brand-light)]">
       <Thumb src={item.image_data} className="w-20 h-20" />
       <div className="flex-1 min-w-0 space-y-2.5">
-        <span className="text-[11px] font-semibold uppercase tracking-[0.08em] text-ember">New listing</span>
+        <span className="text-[11px] font-semibold uppercase tracking-[0.08em] text-brand">New listing</span>
         {editing ? (
           <div className="grid grid-cols-[1fr_64px_80px] gap-2">
             <Input value={title} onChange={(e) => setEdits((x) => ({ ...x, title: e.target.value }))} className="h-9" aria-label="Title" />
@@ -611,7 +611,7 @@ function DraftCard({ showId, item, isLive, onError }: { showId: string; item: Li
         <RetailHint item={item} />
         {item.memory_hint && <p className="text-xs text-ink-soft">Pricing memory: {item.memory_hint}</p>}
         <div className="flex items-center gap-2">
-          <Button onClick={goLive} disabled={busy || !isLive} variant="ember" size="sm">
+          <Button onClick={goLive} disabled={busy || !isLive} variant="brand" size="sm">
             {!isLive ? "Go live first" : busy ? "…" : editing ? "Save and put live" : `Live in ${countdown}s · now`}
           </Button>
           {!editing && (

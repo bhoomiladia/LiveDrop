@@ -88,7 +88,7 @@ export default function OnboardingFlow({ role: initialRole, email, initial, next
         <div className="max-w-[560px] mx-auto">
           <div className="flex items-center gap-1.5 mb-8" aria-label={`Step ${index + 1} of ${steps.length}`}>
             {steps.map((s, i) => (
-              <span key={s} className={cx("h-1 flex-1 rounded-full transition-colors", i <= index ? "bg-ember" : "bg-line-strong")} />
+              <span key={s} className={cx("h-1 flex-1 rounded-full transition-colors", i <= index ? "bg-brand" : "bg-line-strong")} />
             ))}
           </div>
           <Kicker>

@@ -30,10 +30,10 @@ export async function GET(req: NextRequest) {
   }
   return new NextResponse(
     `<!doctype html><meta name="viewport" content="width=device-width,initial-scale=1"><title>Live Drop</title>` +
-      `<body style="font-family:'Inter Tight','Helvetica Neue',system-ui,sans-serif;color:#140c09;background:#fbf8f6;max-width:420px;margin:15vh auto;padding:0 16px;text-align:center">` +
-      `<p style="font-size:12px;font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:#d2491c">Live Drop</p>` +
+      `<body style="font-family:'Inter Tight','Helvetica Neue',system-ui,sans-serif;color:#0c0e13;background:#f6f8fc;max-width:420px;margin:15vh auto;padding:0 16px;text-align:center">` +
+      `<p style="font-size:12px;font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:#2659d9">Live Drop</p>` +
       `<p style="font-size:17px;line-height:1.5">${message.replace(/</g, "&lt;")}</p>` +
-      `<p><a href="/dashboard/orders" style="color:#d2491c">Go to your orders</a></p></body>`,
+      `<p><a href="/dashboard/orders" style="color:#2659d9">Go to your orders</a></p></body>`,
     { headers: { "Content-Type": "text/html; charset=utf-8" } },
   );
 }

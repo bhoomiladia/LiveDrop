@@ -1,6 +1,6 @@
 import { Badge } from "@/components/ui/kit";
 
-const ORDER: Record<string, [string, "success" | "warn" | "ember" | "neutral" | "outline"]> = {
+const ORDER: Record<string, [string, "success" | "warn" | "brand" | "neutral" | "outline"]> = {
   paid: ["Paid", "success"],
   on_hold: ["On hold", "warn"],
   partially_refunded: ["Part refunded", "neutral"],

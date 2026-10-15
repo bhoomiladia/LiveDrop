@@ -93,7 +93,7 @@ function VerifyEmailContent() {
     >
       {status === "loading" && (
         <div className="py-10 flex flex-col items-center text-center">
-          <span className="w-8 h-8 rounded-full border-2 border-line-strong border-t-ember animate-spin" />
+          <span className="w-8 h-8 rounded-full border-2 border-line-strong border-t-brand animate-spin" />
           <p className="mt-4 text-sm text-muted">Verifying your email…</p>
         </div>
       )}
@@ -114,7 +114,7 @@ function VerifyEmailContent() {
         <>
           {status === "error" ? (
             <>
-              <div className="w-12 h-12 rounded-full bg-tint text-ember grid place-items-center mb-6">
+              <div className="w-12 h-12 rounded-full bg-tint text-brand grid place-items-center mb-6">
                 <IconAlert size={22} />
               </div>
               <AuthHeading title="That link has expired" text={message || "This verification link is invalid, expired, or already used. Get a fresh one below."} />

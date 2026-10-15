@@ -47,7 +47,7 @@ function ResetPasswordContent() {
   if (!token) {
     return (
       <AuthShell kicker="Account recovery" title="That link doesn't work." subtitle="Reset links come from the email we sent you. Request a new one if it's expired." navAction={{ label: "Sign in", href: "/login" }}>
-        <div className="w-12 h-12 rounded-full bg-tint text-ember grid place-items-center mb-6">
+        <div className="w-12 h-12 rounded-full bg-tint text-brand grid place-items-center mb-6">
           <IconAlert size={22} />
         </div>
         <AuthHeading title="Invalid reset link" text="This link is missing its reset token. Request a new link and use it within 60 minutes." />

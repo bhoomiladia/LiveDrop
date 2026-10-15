@@ -14,7 +14,7 @@ export default function Home() {
       tagline={"Go live. Say the price.\nGet paid with PayPal."}
       date="AI co-host for live sellers"
       city="PayPal checkout · AI agents"
-      palette="ember"
+      palette="cobalt"
       glyph="arrow"
       startsAt="2026-11-06T19:00:00-05:00"
       register={{ label: "Start selling", href: "/signup" }}

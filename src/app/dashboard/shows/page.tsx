@@ -30,7 +30,7 @@ export default async function ShowsPage() {
                     <div className="min-w-0 flex-1">
                       <div className="flex items-center gap-2.5">
                         {s.status === "live" ? <LiveBadge /> : <Badge tone={s.status === "ended" ? "outline" : "neutral"}>{s.status === "ended" ? "Ended" : "Not started"}</Badge>}
-                        <Link href={`/studio/${s.id}`} className="font-medium truncate hover:text-ember">
+                        <Link href={`/studio/${s.id}`} className="font-medium truncate hover:text-brand">
                           {s.title}
                         </Link>
                       </div>
@@ -46,7 +46,7 @@ export default async function ShowsPage() {
                       <ButtonLink href={`/dashboard/insights?show=${s.id}`} variant="secondary" size="sm">
                         <IconChart size={15} /> Insights
                       </ButtonLink>
-                      <ButtonLink href={`/studio/${s.id}`} variant={s.status === "live" ? "ember" : "primary"} size="sm">
+                      <ButtonLink href={`/studio/${s.id}`} variant={s.status === "live" ? "brand" : "primary"} size="sm">
                         <IconBroadcast size={15} /> {s.status === "ended" ? "Open" : "Studio"}
                       </ButtonLink>
                     </div>

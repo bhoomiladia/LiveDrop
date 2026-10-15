@@ -33,7 +33,7 @@ export default async function ProfilePage() {
             <div>
               <dt className="text-xs text-muted">Account type</dt>
               <dd className="mt-1">
-                <Badge tone="ember">{seller ? "Seller" : "Buyer"}</Badge>
+                <Badge tone="brand">{seller ? "Seller" : "Buyer"}</Badge>
               </dd>
               <p className="text-xs text-muted mt-2 leading-relaxed">
                 {seller ? "Seller accounts run shows. To shop in other sellers' shows, use a separate buyer account." : "Buyer accounts claim and pay in shows. To sell, create a separate seller account."}

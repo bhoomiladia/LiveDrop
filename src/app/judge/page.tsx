@@ -18,7 +18,7 @@ export default function JudgePage() {
       tagline={"Try Live Drop in 2 minutes.\nNo install, no going live yourself."}
       date="Judge mode"
       city="PayPal Sandbox"
-      palette="ember"
+      palette="cobalt"
       glyph="arrow"
       startsAt="2026-11-06T19:00:00-05:00"
       register={{ label: "Open the demo show", href: "/api/judge/buyer" }}

@@ -145,7 +145,7 @@ function SignupContent() {
 
       <p className="text-center text-[13px] text-muted mt-6">
         Already have an account?{" "}
-        <Link href={loginHref} className="text-ember font-medium hover:text-ink">
+        <Link href={loginHref} className="text-brand font-medium hover:text-ink">
           Sign in
         </Link>
       </p>

@@ -35,7 +35,7 @@ export default function BuyerOverview({ user }: { user: Account }) {
       />
 
       {unpaid.length > 0 && (
-        <Card className="mb-6 p-5 flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-ember-light bg-tint">
+        <Card className="mb-6 p-5 flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-brand-light bg-tint">
           <div className="min-w-0">
             <p className="font-medium">
               {unpaid.length} item{unpaid.length === 1 ? "" : "s"} waiting for payment · {money(unpaidCents)}
@@ -64,7 +64,7 @@ export default function BuyerOverview({ user }: { user: Account }) {
       <section className="mb-8">
         <div className="flex items-end justify-between mb-4">
           <h2 className="text-xl font-[450] tracking-[-0.02em]">Live now</h2>
-          <Link href="/dashboard/browse" className="text-[13px] font-medium text-ember hover:text-ink">
+          <Link href="/dashboard/browse" className="text-[13px] font-medium text-brand hover:text-ink">
             All shows
           </Link>
         </div>
@@ -88,7 +88,7 @@ export default function BuyerOverview({ user }: { user: Account }) {
           <CardHeader
             title="Recent orders"
             action={
-              <Link href="/dashboard/orders" className="text-[13px] font-medium text-ember hover:text-ink">
+              <Link href="/dashboard/orders" className="text-[13px] font-medium text-brand hover:text-ink">
                 All orders
               </Link>
             }

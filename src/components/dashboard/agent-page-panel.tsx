@@ -8,7 +8,7 @@ export default function AgentPagePanel({ defaults }: { defaults: { wish?: string
   const [note, setNote] = useState<string | null>(null);
   return (
     <div className="space-y-4">
-      {note && <Notice tone="ember">{note}</Notice>}
+      {note && <Notice tone="brand">{note}</Notice>}
       <AgentPanel full defaults={defaults} onToast={setNote} />
     </div>
   );

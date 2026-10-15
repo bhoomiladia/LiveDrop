@@ -1,19 +1,22 @@
 @import "tailwindcss";
 
-/* Live Drop app theme: the landing page's ember palette and type, kept flat (no gradients). */
+/* Live Drop app theme: the cobalt brand palette and the landing page's type, kept flat (no gradients). */
 :root {
   --paper: #ffffff;
-  --canvas: #fbf8f6;
-  --ink: #140c09;
-  --ink-soft: #3b302b;
-  --muted: #746964;
-  --line: #ece5e1;
-  --line-strong: #dcd2cc;
-  --ember: #d2491c;
-  --ember-deep: #3a0c03;
-  --ember-light: #ffcaae;
-  --tint: #fff0e8;
-  --accent: #fff27a;
+  --canvas: #f6f8fc;
+  --ink: #0c0e13;
+  --ink-soft: #2a2f3a;
+  --muted: #686c75;
+  --line: #e4e8ef;
+  --line-strong: #d0d6e1;
+  --brand: #2659d9;
+  --brand-deep: #06174a;
+  --brand-light: #a9c3f3;
+  --tint: #e9f0fd;
+  --accent: #e4f222;
+  /* Red is reserved for LIVE and destructive actions. */
+  --live: #d6453d;
+  --live-tint: #fdecea;
   --success: #1f7a4d;
   --success-tint: #e8f4ec;
   --warn: #8a5a00;
@@ -29,11 +32,13 @@
   --color-muted: var(--muted);
   --color-line: var(--line);
   --color-line-strong: var(--line-strong);
-  --color-ember: var(--ember);
-  --color-ember-deep: var(--ember-deep);
-  --color-ember-light: var(--ember-light);
+  --color-brand: var(--brand);
+  --color-brand-deep: var(--brand-deep);
+  --color-brand-light: var(--brand-light);
   --color-tint: var(--tint);
   --color-accent: var(--accent);
+  --color-live: var(--live);
+  --color-live-tint: var(--live-tint);
   --color-success: var(--success);
   --color-success-tint: var(--success-tint);
   --color-warn: var(--warn);
@@ -54,6 +59,6 @@ body {
 }
 
 :where(button, a, input, select, textarea, [tabindex]):focus-visible {
-  outline: 2px solid var(--ember);
+  outline: 2px solid var(--brand);
   outline-offset: 2px;
 }

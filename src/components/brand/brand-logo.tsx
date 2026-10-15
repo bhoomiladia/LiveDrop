@@ -44,7 +44,7 @@ export default function BrandLogo({ className = "", theme = "dark", size = "md" 
       } ${className}`}
     >
       <span className="-translate-y-[0.5px]">Live Drop</span>
-      <span className={isLight ? "text-ember-light" : "text-ember"}>
+      <span className={isLight ? "text-brand-light" : "text-brand"}>
         <BrandMark />
       </span>
     </Link>

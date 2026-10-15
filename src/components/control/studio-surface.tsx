@@ -52,7 +52,7 @@ export default function StudioSurface({
             key={id}
             onClick={() => goToPage(id)}
             aria-pressed={pageId === id}
-            className={`h-8 px-3 rounded-[5px] text-[13px] font-medium transition-colors ${pageId === id ? "bg-tint text-ink shadow-[inset_0_0_0_1px_var(--ember-light)]" : "text-ink-soft hover:bg-canvas"}`}
+            className={`h-8 px-3 rounded-[5px] text-[13px] font-medium transition-colors ${pageId === id ? "bg-tint text-ink shadow-[inset_0_0_0_1px_var(--brand-light)]" : "text-ink-soft hover:bg-canvas"}`}
           >
             {label}
           </button>
