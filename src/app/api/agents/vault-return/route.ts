@@ -7,7 +7,7 @@ export async function GET(req: NextRequest) {
   const agentId = req.nextUrl.searchParams.get("agent") ?? "";
   const row = getDb().prepare("SELECT return_show_id FROM agents WHERE id = ?").get(agentId) as { return_show_id: string | null } | undefined;
   const back = (status: string) =>
-    NextResponse.redirect(new URL(row?.return_show_id ? `/live/${row.return_show_id}?agent=${status}` : `/?agent=${status}`, req.url));
+    NextResponse.redirect(new URL(row?.return_show_id ? `/live/${row.return_show_id}?agent=${status}` : `/dashboard/agent?agent=${status}`, req.url));
 
   if (!row) return back("error");
   if (req.nextUrl.searchParams.get("cancelled")) {

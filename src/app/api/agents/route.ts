@@ -29,7 +29,7 @@ export async function GET() {
 // Create an agent and get the PayPal link where the buyer approves saving PayPal.
 export async function POST(req: NextRequest) {
   const viewer = await getViewer();
-  if (!viewer) return NextResponse.json({ error: "Pick a name first." }, { status: 401 });
+  if (!viewer) return NextResponse.json({ error: "Sign in with a buyer account first." }, { status: 401 });
   const body = await req.json().catch(() => ({}));
 
   const wish = typeof body.wish === "string" ? body.wish.trim().slice(0, 200) : "";

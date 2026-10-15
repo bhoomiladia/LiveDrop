@@ -40,7 +40,7 @@ const BOTS = [
   { id: "demo-bot-sam", name: "Sam" },
 ];
 const QUESTIONS = ["do you ship to canada?", "is it true to size?", "can I return it if it doesn't fit?", "how long does shipping take?"];
-const CHATTER = ["love this one 😍", "what a find", "hi from Ohio!", "that color tho"];
+const CHATTER = ["love this one", "what a find", "hi from Ohio!", "that color tho"];
 
 const SHOP_INFO = {
   shipping:
@@ -56,9 +56,14 @@ g.__liveDropRetail ??= new Map();
 const retailCache = g.__liveDropRetail;
 
 function ensureSeller() {
-  getDb()
-    .prepare("INSERT OR IGNORE INTO users (id, name, email, password_hash, email_verified, created_at, updated_at) VALUES (?, ?, ?, NULL, 1, ?, ?)")
+  const db = getDb();
+  db.prepare("INSERT OR IGNORE INTO users (id, name, email, password_hash, email_verified, created_at, updated_at) VALUES (?, ?, ?, NULL, 1, ?, ?)")
     .run(DEMO_SELLER.id, DEMO_SELLER.name, DEMO_SELLER.email, Date.now(), Date.now());
+  db.prepare(
+    `UPDATE users SET role = 'seller', onboarded_at = COALESCE(onboarded_at, ?), shop_name = COALESCE(shop_name, ?),
+       default_shipping_cents = COALESCE(default_shipping_cents, 500), default_claim_minutes = COALESCE(default_claim_minutes, 2)
+     WHERE id = ?`,
+  ).run(Date.now(), "Rosa's Vintage", DEMO_SELLER.id);
   if (!getShopInfo(DEMO_SELLER.id).shipping) void saveShopInfo(DEMO_SELLER.id, SHOP_INFO).catch(() => {});
 }
 
@@ -72,6 +77,21 @@ function currentDemoShow(): ShowRow {
   const fresh = createShow(DEMO_SELLER.id, DEMO_TITLE, 500, 2);
   setShowStatus(fresh.id, "live");
   return getShow(fresh.id)!;
+}
+
+// Judge mode: buyers must be signed in, so each judge gets their own ready-to-use buyer account
+// (no password, no email) instead of sharing one bag with every other judge.
+export function createJudgeBuyer(): { id: string; name: string; email: string } {
+  const short = crypto.randomBytes(2).toString("hex").toUpperCase();
+  const buyer = { id: `judge-buyer-${crypto.randomUUID()}`, name: `Judge ${short}`, email: `judge-${short.toLowerCase()}-${Date.now()}@livedrop.demo` };
+  const now = Date.now();
+  getDb()
+    .prepare(
+      `INSERT INTO users (id, name, email, password_hash, email_verified, role, onboarded_at, interests, created_at, updated_at)
+       VALUES (?, ?, ?, NULL, 1, 'buyer', ?, 'Vintage clothes and accessories', ?, ?)`,
+    )
+    .run(buyer.id, buyer.name, buyer.email, now, now, now);
+  return buyer;
 }
 
 // Called by the judge page and when the demo show is opened. Starts the director if needed.

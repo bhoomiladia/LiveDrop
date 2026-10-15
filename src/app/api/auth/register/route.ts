@@ -7,11 +7,16 @@ import { sendVerificationEmail } from "@/lib/email";
 export async function POST(req: Request) {
   try {
     const body = await req.json();
-    const { name, email, password, confirmPassword } = body;
+    const { name, email, password, confirmPassword, role } = body;
 
     // 1. Validate fields
     if (!name || typeof name !== "string" || !name.trim()) {
       return NextResponse.json({ error: "Full name is required." }, { status: 400 });
+    }
+
+    // Seller or buyer is fixed for the life of the account.
+    if (role !== "seller" && role !== "buyer") {
+      return NextResponse.json({ error: "Choose whether you want to sell or shop." }, { status: 400 });
     }
 
     if (!email || typeof email !== "string" || !validateEmail(email)) {
@@ -49,9 +54,10 @@ export async function POST(req: Request) {
         // Unverified account exists: update password & issue a fresh verification token
         const passwordHash = await hashPassword(password);
         const now = Date.now();
-        db.prepare("UPDATE users SET name = ?, password_hash = ?, updated_at = ? WHERE id = ?").run(
+        db.prepare("UPDATE users SET name = ?, password_hash = ?, role = ?, updated_at = ? WHERE id = ?").run(
           cleanName,
           passwordHash,
+          role,
           now,
           existingUser.id
         );
@@ -85,11 +91,12 @@ export async function POST(req: Request) {
     const passwordHash = await hashPassword(password);
     const now = Date.now();
 
-    db.prepare("INSERT INTO users (id, name, email, password_hash, email_verified, created_at, updated_at) VALUES (?, ?, ?, ?, 0, ?, ?)").run(
+    db.prepare("INSERT INTO users (id, name, email, password_hash, email_verified, role, created_at, updated_at) VALUES (?, ?, ?, ?, 0, ?, ?, ?)").run(
       userId,
       cleanName,
       cleanEmail,
       passwordHash,
+      role,
       now,
       now
     );

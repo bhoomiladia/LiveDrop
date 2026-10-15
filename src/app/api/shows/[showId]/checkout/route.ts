@@ -15,7 +15,7 @@ function errorResponse(err: unknown) {
 export async function POST(_req: NextRequest, ctx: RouteContext<"/api/shows/[showId]/checkout">) {
   const { showId } = await ctx.params;
   const viewer = await getViewer();
-  if (!viewer) return NextResponse.json({ error: "Pick a name first." }, { status: 401 });
+  if (!viewer) return NextResponse.json({ error: "Sign in with a buyer account first." }, { status: 401 });
   try {
     return NextResponse.json(await startCheckout(showId, viewer));
   } catch (err) {
@@ -26,7 +26,7 @@ export async function POST(_req: NextRequest, ctx: RouteContext<"/api/shows/[sho
 // Step 2: the buyer approved in the PayPal window — capture the payment.
 export async function PUT(req: NextRequest, _ctx: RouteContext<"/api/shows/[showId]/checkout">) {
   const viewer = await getViewer();
-  if (!viewer) return NextResponse.json({ error: "Pick a name first." }, { status: 401 });
+  if (!viewer) return NextResponse.json({ error: "Sign in with a buyer account first." }, { status: 401 });
   const { paypalOrderId } = await req.json().catch(() => ({}));
   if (typeof paypalOrderId !== "string") return NextResponse.json({ error: "Missing order." }, { status: 400 });
   try {

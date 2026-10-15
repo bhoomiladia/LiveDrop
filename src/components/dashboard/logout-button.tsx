@@ -2,8 +2,10 @@
 
 import * as React from "react";
 import { useRouter } from "next/navigation";
+import { IconLogout } from "@/components/ui/icons";
+import { buttonClass } from "@/components/ui/kit";
 
-export default function LogoutButton() {
+export default function LogoutButton({ className, compact }: { className?: string; compact?: boolean }) {
   const router = useRouter();
   const [loggingOut, setLoggingOut] = React.useState(false);
 
@@ -23,9 +25,11 @@ export default function LogoutButton() {
       type="button"
       onClick={handleLogout}
       disabled={loggingOut}
-      className="inline-flex items-center gap-1.5 px-3.5 py-1.5 text-xs font-semibold text-[#0c0e13] hover:bg-[#f4f7fd] rounded-lg border border-[#0c0e13]/12 hover:border-[#0c0e13]/25 transition-all disabled:opacity-50"
+      aria-label="Sign out"
+      className={buttonClass("secondary", "sm", className)}
     >
-      {loggingOut ? "Signing out..." : "Sign Out"}
+      <IconLogout size={15} />
+      {!compact && (loggingOut ? "Signing out…" : "Sign out")}
     </button>
   );
 }

@@ -3,10 +3,14 @@
 import Link from "next/link";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { Room, Track } from "livekit-client";
+import BrandLogo from "@/components/brand/brand-logo";
 import ChatLine from "@/components/live/chat-line";
 import OrdersPanel from "@/components/live/orders-panel";
+import ToastStack from "@/components/live/toasts";
 import type { ChatMessage } from "@/components/live/use-show";
-import { money, savings, useShow, type LiveItem } from "@/components/live/use-show";
+import { savings, useShow, type LiveItem } from "@/components/live/use-show";
+import { IconArrowLeft, IconBolt, IconBroadcast, IconCamera, IconChart, IconCopy, IconEye, IconMic, IconSpark, IconTag } from "@/components/ui/icons";
+import { Badge, Button, ButtonLink, Card, Input, LiveBadge, Thumb, cx, money } from "@/components/ui/kit";
 
 // Minimal typing for the browser's speech recognition (Chrome exposes it as webkitSpeechRecognition).
 type Recognition = {
@@ -210,100 +214,110 @@ export default function StudioRoom({ showId }: { showId: string }) {
     };
   }, [listed]);
 
-  if (error) return <div className="p-10 text-center">{error}</div>;
-  if (!snap) return <div className="p-10 text-center">Opening the studio…</div>;
+  if (error) return <div className="min-h-screen bg-canvas grid place-items-center p-10 text-center text-sm text-muted">{error}</div>;
+  if (!snap) return <div className="min-h-screen bg-canvas grid place-items-center p-10 text-center text-sm text-muted">Opening the studio…</div>;
 
   const isLive = snap.show.status === "live";
   const viewerUrl = typeof window !== "undefined" ? `${window.location.origin}/live/${showId}` : `/live/${showId}`;
+  const collected = (snap.totals?.item_cents ?? stats.revenue) + (snap.totals?.shipping_cents ?? 0) - (snap.totals?.refunded_cents ?? 0);
 
   return (
-    <div className="min-h-screen bg-[#f6f7fb] text-[#0b0d12]">
-      <header className="h-14 px-4 md:px-6 flex items-center justify-between bg-white border-b border-black/5 gap-3">
+    <div className="min-h-screen bg-canvas text-ink">
+      <header className="sticky top-0 z-30 h-14 px-4 md:px-6 flex items-center justify-between gap-3 bg-paper/95 backdrop-blur border-b border-line">
         <div className="flex items-center gap-3 min-w-0">
-          <Link href="/studio" className="font-extrabold shrink-0">🔴 Live Drop</Link>
-          <span className="text-black/50 truncate text-sm">{snap.show.title}</span>
-        </div>
-        <div className="flex items-center gap-2 text-sm shrink-0">
-          <span className={`w-2 h-2 rounded-full ${connected ? "bg-emerald-500" : "bg-amber-400"}`} />
-          <span className="text-black/50 hidden sm:inline">👀 {Math.max(0, viewers - 1)} watching</span>
-          <Link href={`/studio/${showId}/control`} className="h-9 px-3 rounded-full border border-black/10 grid place-items-center">
-            📊 Control room
+          <Link href="/dashboard/shows" className="text-muted hover:text-ink shrink-0" aria-label="Back to your shows">
+            <IconArrowLeft size={18} />
           </Link>
-          <button
-            onClick={() => navigator.clipboard.writeText(viewerUrl).then(() => pushToast("Viewer link copied", "info"))}
-            className="h-9 px-3 rounded-full border border-black/10"
-          >
-            Copy viewer link
-          </button>
+          <BrandLogo size="sm" className="shrink-0 hidden md:inline-flex" />
+          <span className="hidden md:block w-px h-5 bg-line-strong" />
+          <span className="text-sm font-medium truncate">{snap.show.title}</span>
+          {isLive ? <LiveBadge className="shrink-0" /> : <Badge tone={snap.show.status === "ended" ? "outline" : "neutral"}>{snap.show.status === "ended" ? "Ended" : "Rehearsal"}</Badge>}
+        </div>
+        <div className="flex items-center gap-2 shrink-0">
+          <span className="hidden sm:inline-flex items-center gap-1.5 text-xs text-muted tabular-nums mr-1">
+            <span className={cx("w-2 h-2 rounded-full", connected ? "bg-success" : "bg-warn")} />
+            <IconEye size={15} /> {Math.max(0, viewers - 1)} watching
+          </span>
+          <ButtonLink href={`/dashboard/insights?show=${showId}`} variant="ghost" size="sm" className="hidden md:inline-flex">
+            <IconChart size={15} /> Insights
+          </ButtonLink>
+          <Button onClick={() => navigator.clipboard.writeText(viewerUrl).then(() => pushToast("Viewer link copied", "info"))} variant="secondary" size="sm">
+            <IconCopy size={15} /> <span className="hidden sm:inline">Viewer link</span>
+          </Button>
           {snap.show.status === "scheduled" && (
-            <button onClick={() => setStatus("live")} className="h-9 px-4 rounded-full bg-red-600 text-white font-bold">Go live</button>
+            <Button onClick={() => setStatus("live")} variant="ember" size="sm">
+              <IconBroadcast size={15} /> Go live
+            </Button>
           )}
           {isLive && (
-            <button onClick={() => confirm("End the show?") && setStatus("ended")} className="h-9 px-4 rounded-full bg-black text-white font-semibold">
+            <Button onClick={() => confirm("End the show? Unpaid buyers get a PayPal invoice.") && setStatus("ended")} size="sm">
               End show
-            </button>
+            </Button>
           )}
-          {snap.show.status === "ended" && <span className="px-3 py-1 rounded-full bg-black/5">Ended</span>}
         </div>
       </header>
 
-      <main className="max-w-7xl mx-auto p-4 md:p-6 grid gap-4 xl:grid-cols-[1.2fr_1fr_320px]">
+      <main className="max-w-[1400px] mx-auto p-4 md:p-6 grid gap-5 xl:grid-cols-[1.25fr_1fr_340px]">
         {/* Camera + voice */}
-        <section className="space-y-3">
-          <div className="relative rounded-3xl overflow-hidden bg-black aspect-video">
+        <section className="space-y-4 min-w-0">
+          <div className="relative rounded-[10px] overflow-hidden bg-ink aspect-video">
             <video ref={videoRef} muted playsInline className="w-full h-full object-cover" />
             {!cameraOn && (
               <div className="absolute inset-0 grid place-items-center text-center p-6">
                 <div>
-                  <button onClick={startCamera} className="h-11 px-5 rounded-full bg-white text-black font-semibold">Turn on camera</button>
-                  {cameraError && <p className="text-white/70 text-sm mt-3 max-w-xs">{cameraError}</p>}
+                  <Button onClick={startCamera} variant="secondary">
+                    <IconCamera size={16} /> Turn on camera
+                  </Button>
+                  {cameraError && <p className="text-paper/70 text-sm mt-3 max-w-xs">{cameraError}</p>}
                 </div>
               </div>
             )}
-            {isLive && <span className="absolute top-3 left-3 text-xs font-bold bg-red-600 text-white rounded px-2 py-0.5">LIVE</span>}
+            {isLive && <LiveBadge className="absolute top-3 left-3" />}
             {cameraOn && (
-              <span className="absolute top-3 right-3 text-xs font-semibold bg-black/60 text-white rounded-full px-2.5 py-1">
+              <span
+                className={cx(
+                  "absolute top-3 right-3 text-xs font-medium rounded-[4px] px-2 h-[22px] inline-flex items-center",
+                  broadcast === "error" ? "bg-ember text-paper" : "bg-ink/70 text-paper",
+                )}
+              >
                 {broadcast === "on"
-                  ? "📡 Viewers can see you"
+                  ? "Viewers can see you"
                   : broadcast === "connecting"
                     ? "Connecting video…"
                     : broadcast === "error"
-                      ? "⚠️ Video not reaching viewers"
+                      ? "Video not reaching viewers"
                       : isLive
                         ? "Starting video…"
                         : "Preview · go live to broadcast"}
               </span>
             )}
             {(heard || interim) && (
-              <div className="absolute inset-x-3 bottom-3 rounded-xl bg-black/70 text-white text-sm p-2.5">
-                {heard} <span className="text-white/50">{interim}</span>
+              <div className="absolute inset-x-3 bottom-3 rounded-[8px] bg-ink/80 text-paper text-sm p-3">
+                {heard} <span className="text-paper/50">{interim}</span>
               </div>
             )}
           </div>
 
-          <div className="bg-white rounded-2xl border border-black/5 p-4 space-y-3">
-            <div className="flex items-center gap-2">
-              {speechSupported ? (
-                <button
-                  onClick={listening ? stopListening : startListening}
-                  className={`h-11 px-4 rounded-full font-semibold ${listening ? "bg-red-50 text-red-600 border border-red-200" : "bg-black text-white"}`}
-                >
-                  {listening ? "🎙️ Listening… (tap to stop)" : "🎙️ Start talking"}
-                </button>
-              ) : (
-                <span className="text-sm text-black/50">Voice needs Chrome. Type below instead.</span>
-              )}
-              <button
-                onClick={() => listIt(heard || interim)}
-                disabled={listing || !(heard || interim)}
-                className="h-11 px-5 rounded-full bg-amber-400 font-bold disabled:opacity-40"
-              >
-                {listing ? "Listing…" : "List it"}
-              </button>
+          <Card className="p-5 space-y-4">
+            <div>
+              <h2 className="text-[15px] font-semibold">List an item</h2>
+              <p className="text-[13px] text-muted mt-1 leading-relaxed">
+                Hold it up and say what it is, the size and the price, like &ldquo;vintage denim jacket, size medium, forty-five dollars&rdquo;. Then tap List it.
+              </p>
             </div>
-            <p className="text-xs text-black/50">
-              Hold the item up and say what it is, the size and the price, e.g. “vintage denim jacket, size medium, forty-five dollars”. Then tap <b>List it</b>.
-            </p>
+            <div className="flex flex-wrap items-center gap-2">
+              {speechSupported ? (
+                <Button onClick={listening ? stopListening : startListening} variant={listening ? "danger" : "primary"}>
+                  <IconMic size={16} />
+                  {listening ? "Listening, tap to stop" : "Start talking"}
+                </Button>
+              ) : (
+                <span className="text-[13px] text-muted">Voice needs Chrome. Type below instead.</span>
+              )}
+              <Button onClick={() => listIt(heard || interim)} disabled={listing || !(heard || interim)} variant="ember">
+                {listing ? "Listing…" : "List it"}
+              </Button>
+            </div>
             <form
               className="flex gap-2"
               onSubmit={(e) => {
@@ -311,87 +325,83 @@ export default function StudioRoom({ showId }: { showId: string }) {
                 void listIt(typed);
               }}
             >
-              <input
-                value={typed}
-                onChange={(e) => setTyped(e.target.value)}
-                placeholder="…or type it: wool scarf, forty dollars"
-                className="flex-1 min-w-0 h-10 rounded-xl border border-black/10 px-3 text-sm outline-none focus:ring-2 focus:ring-black/10"
-              />
-              <button disabled={!typed.trim() || listing} className="h-10 px-4 rounded-full border border-black/10 text-sm font-semibold disabled:opacity-40">
+              <Input value={typed} onChange={(e) => setTyped(e.target.value)} placeholder="Or type it: wool scarf, forty dollars" />
+              <Button disabled={!typed.trim() || listing} variant="secondary">
                 List
-              </button>
+              </Button>
             </form>
-          </div>
+          </Card>
         </section>
 
         {/* Drafts + listed items */}
-        <section className="space-y-3">
+        <section className="space-y-4 min-w-0">
           {drafts.map((d) => (
             <DraftCard key={d.id} showId={showId} item={d} isLive={isLive} onError={(m) => pushToast(m, "info")} />
           ))}
 
-          <div className="grid grid-cols-3 gap-2">
-            <Stat label="Listed" value={stats.listed} />
-            <Stat label="Claimed" value={stats.claimed} />
-            <Stat label="Paid" value={stats.paid} />
-          </div>
-          <div className="grid grid-cols-2 gap-2">
-            <Stat label="Item sales" value={money(snap.totals?.item_cents ?? stats.revenue)} />
-            <Stat
-              label="Collected via PayPal"
-              value={money((snap.totals?.item_cents ?? stats.revenue) + (snap.totals?.shipping_cents ?? 0) - (snap.totals?.refunded_cents ?? 0))}
-              hint={`incl. ${money(snap.totals?.shipping_cents ?? 0)} shipping${snap.totals?.refunded_cents ? ` · −${money(snap.totals.refunded_cents)} refunds` : ""}`}
-            />
-          </div>
+          <Card className="grid grid-cols-3 divide-x divide-line">
+            <MiniStat label="Listed" value={stats.listed} />
+            <MiniStat label="Claimed" value={stats.claimed} />
+            <MiniStat label="Paid" value={stats.paid} />
+          </Card>
+          <Card className="p-4 flex items-end justify-between gap-4">
+            <div>
+              <p className="text-[11px] font-semibold uppercase tracking-[0.08em] text-muted">Collected via PayPal</p>
+              <p className="text-[28px] font-[450] tracking-[-0.03em] leading-none mt-2 tabular-nums">{money(collected)}</p>
+            </div>
+            <p className="text-xs text-muted text-right">
+              {money(snap.totals?.item_cents ?? stats.revenue)} items
+              <br />
+              {money(snap.totals?.shipping_cents ?? 0)} shipping{snap.totals?.refunded_cents ? ` · −${money(snap.totals.refunded_cents)} refunds` : ""}
+            </p>
+          </Card>
 
-          <ul className="space-y-2">
-            {listed.map((i) => (
-              <li key={i.id} className="bg-white rounded-2xl border border-black/5 p-3 flex gap-3 items-center">
-                <div className="w-14 h-14 rounded-xl bg-black/5 overflow-hidden shrink-0">
-                  {i.image_data && <img src={i.image_data} alt="" className="w-full h-full object-cover" />}
-                </div>
-                <div className="min-w-0 flex-1">
-                  <p className="font-semibold truncate">
-                    #{i.seq} {i.title} {i.size && <span className="text-black/50 font-normal">· {i.size}</span>}
-                  </p>
-                  <p className="text-xs text-black/50">
-                    {money(i.price_cents)}
-                    {i.retail_cents ? ` · new ${money(i.retail_cents)}+` : ""}
-                  </p>
-                </div>
-                <div className="flex flex-col items-end gap-1">
-                  <StatusPill item={i} />
-                  {isLive && i.status === "listed" && !i.auction_ends_at && (
-                    <AuctionButton showId={showId} item={i} onError={(m) => pushToast(m, "info")} />
-                  )}
-                </div>
-              </li>
-            ))}
-            {listed.length === 0 && <li className="text-sm text-black/50 p-2">Items you put live appear here.</li>}
-          </ul>
+          <Card>
+            <div className="px-4 h-12 flex items-center border-b border-line">
+              <h2 className="text-sm font-semibold">Items in this show</h2>
+            </div>
+            <ul className="divide-y divide-line">
+              {listed.map((i) => (
+                <li key={i.id} className="p-3 flex gap-3 items-center">
+                  <Thumb src={i.image_data} className="w-12 h-12" />
+                  <div className="min-w-0 flex-1">
+                    <p className="text-sm font-medium truncate">
+                      <span className="text-muted tabular-nums">#{i.seq}</span> {i.title} {i.size && <span className="text-muted font-normal">· {i.size}</span>}
+                    </p>
+                    <p className="text-xs text-muted tabular-nums">
+                      {money(i.price_cents)}
+                      {i.retail_cents ? ` · new from ${money(i.retail_cents)}` : ""}
+                    </p>
+                  </div>
+                  <div className="flex flex-col items-end gap-1.5">
+                    <StatusPill item={i} />
+                    {isLive && i.status === "listed" && !i.auction_ends_at && <AuctionButton showId={showId} item={i} onError={(m) => pushToast(m, "info")} />}
+                  </div>
+                </li>
+              ))}
+              {listed.length === 0 && <li className="text-[13px] text-muted p-4">Items you put live appear here.</li>}
+            </ul>
+          </Card>
         </section>
 
         {/* Chat */}
-        <aside className="bg-white rounded-2xl border border-black/5 flex flex-col h-[600px]">
-          <h2 className="font-semibold px-4 pt-3 pb-2 border-b border-black/5">Chat</h2>
-          <div className="flex-1 overflow-y-auto p-3 space-y-1.5 text-sm">
+        <Card className="flex flex-col h-[640px] xl:sticky xl:top-20">
+          <div className="px-4 h-12 flex items-center justify-between border-b border-line shrink-0">
+            <h2 className="text-sm font-semibold">Chat</h2>
+            <span className="text-[11px] text-muted">Reply to flagged questions</span>
+          </div>
+          <div className="flex-1 overflow-y-auto p-3 space-y-2 text-sm">
             {snap.messages.map((m) => (
-              <ChatLine
-                key={m.id}
-                m={m}
-                dark={false}
-                replyTo={m.reply_to ? snap.messages.find((x) => x.id === m.reply_to) : undefined}
-                onReply={setReplyTo}
-              />
+              <ChatLine key={m.id} m={m} replyTo={m.reply_to ? snap.messages.find((x) => x.id === m.reply_to) : undefined} onReply={setReplyTo} />
             ))}
-            {snap.messages.length === 0 && <p className="text-black/40 text-center mt-8">No messages yet.</p>}
+            {snap.messages.length === 0 && <p className="text-muted text-center mt-8 text-[13px]">No messages yet.</p>}
           </div>
           <SellerChatBox showId={showId} replyTo={replyTo} onClearReply={() => setReplyTo(null)} onError={(m) => pushToast(m, "info")} />
-        </aside>
+        </Card>
       </main>
 
       {/* After the show: orders, refunds, tracking, invoices. Re-loads whenever an item changes status. */}
-      <div className="max-w-7xl mx-auto px-4 md:px-6 pb-10">
+      <div className="max-w-[1400px] mx-auto px-4 md:px-6 pb-12">
         <OrdersPanel
           showId={showId}
           refreshKey={`${moneyTick}-${snap.show.status}-${snap.items.map((i) => i.status).join(",")}`}
@@ -399,18 +409,7 @@ export default function StudioRoom({ showId }: { showId: string }) {
         />
       </div>
 
-      <div className="fixed bottom-4 left-1/2 -translate-x-1/2 space-y-2 z-50 w-[min(92vw,420px)]">
-        {toasts.map((t) => (
-          <div
-            key={t.id}
-            className={`rounded-full px-4 py-2.5 text-sm font-semibold shadow-lg text-center ${
-              t.tone === "paid" ? "bg-emerald-500 text-white" : t.tone === "claim" ? "bg-amber-400 text-black" : "bg-black text-white"
-            }`}
-          >
-            {t.text}
-          </div>
-        ))}
-      </div>
+      <ToastStack toasts={toasts} />
     </div>
   );
 }
@@ -424,16 +423,16 @@ function RetailHint({ item }: { item: LiveItem }) {
   } catch {}
   const save = savings(item);
   return (
-    <details className="text-xs text-black/60">
-      <summary className="cursor-pointer select-none">
-        🏷️ Similar new items: <b>{money(item.retail_cents)}+</b> in stores
-        {save !== null && <span className="text-emerald-700 font-semibold"> · your price is {save}% less</span>}
+    <details className="text-xs text-muted">
+      <summary className="cursor-pointer select-none inline-flex items-center gap-1.5">
+        <IconTag size={13} /> Similar new items: <b className="text-ink">{money(item.retail_cents)}+</b> in stores
+        {save !== null && <span className="text-success font-medium"> · yours is {save}% less</span>}
       </summary>
-      <ul className="mt-1 space-y-0.5 pl-4 list-disc">
+      <ul className="mt-1.5 space-y-0.5 pl-5 list-disc">
         {sources.map((s, i) => (
           <li key={i}>
             {money(s.price_cents)} · {s.brand ? `${s.brand} · ` : ""}
-            {s.title} <span className="text-black/40">({s.store})</span>
+            {s.title} <span className="text-muted/70">({s.store})</span>
           </li>
         ))}
       </ul>
@@ -457,7 +456,7 @@ function SellerChatBox({
   const [busy, setBusy] = useState(false);
   return (
     <form
-      className="p-2 border-t border-black/5 space-y-1.5"
+      className="p-2.5 border-t border-line space-y-2"
       onSubmit={async (e) => {
         e.preventDefault();
         if (!text.trim()) return;
@@ -474,37 +473,28 @@ function SellerChatBox({
       }}
     >
       {replyTo && (
-        <p className="text-[11px] text-black/50 flex justify-between gap-2">
+        <p className="text-[11px] text-muted flex justify-between gap-2 px-1">
           <span className="truncate">
-            ↳ Replying to {replyTo.name}: {replyTo.text}
+            Replying to {replyTo.name}: {replyTo.text}
           </span>
-          <button type="button" onClick={onClearReply} className="underline shrink-0">
-            cancel
+          <button type="button" onClick={onClearReply} className="font-medium text-ink shrink-0">
+            Cancel
           </button>
         </p>
       )}
       <div className="flex gap-2">
-        <input
-          value={text}
-          onChange={(e) => setText(e.target.value)}
-          maxLength={280}
-          placeholder={replyTo ? "Your answer (your assistant will remember it)" : "Say something to viewers"}
-          className="flex-1 min-w-0 h-9 rounded-full border border-black/10 px-3 text-sm outline-none focus:ring-2 focus:ring-black/10"
-        />
-        <button disabled={busy || !text.trim()} className="h-9 px-4 rounded-full bg-black text-white text-sm font-semibold disabled:opacity-40">
-          Send
-        </button>
+        <Input value={text} onChange={(e) => setText(e.target.value)} maxLength={280} placeholder={replyTo ? "Your answer (your assistant will remember it)" : "Say something to viewers"} />
+        <Button disabled={busy || !text.trim()}>Send</Button>
       </div>
     </form>
   );
 }
 
-function Stat({ label, value, hint }: { label: string; value: string | number; hint?: string }) {
+function MiniStat({ label, value }: { label: string; value: string | number }) {
   return (
-    <div className="bg-white rounded-2xl border border-black/5 p-3">
-      <p className="text-[11px] uppercase tracking-wide text-black/40">{label}</p>
-      <p className="text-lg font-extrabold">{value}</p>
-      {hint && <p className="text-[11px] text-black/40">{hint}</p>}
+    <div className="p-4">
+      <p className="text-[11px] font-semibold uppercase tracking-[0.08em] text-muted">{label}</p>
+      <p className="text-[26px] font-[450] tracking-[-0.03em] leading-none mt-2 tabular-nums">{value}</p>
     </div>
   );
 }
@@ -525,26 +515,30 @@ function AuctionButton({ showId, item, onError }: { showId: string; item: LiveIt
     if (!res.ok) onError((await res.json()).error);
   }
   return (
-    <button onClick={start} disabled={busy} className="text-[11px] font-bold px-2.5 py-1 rounded-full bg-fuchsia-600 text-white disabled:opacity-50">
-      ⚡ Auction
+    <button onClick={start} disabled={busy} className="inline-flex items-center gap-1 text-[11.5px] font-medium text-ember hover:text-ink disabled:opacity-50">
+      <IconBolt size={13} /> Auction
     </button>
   );
 }
 
 function StatusPill({ item }: { item: LiveItem }) {
-  const map: Record<string, [string, string]> = {
-    listed: ["Open", "bg-blue-50 text-blue-700"],
-    claimed: [`Claimed · ${item.winner_name}`, "bg-amber-50 text-amber-700"],
-    paid: [`Paid · ${item.winner_name}`, "bg-emerald-50 text-emerald-700"],
-    shipped: ["Shipped", "bg-emerald-50 text-emerald-700"],
-    on_hold: ["Agent hold", "bg-purple-50 text-purple-700"],
-    refunded: ["Refunded", "bg-black/5 text-black/60"],
+  const map: Record<string, [string, "neutral" | "warn" | "success" | "ember" | "outline"]> = {
+    listed: ["Open", "neutral"],
+    claimed: [`Claimed · ${item.winner_name}`, "warn"],
+    paid: [`Paid · ${item.winner_name}`, "success"],
+    shipped: ["Shipped", "success"],
+    on_hold: ["Agent hold", "warn"],
+    refunded: ["Refunded", "outline"],
   };
   const auctioning = item.status === "listed" && item.auction_ends_at && !item.auction_closed;
-  const [text, cls] = auctioning
-    ? [item.top_bid_cents ? `⚡ ${money(item.top_bid_cents)} · ${item.top_bidder}` : "⚡ Auction · no bids yet", "bg-fuchsia-50 text-fuchsia-700"]
-    : (map[item.status] ?? [item.status, "bg-black/5"]);
-  return <span className={`text-xs font-semibold px-2.5 py-1 rounded-full whitespace-nowrap max-w-[140px] truncate ${cls}`}>{text}</span>;
+  const [text, tone] = auctioning
+    ? ([item.top_bid_cents ? `Auction · ${money(item.top_bid_cents)} ${item.top_bidder}` : "Auction · no bids yet", "ember"] as const)
+    : (map[item.status] ?? [item.status, "neutral"]);
+  return (
+    <Badge tone={tone} className="max-w-[150px]">
+      <span className="truncate">{text}</span>
+    </Badge>
+  );
 }
 
 // A new listing: shows what plain code understood instantly, lets the seller fix it,
@@ -561,7 +555,6 @@ function DraftCard({ showId, item, isLive, onError }: { showId: string; item: Li
   const editing = manualEdit || !item.price_cents;
   const [countdown, setCountdown] = useState(AUTO_LIVE_SECONDS);
   const [busy, setBusy] = useState(false);
-
 
   const goLive = useCallback(async () => {
     setBusy(true);
@@ -591,42 +584,43 @@ function DraftCard({ showId, item, isLive, onError }: { showId: string; item: Li
   }, [countdown, editing, isLive, busy, goLive]);
 
   return (
-    <div className="bg-white rounded-2xl border-2 border-amber-300 p-3 flex gap-3">
-      <div className="w-20 h-20 rounded-xl bg-black/5 overflow-hidden shrink-0">
-        {item.image_data ? <img src={item.image_data} alt="" className="w-full h-full object-cover" /> : <div className="w-full h-full grid place-items-center text-2xl">🛍️</div>}
-      </div>
-      <div className="flex-1 min-w-0 space-y-2">
+    <Card className="p-4 flex gap-4 border-ember-light shadow-[inset_0_0_0_1px_var(--ember-light)]">
+      <Thumb src={item.image_data} className="w-20 h-20" />
+      <div className="flex-1 min-w-0 space-y-2.5">
+        <span className="text-[11px] font-semibold uppercase tracking-[0.08em] text-ember">New listing</span>
         {editing ? (
           <div className="grid grid-cols-[1fr_64px_80px] gap-2">
-            <input value={title} onChange={(e) => setEdits((x) => ({ ...x, title: e.target.value }))} className="h-9 rounded-lg border border-black/10 px-2 text-sm" />
-            <input value={size} onChange={(e) => setEdits((x) => ({ ...x, size: e.target.value }))} placeholder="Size" className="h-9 rounded-lg border border-black/10 px-2 text-sm" />
-            <input value={price} onChange={(e) => setEdits((x) => ({ ...x, price: e.target.value }))} placeholder="Price" inputMode="decimal" className="h-9 rounded-lg border border-black/10 px-2 text-sm" />
+            <Input value={title} onChange={(e) => setEdits((x) => ({ ...x, title: e.target.value }))} className="h-9" aria-label="Title" />
+            <Input value={size} onChange={(e) => setEdits((x) => ({ ...x, size: e.target.value }))} placeholder="Size" className="h-9" aria-label="Size" />
+            <Input value={price} onChange={(e) => setEdits((x) => ({ ...x, price: e.target.value }))} placeholder="Price" inputMode="decimal" className="h-9" aria-label="Price" />
           </div>
         ) : (
           <div>
-            <p className="font-semibold truncate">{item.title}</p>
-            <p className="text-sm text-black/60">
+            <p className="font-medium truncate">{item.title}</p>
+            <p className="text-sm text-muted flex items-center gap-2 flex-wrap">
               {item.size ? `Size ${item.size} · ` : ""}
-              <b className="text-black">{money(item.price_cents)}</b>
-              {item.ai_status === "pending" && <span className="ml-2 text-xs text-black/40">✨ AI adding details…</span>}
+              <b className="text-ink font-medium tabular-nums">{money(item.price_cents)}</b>
+              {item.ai_status === "pending" && (
+                <span className="inline-flex items-center gap-1 text-xs">
+                  <IconSpark size={12} /> AI adding details
+                </span>
+              )}
             </p>
           </div>
         )}
         <RetailHint item={item} />
-        {item.memory_hint && <p className="text-xs text-indigo-700">🧠 Pricing memory: {item.memory_hint}</p>}
+        {item.memory_hint && <p className="text-xs text-ink-soft">Pricing memory: {item.memory_hint}</p>}
         <div className="flex items-center gap-2">
-          <button onClick={goLive} disabled={busy || !isLive} className="h-8 px-3 rounded-full bg-red-600 text-white text-xs font-bold disabled:opacity-40">
-            {!isLive ? "Go live first" : busy ? "…" : editing ? "Save & put live" : `Live in ${countdown}s · now`}
-          </button>
+          <Button onClick={goLive} disabled={busy || !isLive} variant="ember" size="sm">
+            {!isLive ? "Go live first" : busy ? "…" : editing ? "Save and put live" : `Live in ${countdown}s · now`}
+          </Button>
           {!editing && (
-            <button
-              onClick={() => setManualEdit(true)}
-              className="h-8 px-3 rounded-full border border-black/10 text-xs font-semibold">
+            <Button onClick={() => setManualEdit(true)} variant="secondary" size="sm">
               Fix it
-            </button>
+            </Button>
           )}
         </div>
       </div>
-    </div>
+    </Card>
   );
 }

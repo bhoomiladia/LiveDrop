@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { Button, Card, CardHeader, Field, Notice, Textarea } from "@/components/ui/kit";
 
 type Info = { shipping: string; returns: string; sizing: string; other: string };
 const FIELDS: { key: keyof Info; label: string; placeholder: string }[] = [
@@ -11,81 +12,68 @@ const FIELDS: { key: keyof Info; label: string; placeholder: string }[] = [
 ];
 
 // The shop assistant answers viewers' questions from this (RAG), and names the source.
-export default function ShopInfoForm() {
+// `bare` renders just the fields (for onboarding); `onSaved` runs after a successful save.
+export default function ShopInfoForm({ bare, onSaved, submitLabel }: { bare?: boolean; onSaved?: () => void; submitLabel?: string }) {
   const [info, setInfo] = useState<Info | null>(null);
-  const [open, setOpen] = useState(false);
   const [busy, setBusy] = useState(false);
-  const [note, setNote] = useState<string | null>(null);
+  const [note, setNote] = useState<{ tone: "success" | "error" | "neutral"; text: string } | null>(null);
 
   useEffect(() => {
     let active = true;
     fetch("/api/shop", { cache: "no-store" })
       .then((r) => r.json())
-      .then((b) => {
-        if (!active || !b.info) return;
-        setInfo(b.info);
-        setOpen(!Object.values(b.info).some(Boolean)); // open by default until something is filled in
-      });
+      .then((b) => active && b.info && setInfo(b.info));
     return () => {
       active = false;
     };
   }, []);
 
-  if (!info) return null;
+  if (!info) return bare ? null : <Card className="h-64 animate-pulse" />;
   const filled = Object.values(info).filter(Boolean).length;
 
+  const form = (
+    <form
+      className="space-y-4"
+      onSubmit={async (e) => {
+        e.preventDefault();
+        setBusy(true);
+        setNote(null);
+        const res = await fetch("/api/shop", { method: "PUT", headers: { "Content-Type": "application/json" }, body: JSON.stringify(info) });
+        const body = await res.json();
+        setBusy(false);
+        if (!res.ok) return setNote({ tone: "error", text: body.error });
+        setNote(
+          body.searchable
+            ? { tone: "success", text: `Saved. Your assistant knows ${body.pieces} piece${body.pieces === 1 ? "" : "s"} of shop info.` }
+            : { tone: "neutral", text: "Saved, but the AI couldn't index it right now (free tier busy). Save again in a minute." },
+        );
+        onSaved?.();
+      }}
+    >
+      {FIELDS.map((f) => (
+        <Field key={f.key} label={f.label}>
+          <Textarea
+            value={info[f.key]}
+            onChange={(e) => setInfo({ ...info, [f.key]: e.target.value })}
+            placeholder={f.placeholder}
+            rows={3}
+            maxLength={3000}
+          />
+        </Field>
+      ))}
+      {note && <Notice tone={note.tone}>{note.text}</Notice>}
+      <Button disabled={busy}>{busy ? "Teaching your assistant…" : (submitLabel ?? "Save shop info")}</Button>
+    </form>
+  );
+
+  if (bare) return form;
   return (
-    <section className="bg-white rounded-2xl border border-black/5 p-4 space-y-3">
-      <button type="button" onClick={() => setOpen((o) => !o)} className="w-full flex items-center justify-between text-left">
-        <div>
-          <h2 className="font-bold">🤖 Shop info for your assistant</h2>
-          <p className="text-xs text-black/50">
-            Viewers&apos; questions in chat are answered from this, with the source shown. If the answer isn&apos;t here, the assistant asks you.
-            {filled ? ` (${filled} of 4 filled in)` : ""}
-          </p>
-        </div>
-        <span className="text-black/40">{open ? "▲" : "▼"}</span>
-      </button>
-      {open && (
-        <form
-          className="space-y-3"
-          onSubmit={async (e) => {
-            e.preventDefault();
-            setBusy(true);
-            setNote(null);
-            const res = await fetch("/api/shop", { method: "PUT", headers: { "Content-Type": "application/json" }, body: JSON.stringify(info) });
-            const body = await res.json();
-            setBusy(false);
-            setNote(
-              !res.ok
-                ? body.error
-                : body.searchable
-                  ? `Saved. Your assistant knows ${body.pieces} piece${body.pieces === 1 ? "" : "s"} of shop info.`
-                  : "Saved, but the AI couldn't index it right now (free tier busy). Save again in a minute.",
-            );
-          }}
-        >
-          {FIELDS.map((f) => (
-            <label key={f.key} className="block text-sm">
-              <span className="font-semibold">{f.label}</span>
-              <textarea
-                value={info[f.key]}
-                onChange={(e) => setInfo({ ...info, [f.key]: e.target.value })}
-                placeholder={f.placeholder}
-                rows={2}
-                maxLength={3000}
-                className="mt-1 w-full rounded-xl border border-black/10 p-2.5 text-sm outline-none focus:ring-2 focus:ring-black/10"
-              />
-            </label>
-          ))}
-          <div className="flex items-center gap-3">
-            <button disabled={busy} className="h-10 px-5 rounded-full bg-black text-white text-sm font-semibold disabled:opacity-50">
-              {busy ? "Teaching your assistant…" : "Save shop info"}
-            </button>
-            {note && <p className="text-xs text-black/60">{note}</p>}
-          </div>
-        </form>
-      )}
-    </section>
+    <Card id="shop-info" className="scroll-mt-24">
+      <CardHeader
+        title="Shop info for your assistant"
+        description={`Viewers' questions in chat are answered from this, with the source shown. If the answer isn't here, the assistant asks you. ${filled} of 4 filled in.`}
+      />
+      <div className="px-5 pb-5">{form}</div>
+    </Card>
   );
 }

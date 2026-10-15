@@ -81,7 +81,7 @@ export default function Home() {
         title: "Questions",
         items: [
           { q: "Is this real money?", a: "Not in this demo. Live Drop runs on the PayPal Sandbox, PayPal's test environment with pretend accounts and money." },
-          { q: "Do viewers need an account?", a: "No. Viewers pick a name and pay with PayPal. Only sellers sign up." },
+          { q: "Do viewers need an account?", a: "Anyone can watch. To claim, bid and pay, viewers sign in with a free buyer account, so their bag, orders and AI agent follow them across shows." },
           { q: "What if two people type SOLD at once?", a: "Our server's clock decides. The first message it receives wins, and the next person is first in the waiting line." },
           { q: "Can an AI agent overspend?", a: "No. Its limits are a signed permission slip checked by plain code before every purchase, and you get an undo window." },
           { q: "Why pay through PayPal checkout instead of Friends and Family?", a: "Checkout payments come with PayPal Purchase Protection. Friends and Family payments don't." },

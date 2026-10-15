@@ -7,7 +7,7 @@ import { getViewer } from "@/lib/viewer";
 export async function POST(req: NextRequest, ctx: RouteContext<"/api/shows/[showId]/claim">) {
   const { showId } = await ctx.params;
   const viewer = await getViewer();
-  if (!viewer) return NextResponse.json({ error: "Pick a name first." }, { status: 401 });
+  if (!viewer) return NextResponse.json({ error: "Sign in with a buyer account first." }, { status: 401 });
   if (getShow(showId)?.status !== "live") return NextResponse.json({ error: "The show isn't live." }, { status: 400 });
 
   const { itemId } = await req.json().catch(() => ({}));

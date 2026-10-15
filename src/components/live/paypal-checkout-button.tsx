@@ -83,7 +83,7 @@ export default function PayPalCheckoutButton({
       type="button"
       onClick={pay}
       disabled={!ready || busy}
-      className="w-full h-12 rounded-full bg-[#ffc439] hover:bg-[#f2b630] disabled:opacity-60 text-[#111] font-semibold text-[15px] flex items-center justify-center gap-2 transition-colors"
+      className="w-full h-12 rounded-[5px] bg-[#ffc439] hover:bg-[#f2b630] disabled:opacity-60 text-[#111] font-semibold text-[15px] flex items-center justify-center gap-2 transition-colors"
     >
       {!ready ? "Loading PayPal…" : busy ? "Waiting for PayPal…" : (
         <>

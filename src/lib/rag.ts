@@ -17,7 +17,7 @@ const SOURCES: { key: keyof ShopInfo; label: string }[] = [
   { key: "sizing", label: "Shop sizing guide" },
   { key: "other", label: "Shop info" },
 ];
-const ASSISTANT = { id: "assistant", name: "🤖 Shop assistant" };
+const ASSISTANT = { id: "assistant", name: "Shop assistant" };
 const MIN_SCORE = 0.5; // below this, nothing in the shop's knowledge is close enough to answer
 
 // ----------------------------------------------------------------- storage
@@ -180,11 +180,13 @@ export async function sellerReply(showId: string, sellerId: string, text: string
   const question = replyToId
     ? (db.prepare("SELECT * FROM messages WHERE id = ? AND show_id = ?").get(replyToId, showId) as MessageRow | undefined)
     : undefined;
+  // Viewers see the shop's name; the chat line marks it as the seller.
+  const seller = db.prepare("SELECT name, shop_name FROM users WHERE id = ?").get(sellerId) as { name: string; shop_name: string | null } | undefined;
   const msg: MessageRow = {
     id: crypto.randomUUID(),
     show_id: showId,
     viewer_id: "seller",
-    viewer_name: "Seller ⭐",
+    viewer_name: seller?.shop_name || seller?.name || "Seller",
     text: text.slice(0, 280),
     kind: "seller",
     item_id: question?.item_id ?? null,

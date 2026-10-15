@@ -2,6 +2,8 @@
 
 import { useEffect, useRef, useState } from "react";
 import { Room, RoomEvent, Track, type RemoteTrack } from "livekit-client";
+import { IconVolume } from "@/components/ui/icons";
+import { LiveBadge } from "@/components/ui/kit";
 
 // Viewer side: watches the seller's camera and mic from the show's LiveKit room.
 export default function LiveVideo({ showId, live }: { showId: string; live: boolean }) {
@@ -61,21 +63,21 @@ export default function LiveVideo({ showId, live }: { showId: string; live: bool
   }, [showId, live]);
 
   return (
-    <div className="relative rounded-3xl overflow-hidden bg-black aspect-video border border-white/10">
+    <div className="relative rounded-[10px] overflow-hidden bg-ink aspect-video">
       <video ref={videoRef} autoPlay playsInline muted={false} className={`w-full h-full object-cover ${hasVideo ? "" : "hidden"}`} />
       <audio ref={audioRef} autoPlay />
       {!hasVideo && (
-        <div className="absolute inset-0 grid place-items-center text-center p-6 text-white/60 text-sm">
+        <div className="absolute inset-0 grid place-items-center text-center p-6 text-paper/60 text-sm">
           {!live ? "Video starts when the show goes live." : problem ? problem : "Waiting for the seller's camera…"}
         </div>
       )}
-      {live && hasVideo && <span className="absolute top-3 left-3 text-xs font-bold bg-red-600 rounded px-2 py-0.5">LIVE</span>}
+      {live && hasVideo && <LiveBadge className="absolute top-3 left-3" />}
       {needsTap && hasVideo && (
         <button
           onClick={() => roomRef.current?.startAudio().then(() => setNeedsTap(false))}
-          className="absolute bottom-3 right-3 h-10 px-4 rounded-full bg-white text-black text-sm font-semibold shadow"
+          className="absolute bottom-3 right-3 h-9 px-3.5 rounded-[5px] bg-paper text-ink text-sm font-medium inline-flex items-center gap-2"
         >
-          🔊 Tap for sound
+          <IconVolume /> Tap for sound
         </button>
       )}
     </div>

@@ -130,16 +130,7 @@ export async function GET(req: Request) {
         now
       );
 
-      user = {
-        id: newUserId,
-        name,
-        email,
-        password_hash: null,
-        email_verified: 1,
-        image: picture,
-        created_at: now,
-        updated_at: now,
-      };
+      user = db.prepare("SELECT * FROM users WHERE id = ?").get(newUserId) as UserRecord;
     }
 
     // 4. Issue session token and cookie
@@ -151,7 +142,7 @@ export async function GET(req: Request) {
 
     await setSessionCookie(sessionToken);
 
-    // Redirect to dashboard
+    // New Google accounts pick seller or buyer in onboarding; the dashboard sends them there.
     return NextResponse.redirect(new URL("/dashboard", baseUrl));
   } catch (error) {
     console.error("[Google OAuth Callback Error]:", error);

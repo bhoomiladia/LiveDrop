@@ -19,7 +19,7 @@ export async function POST(req: NextRequest, ctx: RouteContext<"/api/shows/[show
   }
 
   const viewer = await getViewer();
-  if (!viewer) return NextResponse.json({ error: "Pick a name first." }, { status: 401 });
+  if (!viewer) return NextResponse.json({ error: "Sign in with a buyer account first." }, { status: 401 });
 
   const show = getShow(showId);
   if (!show) return NextResponse.json({ error: "Show not found." }, { status: 404 });

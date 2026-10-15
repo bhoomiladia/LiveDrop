@@ -66,6 +66,7 @@ type Snapshot = {
   bag: Bag | null;
   viewer: { id: string; name: string } | null;
   totals: { item_cents: number; shipping_cents: number; refunded_cents: number; orders: number } | null; // seller only
+  account: { name: string; role: "seller" | "buyer" | null } | null; // who is signed in (null = signed out)
 };
 
 // "You save 80%" against the typical price of similar new items.
@@ -145,39 +146,39 @@ export function useShow(showId: string) {
           });
           break;
         case "claim":
-          if (event.status === "won") pushToast(`🙋 ${event.name} claimed it!`, "claim");
+          if (event.status === "won") pushToast(`${event.name} claimed it`, "claim");
           break;
         case "paid":
-          pushToast(`✅ ${event.name} paid ${money(event.total_cents)} with PayPal`, "paid");
+          pushToast(`${event.name} paid ${money(event.total_cents)} with PayPal`, "paid");
           void refreshBag(); // also refreshes the seller's totals
           break;
         case "auction_started":
-          pushToast(`⚡ Flash auction: ${event.title}! Type your bid in the chat`, "claim");
+          pushToast(`Flash auction: ${event.title}. Type your bid in the chat`, "claim");
           break;
         case "auction_ended":
-          pushToast(event.winner ? `⚡ Sold to ${event.winner} for ${money(event.amount_cents)}` : `⚡ No bids on ${event.title}`, event.winner ? "claim" : "info");
+          pushToast(event.winner ? `Sold to ${event.winner} for ${money(event.amount_cents)}` : `No bids on ${event.title}`, event.winner ? "claim" : "info");
           break;
         case "bid_too_low":
           pushToast(`Bid at least ${money(event.minimum_cents)}`, "info");
           break;
         case "shipped":
-          pushToast(`📦 Your order shipped: ${event.carrier} ${event.tracking_number}`, "paid");
+          pushToast(`Your order shipped: ${event.carrier} ${event.tracking_number}`, "paid");
           break;
         case "refunded":
-          pushToast(event.viewer_id ? `↩️ Refund of ${money(event.amount_cents)} sent to your PayPal` : "Refund sent", "info");
+          pushToast(event.viewer_id ? `Refund of ${money(event.amount_cents)} sent to your PayPal` : "Refund sent", "info");
           break;
         case "invoices_sent":
           void refreshBag();
           break;
         case "agent_bought":
-          pushToast(`🤖 ${event.name}'s agent bought ${event.title}`, "claim");
+          pushToast(`${event.name}'s agent bought ${event.title}`, "claim");
           break;
         case "agent_undone":
-          pushToast(`↩️ ${event.name} undid an agent purchase`, "info");
+          pushToast(`${event.name} undid an agent purchase`, "info");
           break;
         case "released":
           pushToast(
-            event.to ? `⏱️ ${event.from} didn't pay in time. ${event.title} goes to ${event.to}` : `⏱️ ${event.title} is up for grabs again`,
+            event.to ? `${event.from} didn't pay in time. ${event.title} goes to ${event.to}` : `${event.title} is up for grabs again`,
             "info",
           );
           break;

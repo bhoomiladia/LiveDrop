@@ -29,7 +29,7 @@ export function BrandMark({ className = "w-[17px] h-[14px]" }: { className?: str
 
 export default function BrandLogo({ className = "", theme = "dark", size = "md" }: BrandLogoProps) {
   const isLight = theme === "light";
-  
+
   const textSizes = {
     sm: "text-base tracking-[-0.03em]",
     md: "text-xl tracking-[-0.04em]",
@@ -40,11 +40,11 @@ export default function BrandLogo({ className = "", theme = "dark", size = "md" 
     <Link
       href="/"
       className={`group inline-flex items-center gap-2 font-semibold ${textSizes[size]} ${
-        isLight ? "text-white" : "text-[#0c0e13]"
+        isLight ? "text-white" : "text-ink"
       } ${className}`}
     >
       <span className="-translate-y-[0.5px]">Live Drop</span>
-      <span className={isLight ? "text-[#a9c3f3]" : "text-[#2659d9]"}>
+      <span className={isLight ? "text-ember-light" : "text-ember"}>
         <BrandMark />
       </span>
     </Link>

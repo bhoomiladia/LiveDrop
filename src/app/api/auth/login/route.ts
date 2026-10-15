@@ -60,6 +60,8 @@ export async function POST(req: Request) {
         id: user.id,
         name: user.name,
         email: user.email,
+        role: user.role,
+        onboarded: Boolean(user.role && user.onboarded_at),
       },
     });
   } catch (error) {

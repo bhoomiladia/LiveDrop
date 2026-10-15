@@ -10,17 +10,18 @@ export async function GET() {
 export async function POST(req: Request) {
   const user = await getCurrentUser();
   if (!user) return NextResponse.json({ error: "Please log in to create a show." }, { status: 401 });
+  if (user.role !== "seller") return NextResponse.json({ error: "Only seller accounts can create shows." }, { status: 403 });
 
   const body = await req.json().catch(() => ({}));
   const title = typeof body.title === "string" ? body.title.trim().slice(0, 80) : "";
   if (title.length < 3) return NextResponse.json({ error: "Give your show a title (at least 3 characters)." }, { status: 400 });
 
-  const shippingUsd = Number(body.shippingUsd ?? 7);
+  const shippingUsd = Number(body.shippingUsd ?? (user.default_shipping_cents ?? 700) / 100);
   if (!Number.isFinite(shippingUsd) || shippingUsd < 0 || shippingUsd > 100) {
     return NextResponse.json({ error: "Shipping must be between 0 and 100 USD." }, { status: 400 });
   }
 
-  const claimMinutes = Number(body.claimMinutes ?? 5);
+  const claimMinutes = Number(body.claimMinutes ?? user.default_claim_minutes ?? 5);
   if (!Number.isInteger(claimMinutes) || claimMinutes < 1 || claimMinutes > 30) {
     return NextResponse.json({ error: "Time to pay must be 1 to 30 minutes." }, { status: 400 });
   }

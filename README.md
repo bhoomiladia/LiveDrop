@@ -564,13 +564,18 @@ PayPal can't reach `localhost`. To receive webhooks while developing, use a tunn
 | Page | Who uses it | What it's for |
 |---|---|---|
 | `/` | Everyone | Home: shows that are **live now** (refreshes itself), starting soon, and recently ended |
-| `/live/[showId]` | Viewers | Watch, chat, claim, and pay |
-| `/studio/[showId]` | Sellers | Go live, plus the control room and the Show Producer |
-| `/agent` | Buyers | Set up your agent and its permission slip |
-| `/bag` | Buyers | Your claimed items, payments, and invoices |
-| `/judge` | Judges | Try it in 2 minutes: the always-on demo show, sandbox buyer login, one-click seller view |
-| `/login`, `/signup`, `/verify-email`, `/forgot-password`, `/reset-password` | Everyone | Accounts (already built) |
-| `/dashboard` | Signed-in users | Your account (already built) |
+| `/login`, `/signup`, `/verify-email`, `/forgot-password`, `/reset-password` | Everyone | Accounts. At sign-up you choose **seller** or **buyer** (fixed for the account) |
+| `/onboarding` | New accounts | Role (for Google sign-ins), profile, show defaults (sellers) or sizes and interests (buyers), shop policies for the assistant |
+| `/dashboard` | Signed-in users | Overview: sellers see sales, unpaid items, orders to ship and flagged questions; buyers see live shows, their bag and their agent |
+| `/dashboard/shows` | Sellers | Create shows (pre-filled from your defaults) and open the studio |
+| `/dashboard/orders` | Both | Sellers: invoices, tracking and refunds per show. Buyers: bag across all shows (pay, undo agent holds, invoices) and order history |
+| `/dashboard/insights` | Sellers | AG Studio control room and the Show Producer |
+| `/dashboard/browse` | Buyers | Live, upcoming and recent shows |
+| `/dashboard/agent` | Buyers | Set up your AI agent and its permission slip, see what it bought |
+| `/dashboard/profile` | Both | Profile; sellers also edit shop info for the assistant |
+| `/live/[showId]` | Everyone | Watch. Signed-in buyers chat, claim, bid and pay |
+| `/studio/[showId]` | Sellers | Go live: camera, voice listing, chat, orders |
+| `/judge` | Judges | Try it in 2 minutes: one-click demo buyer, sandbox PayPal login, one-click seller view |
 
 ---
 

@@ -1,7 +1,8 @@
 "use client";
 
 import { useCallback, useEffect, useRef, useState } from "react";
-import { money } from "./use-show";
+import { IconCamera, IconReceipt, IconTruck } from "@/components/ui/icons";
+import { Badge, Button, Card, CardHeader, EmptyState, Input, Select, cx, money } from "@/components/ui/kit";
 
 type OrderItem = { id: string; title: string; size: string | null; price_cents: number; status: string };
 type Order = {
@@ -20,7 +21,7 @@ type Order = {
 type OpenInvoice = { id: string; viewer_name: string; total_cents: number; expires_at: number; items: OrderItem[] };
 type Data = { orders: Order[]; open_invoices: OpenInvoice[]; unpaid_without_invoice: number };
 
-const KIND: Record<Order["kind"], string> = { bag: "PayPal checkout", agent: "🤖 Agent", invoice: "PayPal invoice" };
+const KIND: Record<Order["kind"], string> = { bag: "Live checkout", agent: "AI agent", invoice: "PayPal invoice" };
 
 // The seller's after-show desk: orders, refunds, tracking numbers, invoices.
 export default function OrdersPanel({ showId, refreshKey, onToast }: { showId: string; refreshKey: string; onToast: (m: string) => void }) {
@@ -64,41 +65,52 @@ export default function OrdersPanel({ showId, refreshKey, onToast }: { showId: s
     void load();
   }
 
-  if (!data) return null;
+  if (!data) return <Card className="h-40 animate-pulse" />;
   const empty = !data.orders.length && !data.open_invoices.length && !data.unpaid_without_invoice;
 
   return (
-    <section className="bg-white rounded-2xl border border-black/5 p-4 space-y-3">
-      <div className="flex items-center justify-between gap-3 flex-wrap">
-        <div>
-          <h2 className="font-bold">Orders</h2>
-          <p className="text-xs text-black/50">Refunds and tracking go through PayPal. Unpaid bags get one PayPal invoice each when the show ends.</p>
+    <Card>
+      <CardHeader
+        title="Orders"
+        description="Refunds and tracking go through PayPal. Unpaid bags get one PayPal invoice each when the show ends."
+        action={
+          data.unpaid_without_invoice > 0 && (
+            <Button onClick={sendInvoices} disabled={sending} variant="paypal" size="sm">
+              {sending ? "Sending…" : `Send PayPal invoices (${data.unpaid_without_invoice} unpaid)`}
+            </Button>
+          )
+        }
+      />
+
+      {empty && (
+        <div className="border-t border-line">
+          <EmptyState icon={<IconReceipt size={20} />} title="No orders yet">
+            Orders appear here as soon as buyers pay with PayPal.
+          </EmptyState>
         </div>
-        {data.unpaid_without_invoice > 0 && (
-          <button onClick={sendInvoices} disabled={sending} className="h-9 px-4 rounded-full bg-[#ffc439] text-sm font-semibold disabled:opacity-50">
-            {sending ? "Sending…" : `Send PayPal invoices now (${data.unpaid_without_invoice} unpaid item${data.unpaid_without_invoice === 1 ? "" : "s"})`}
-          </button>
-        )}
-      </div>
+      )}
 
-      {empty && <p className="text-sm text-black/40">No orders yet.</p>}
-
-      {data.open_invoices.map((v) => (
-        <div key={v.id} className="rounded-xl border border-dashed border-black/15 p-3 text-sm flex justify-between gap-3">
-          <div className="min-w-0">
-            <p className="font-semibold">
-              {v.viewer_name} <span className="text-xs font-normal text-black/50">· invoice sent, waiting for payment</span>
-            </p>
-            <p className="text-xs text-black/50 truncate">{v.items.map((i) => i.title).join(", ")}</p>
-          </div>
-          <span className="font-semibold shrink-0">{money(v.total_cents)}</span>
-        </div>
-      ))}
-
-      {data.orders.map((o) => (
-        <OrderCard key={o.id} showId={showId} order={o} onRefund={refund} onToast={onToast} onChanged={load} />
-      ))}
-    </section>
+      {(data.open_invoices.length > 0 || data.orders.length > 0) && (
+        <ul className="border-t border-line divide-y divide-line">
+          {data.open_invoices.map((v) => (
+            <li key={v.id} className="px-5 py-4 flex justify-between gap-4">
+              <div className="min-w-0">
+                <p className="text-sm font-medium flex items-center gap-2 flex-wrap">
+                  {v.viewer_name} <Badge tone="warn">Invoice sent, unpaid</Badge>
+                </p>
+                <p className="text-xs text-muted truncate mt-1">{v.items.map((i) => i.title).join(", ")}</p>
+              </div>
+              <span className="text-sm font-medium tabular-nums shrink-0">{money(v.total_cents)}</span>
+            </li>
+          ))}
+          {data.orders.map((o) => (
+            <li key={o.id}>
+              <OrderCard showId={showId} order={o} onRefund={refund} onToast={onToast} onChanged={load} />
+            </li>
+          ))}
+        </ul>
+      )}
+    </Card>
   );
 }
 
@@ -131,7 +143,7 @@ function OrderCard({
       if (!res.ok) return onToast(body.error);
       setCarrier(body.carrier);
       setNumber(body.tracking_number);
-      onToast("🤖 Label read. Check it, then Save.");
+      onToast("Label read. Check it, then save.");
     } finally {
       setReading(false);
     }
@@ -144,71 +156,67 @@ function OrderCard({
       body: JSON.stringify({ carrier, trackingNumber: number }),
     });
     const body = await res.json();
-    onToast(res.ok ? (body.sent_to_paypal ? "📦 Tracking saved and sent to PayPal" : "📦 Tracking saved") : body.error);
+    onToast(res.ok ? (body.sent_to_paypal ? "Tracking saved and sent to PayPal" : "Tracking saved") : body.error);
     if (res.ok) onChanged();
   }
 
   return (
-    <div className="rounded-xl border border-black/10 p-3 space-y-2">
-      <div className="flex justify-between gap-3">
-        <p className="font-semibold">
-          {order.viewer_name} <span className="text-[11px] font-normal px-2 py-0.5 rounded-full bg-black/5 ml-1">{KIND[order.kind]}</span>
-          {order.status !== "paid" && order.status !== "on_hold" && (
-            <span className="text-[11px] font-normal px-2 py-0.5 rounded-full bg-red-50 text-red-700 ml-1">{order.status.replace("_", " ")}</span>
-          )}
-          {order.status === "on_hold" && <span className="text-[11px] font-normal px-2 py-0.5 rounded-full bg-purple-50 text-purple-700 ml-1">on hold (undo window)</span>}
+    <div className="px-5 py-4 space-y-3">
+      <div className="flex justify-between gap-4">
+        <p className="text-sm font-medium flex items-center gap-2 flex-wrap">
+          {order.viewer_name}
+          <Badge tone="neutral">{KIND[order.kind]}</Badge>
+          {order.status === "on_hold" && <Badge tone="warn">On hold, undo window open</Badge>}
+          {order.status !== "paid" && order.status !== "on_hold" && <Badge tone="outline">{order.status.replace("_", " ")}</Badge>}
         </p>
-        <p className="font-semibold shrink-0">
+        <p className="text-sm font-medium tabular-nums shrink-0 text-right">
           {money(total)}
-          {order.refunded_cents > 0 && <span className="block text-[11px] text-red-600 text-right">−{money(order.refunded_cents)} refunded</span>}
+          {order.refunded_cents > 0 && <span className="block text-[11px] text-ember">−{money(order.refunded_cents)} refunded</span>}
         </p>
       </div>
-      <ul className="text-sm space-y-1">
+      <ul className="text-[13px] space-y-1">
         {order.items.map((i) => (
           <li key={i.id} className="flex items-center justify-between gap-2">
-            <span className={i.status === "refunded" ? "line-through text-black/40" : ""}>
+            <span className={cx(i.status === "refunded" && "line-through text-muted")}>
               {i.title}
               {i.size ? ` (${i.size})` : ""} · {money(i.price_cents)}
             </span>
             {refundable && i.status !== "refunded" && order.items.length > 1 && (
-              <button onClick={() => onRefund(order, i)} className="text-[11px] text-red-600 underline">
+              <button onClick={() => onRefund(order, i)} className="text-xs font-medium text-ember hover:text-ink">
                 Refund item
               </button>
             )}
           </li>
         ))}
-        {order.shipping_cents > 0 && <li className="text-xs text-black/50">Shipping {money(order.shipping_cents)}</li>}
+        {order.shipping_cents > 0 && <li className="text-xs text-muted">Shipping {money(order.shipping_cents)}</li>}
       </ul>
 
       {order.tracking_number ? (
-        <p className="text-xs text-emerald-700">📦 {order.carrier} {order.tracking_number}</p>
+        <p className="text-xs text-success flex items-center gap-1.5">
+          <IconTruck size={15} /> {order.carrier} {order.tracking_number}
+        </p>
       ) : (
         order.status === "paid" && (
           <div className="flex flex-wrap items-center gap-2">
-            <select value={carrier} onChange={(e) => setCarrier(e.target.value)} className="h-8 rounded-lg border border-black/10 text-xs px-1 bg-white">
+            <Select value={carrier} onChange={(e) => setCarrier(e.target.value)} className="h-8 w-24 text-xs">
               {[...new Set(["USPS", "UPS", "FedEx", "DHL", carrier])].map((c) => (
                 <option key={c}>{c}</option>
               ))}
-            </select>
-            <input
-              value={number}
-              onChange={(e) => setNumber(e.target.value)}
-              placeholder="Tracking number"
-              className="h-8 flex-1 min-w-[140px] rounded-lg border border-black/10 px-2 text-xs"
-            />
+            </Select>
+            <Input value={number} onChange={(e) => setNumber(e.target.value)} placeholder="Tracking number" className="h-8 flex-1 min-w-[140px] text-xs" />
             <input ref={fileRef} type="file" accept="image/*" capture="environment" hidden onChange={(e) => e.target.files?.[0] && readLabel(e.target.files[0])} />
-            <button onClick={() => fileRef.current?.click()} disabled={reading} className="h-8 px-3 rounded-full border border-black/10 text-xs font-semibold">
-              {reading ? "Reading…" : "📷 Read label"}
-            </button>
-            <button onClick={saveTracking} disabled={!number} className="h-8 px-3 rounded-full bg-black text-white text-xs font-semibold disabled:opacity-40">
+            <Button onClick={() => fileRef.current?.click()} disabled={reading} variant="secondary" size="sm" title="Snap the shipping label and AI reads the tracking number">
+              <IconCamera size={14} /> {reading ? "Reading…" : "Read label"}
+            </Button>
+            <Button onClick={saveTracking} disabled={!number} size="sm">
               Save
-            </button>
+            </Button>
           </div>
         )
       )}
 
       {refundable && (
-        <button onClick={() => onRefund(order, null)} className="text-xs text-red-600 underline">
+        <button onClick={() => onRefund(order, null)} className="text-xs font-medium text-ember hover:text-ink">
           Refund {order.items.length > 1 ? "everything left" : "order"}
         </button>
       )}

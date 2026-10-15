@@ -23,8 +23,8 @@ export async function proxy(req: NextRequest) {
     }
   }
 
-  // 1. Protect seller pages
-  if (pathname.startsWith("/dashboard") || pathname.startsWith("/studio")) {
+  // 1. Protect account pages (role and onboarding checks happen in the pages themselves)
+  if (pathname.startsWith("/dashboard") || pathname.startsWith("/studio") || pathname.startsWith("/onboarding")) {
     if (!isAuthenticated) {
       const loginUrl = new URL("/login", req.url);
       const callbackPath = pathname + search;
@@ -49,5 +49,5 @@ export async function proxy(req: NextRequest) {
 }
 
 export const config = {
-  matcher: ["/dashboard/:path*", "/dashboard", "/studio/:path*", "/studio", "/login", "/signup"],
+  matcher: ["/dashboard/:path*", "/dashboard", "/studio/:path*", "/studio", "/onboarding", "/login", "/signup"],
 };

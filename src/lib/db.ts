@@ -7,7 +7,7 @@ let dbInstance: DatabaseSync | null = null;
 export function getDb(): DatabaseSync {
   if (dbInstance) return dbInstance;
 
-  // Store database in .data/flowmint.db within the workspace
+  // Store the database in .data/ within the workspace
   const dataDir = path.join(process.cwd(), ".data");
   if (!fs.existsSync(dataDir)) {
     fs.mkdirSync(dataDir, { recursive: true });
@@ -276,6 +276,21 @@ export function getDb(): DatabaseSync {
   addColumnIfMissing(dbInstance, "items", "memory_hint", "TEXT"); // pricing memory, for the seller
   addColumnIfMissing(dbInstance, "items", "category", "TEXT"); // from the AI listing builder (e.g. "Jackets")
 
+  // Accounts are either a seller or a buyer, chosen once at sign-up (or onboarding for Google sign-ins).
+  addColumnIfMissing(dbInstance, "users", "role", "TEXT"); // seller | buyer | NULL = not chosen yet
+  addColumnIfMissing(dbInstance, "users", "onboarded_at", "INTEGER");
+  addColumnIfMissing(dbInstance, "users", "bio", "TEXT");
+  addColumnIfMissing(dbInstance, "users", "shop_name", "TEXT"); // sellers
+  addColumnIfMissing(dbInstance, "users", "default_shipping_cents", "INTEGER"); // sellers: pre-fills new shows
+  addColumnIfMissing(dbInstance, "users", "default_claim_minutes", "INTEGER");
+  addColumnIfMissing(dbInstance, "users", "sizes", "TEXT"); // buyers: pre-fills their AI agent
+  addColumnIfMissing(dbInstance, "users", "interests", "TEXT");
+  // Accounts from before roles existed that already run shows are sellers who are set up.
+  dbInstance.exec(`
+    UPDATE users SET role = 'seller', onboarded_at = COALESCE(onboarded_at, created_at)
+    WHERE role IS NULL AND id IN (SELECT seller_id FROM shows);
+  `);
+
   return dbInstance;
 }
 
@@ -293,4 +308,12 @@ export type UserRecord = {
   image: string | null;
   created_at: number;
   updated_at: number;
+  role: "seller" | "buyer" | null;
+  onboarded_at: number | null;
+  bio: string | null;
+  shop_name: string | null;
+  default_shipping_cents: number | null;
+  default_claim_minutes: number | null;
+  sizes: string | null;
+  interests: string | null;
 };

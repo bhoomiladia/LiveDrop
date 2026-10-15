@@ -1,26 +1,59 @@
 @import "tailwindcss";
 
+/* Live Drop app theme: the landing page's ember palette and type, kept flat (no gradients). */
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  --paper: #ffffff;
+  --canvas: #fbf8f6;
+  --ink: #140c09;
+  --ink-soft: #3b302b;
+  --muted: #746964;
+  --line: #ece5e1;
+  --line-strong: #dcd2cc;
+  --ember: #d2491c;
+  --ember-deep: #3a0c03;
+  --ember-light: #ffcaae;
+  --tint: #fff0e8;
+  --accent: #fff27a;
+  --success: #1f7a4d;
+  --success-tint: #e8f4ec;
+  --warn: #8a5a00;
+  --warn-tint: #fff6d6;
+  --paypal: #ffc439;
 }
 
 @theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
+  --color-paper: var(--paper);
+  --color-canvas: var(--canvas);
+  --color-ink: var(--ink);
+  --color-ink-soft: var(--ink-soft);
+  --color-muted: var(--muted);
+  --color-line: var(--line);
+  --color-line-strong: var(--line-strong);
+  --color-ember: var(--ember);
+  --color-ember-deep: var(--ember-deep);
+  --color-ember-light: var(--ember-light);
+  --color-tint: var(--tint);
+  --color-accent: var(--accent);
+  --color-success: var(--success);
+  --color-success-tint: var(--success-tint);
+  --color-warn: var(--warn);
+  --color-warn-tint: var(--warn-tint);
+  --color-paypal: var(--paypal);
+  /* Same type stack as the landing page (onward-summit-template). */
+  --font-sans: "Inter Tight", "Inter", "Geist", "Helvetica Neue", ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, Arial, sans-serif;
   --font-mono: var(--font-geist-mono);
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
+body {
+  background: var(--paper);
+  color: var(--ink);
+  font-family: var(--font-sans);
+  letter-spacing: -0.006em;
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
 }
 
-body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+:where(button, a, input, select, textarea, [tabindex]):focus-visible {
+  outline: 2px solid var(--ember);
+  outline-offset: 2px;
 }

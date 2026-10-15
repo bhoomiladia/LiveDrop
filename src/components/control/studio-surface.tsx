@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { AgStudioAiModule, type AgStudioApi, type AgStudioMode } from "ag-studio";
 import { AgStudio, AgStudioProvider } from "ag-studio-react";
 import type { ControlData } from "@/lib/control-data";
+import { buttonClass } from "@/components/ui/kit";
 import { buildShowProducer } from "./show-producer";
 import { buildStudioData, controlReport, PAGE_TITLES } from "./studio-config";
 
@@ -45,28 +46,29 @@ export default function StudioSurface({
 
   return (
     <div className="h-full flex flex-col">
-      <div className="px-4 md:px-6 py-2 flex items-center gap-2 flex-wrap bg-white border-b border-black/5">
+      <div className="px-4 py-2.5 flex items-center gap-1.5 flex-wrap bg-paper border-b border-line">
         {Object.entries(PAGE_TITLES).map(([id, label]) => (
           <button
             key={id}
             onClick={() => goToPage(id)}
-            className={`h-8 px-3 rounded-full text-sm font-semibold ${pageId === id ? "bg-black text-white" : "bg-black/5 text-black/70"}`}
+            aria-pressed={pageId === id}
+            className={`h-8 px-3 rounded-[5px] text-[13px] font-medium transition-colors ${pageId === id ? "bg-tint text-ink shadow-[inset_0_0_0_1px_var(--ember-light)]" : "text-ink-soft hover:bg-canvas"}`}
           >
             {label}
           </button>
         ))}
         <div className="ml-auto flex items-center gap-2">
-          <button onClick={refresh} className="h-8 px-3 rounded-full border border-black/10 text-sm">
-            {refreshing ? "Refreshing…" : "↻ Refresh data"}
+          <button onClick={refresh} className={buttonClass("secondary", "sm")}>
+            {refreshing ? "Refreshing…" : "Refresh data"}
           </button>
-          <button onClick={() => setMode((m) => (m === "view" ? "edit" : "view"))} className="h-8 px-3 rounded-full border border-black/10 text-sm">
-            {mode === "view" ? "✏️ Edit layout" : "✓ Done editing"}
+          <button onClick={() => setMode((m) => (m === "view" ? "edit" : "view"))} className={buttonClass(mode === "view" ? "secondary" : "primary", "sm")}>
+            {mode === "view" ? "Edit layout" : "Done editing"}
           </button>
         </div>
       </div>
       {empty && (
-        <p className="px-6 py-2 text-sm bg-amber-50 text-amber-800">
-          No items yet. Go live and list a few, and this fills up. (The Show Producer can still answer questions.)
+        <p className="px-4 py-2.5 text-[13px] bg-warn-tint text-warn border-b border-line">
+          No items yet. Go live and list a few, and this fills up. The Show Producer can still answer questions.
         </p>
       )}
       <div className="flex-1 min-h-0">

@@ -273,7 +273,7 @@ async function matchWishes(item: ItemRow, agents: AgentRow[]): Promise<Map<strin
 
 async function buy(agent: AgentRow, item: ItemRow, reason: string): Promise<boolean> {
   const db = getDb();
-  const agentViewer = { id: agent.viewer_id, name: `${agent.viewer_name}'s agent 🤖` };
+  const agentViewer = { id: agent.viewer_id, name: `${agent.viewer_name}'s agent` };
   const claim = claimItem(item.id, agentViewer, null, "agent");
   if (!claim || claim.status !== "won") return false;
 
@@ -389,7 +389,7 @@ async function notifyOwner(agent: AgentRow, item: ItemRow, orderId: string, undo
     to: agent.email,
     subject: `Your Live Drop agent bought: ${item.title}`,
     text: `Your agent bought ${item.title} for ${price}. The money is on hold. Changed your mind? Undo within ${minutes} minutes: ${undoUrl}`,
-    html: `<p>🤖 Your agent bought <b>${escapeHtml(item.title)}</b> for <b>${price}</b>.</p>
+    html: `<p>Your agent bought <b>${escapeHtml(item.title)}</b> for <b>${price}</b>.</p>
       <p>The money is on hold in PayPal. It's only taken after ${minutes} minutes.</p>
       <p><a href="${undoUrl}">Undo this purchase</a></p>`,
   });
