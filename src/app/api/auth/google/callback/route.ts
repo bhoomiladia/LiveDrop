@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import crypto from "node:crypto";
 import { cookies } from "next/headers";
-import { getDb, UserRecord } from "@/lib/db";
+import { col, newUser, withId } from "@/lib/db";
 import { createSessionToken, setSessionCookie, normalizeEmail } from "@/lib/auth";
 
 export async function GET(req: Request) {
@@ -84,53 +84,34 @@ export async function GET(req: Request) {
     const name = profile.name || email.split("@")[0];
     const picture = profile.picture || null;
 
-    const db = getDb();
+    const users = await col("users");
+    const accounts = await col("accounts");
 
     // 3. Check for existing user account
-    let user = db.prepare("SELECT * FROM users WHERE email = ?").get(email) as UserRecord | undefined;
+    let user = await users.findOne({ email });
     const now = Date.now();
+    const linkGoogle = (userId: string) =>
+      accounts.updateOne(
+        { provider: "google", provider_account_id: googleId },
+        { $setOnInsert: withId({ id: crypto.randomUUID(), user_id: userId, provider: "google", provider_account_id: googleId, created_at: now }) },
+        { upsert: true }
+      );
 
     if (user) {
       // User exists: update verification status if needed and link account
       if (user.email_verified === 0) {
-        db.prepare("UPDATE users SET email_verified = 1, image = COALESCE(image, ?), updated_at = ? WHERE id = ?").run(
-          picture,
-          now,
-          user.id
-        );
+        await users.updateOne({ id: user.id }, { $set: { email_verified: 1, image: user.image ?? picture, updated_at: now } });
       }
 
       // Ensure Google account linkage exists
-      const account = db.prepare("SELECT * FROM accounts WHERE provider = 'google' AND provider_account_id = ?").get(googleId);
-      if (!account) {
-        db.prepare("INSERT INTO accounts (id, user_id, provider, provider_account_id, created_at) VALUES (?, ?, 'google', ?, ?)").run(
-          crypto.randomUUID(),
-          user.id,
-          googleId,
-          now
-        );
-      }
+      await linkGoogle(user.id);
     } else {
       // Create new user verified through Google
-      const newUserId = crypto.randomUUID();
-      db.prepare("INSERT INTO users (id, name, email, password_hash, email_verified, image, created_at, updated_at) VALUES (?, ?, ?, NULL, 1, ?, ?, ?)").run(
-        newUserId,
-        name,
-        email,
-        picture,
-        now,
-        now
-      );
+      user = newUser({ id: crypto.randomUUID(), name, email, email_verified: 1, image: picture, created_at: now, updated_at: now });
+      await users.insertOne(user);
 
       // Link Google provider account
-      db.prepare("INSERT INTO accounts (id, user_id, provider, provider_account_id, created_at) VALUES (?, ?, 'google', ?, ?)").run(
-        crypto.randomUUID(),
-        newUserId,
-        googleId,
-        now
-      );
-
-      user = db.prepare("SELECT * FROM users WHERE id = ?").get(newUserId) as UserRecord;
+      await linkGoogle(user.id);
     }
 
     // 4. Issue session token and cookie

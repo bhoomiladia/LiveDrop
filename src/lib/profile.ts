@@ -1,6 +1,6 @@
 import "server-only";
-import { getDb, type UserRecord } from "./db";
-import { getBag, listShowsForSeller, type ShowRow } from "./live";
+import { col, type ItemRow, type UserRecord } from "./db";
+import { COLLECTED_STATUSES, getBag, itemCountsByShow, listShowsForSeller, type Bag, type ShowRow } from "./live";
 
 // ----------------------------------------------------------------- profile and onboarding
 
@@ -37,26 +37,15 @@ export function cleanProfile(role: "seller" | "buyer", body: Record<string, unkn
   return out;
 }
 
-export function saveProfile(userId: string, p: ProfileInput, opts: { role?: "seller" | "buyer"; finishOnboarding?: boolean } = {}) {
-  const db = getDb();
+export async function saveProfile(userId: string, p: ProfileInput, opts: { role?: "seller" | "buyer"; finishOnboarding?: boolean } = {}) {
+  const users = await col("users");
   const now = Date.now();
-  const sets: string[] = [];
-  const args: (string | number | null)[] = [];
-  for (const [k, v] of Object.entries(p)) {
-    if (v === undefined) continue;
-    sets.push(`${k} = ?`);
-    args.push(v);
-  }
+  const fields = Object.fromEntries(Object.entries(p).filter(([, v]) => v !== undefined)) as Partial<UserRecord>;
+  await users.updateOne({ id: userId }, { $set: { ...fields, updated_at: now } });
   // The role can only be set once (accounts that signed up with Google choose it in onboarding).
-  if (opts.role) sets.push(`role = COALESCE(role, '${opts.role === "seller" ? "seller" : "buyer"}')`);
-  if (opts.finishOnboarding) {
-    sets.push("onboarded_at = COALESCE(onboarded_at, ?)");
-    args.push(now);
-  }
-  sets.push("updated_at = ?");
-  args.push(now, userId);
-  db.prepare(`UPDATE users SET ${sets.join(", ")} WHERE id = ?`).run(...args);
-  return db.prepare("SELECT * FROM users WHERE id = ?").get(userId) as UserRecord;
+  if (opts.role) await users.updateOne({ id: userId, role: null }, { $set: { role: opts.role === "seller" ? "seller" : "buyer" } });
+  if (opts.finishOnboarding) await users.updateOne({ id: userId, onboarded_at: null }, { $set: { onboarded_at: now } });
+  return (await users.findOne({ id: userId }))!;
 }
 
 export function homeFor(user: Pick<UserRecord, "role" | "onboarded_at">): string {
@@ -65,71 +54,82 @@ export function homeFor(user: Pick<UserRecord, "role" | "onboarded_at">): string
 
 // ----------------------------------------------------------------- seller overview
 
-export type SellerOverview = ReturnType<typeof getSellerOverview>;
+export type SellerOverview = Awaited<ReturnType<typeof getSellerOverview>>;
 
-export function getSellerOverview(sellerId: string) {
-  const db = getDb();
-  const shows = listShowsForSeller(sellerId);
-  const totals = db
-    .prepare(
-      `SELECT COALESCE(SUM(o.item_cents + o.shipping_cents - o.refunded_cents), 0) AS collected_cents, COUNT(*) AS orders
-       FROM orders o JOIN shows s ON s.id = o.show_id
-       WHERE s.seller_id = ? AND o.status IN ('paid', 'partially_refunded', 'refunded')`,
-    )
-    .get(sellerId) as { collected_cents: number; orders: number };
-  const sold = db
-    .prepare(
-      `SELECT COUNT(*) AS n FROM items i JOIN shows s ON s.id = i.show_id
-       WHERE s.seller_id = ? AND i.status IN ('paid', 'shipped', 'on_hold')`,
-    )
-    .get(sellerId) as { n: number };
-  const unpaid = db
-    .prepare(
-      `SELECT COUNT(*) AS n, COALESCE(SUM(COALESCE(c.bid_cents, i.price_cents)), 0) AS cents
-       FROM claims c JOIN items i ON i.id = c.item_id JOIN shows s ON s.id = c.show_id
-       WHERE s.seller_id = ? AND c.status = 'won' AND i.status = 'claimed'`,
-    )
-    .get(sellerId) as { n: number; cents: number };
-  const openInvoices = db
-    .prepare(`SELECT COUNT(*) AS n FROM invoices v JOIN shows s ON s.id = v.show_id WHERE s.seller_id = ? AND v.status = 'sent'`)
-    .get(sellerId) as { n: number };
-  const toShip = db
-    .prepare(
-      `SELECT COUNT(*) AS n FROM orders o JOIN shows s ON s.id = o.show_id
-       WHERE s.seller_id = ? AND o.status = 'paid' AND o.tracking_number IS NULL`,
-    )
-    .get(sellerId) as { n: number };
-  const recentOrders = db
-    .prepare(
-      `SELECT o.id, o.show_id, s.title AS show_title, o.viewer_name, o.kind, o.status, o.item_cents + o.shipping_cents AS total_cents,
-         o.tracking_number, o.created_at,
-         (SELECT GROUP_CONCAT(i.title, ', ') FROM order_items oi JOIN items i ON i.id = oi.item_id WHERE oi.order_id = o.id) AS items
-       FROM orders o JOIN shows s ON s.id = o.show_id
-       WHERE s.seller_id = ? AND o.status NOT IN ('created', 'failed')
-       ORDER BY o.created_at DESC LIMIT 6`,
-    )
-    .all(sellerId) as {
-    id: string;
-    show_id: string;
-    show_title: string;
-    viewer_name: string;
-    kind: string;
-    status: string;
-    total_cents: number;
-    tracking_number: string | null;
-    created_at: number;
-    items: string | null;
-  }[];
+const SOLD_STATUSES: ItemRow["status"][] = ["paid", "shipped", "on_hold"];
+const collectedCents = { $subtract: [{ $add: ["$item_cents", "$shipping_cents"] }, { $ifNull: ["$refunded_cents", 0] }] };
+
+// "Denim Jacket, Wool Cardigan" for each order.
+async function orderItemTitles(orderIds: string[]): Promise<Map<string, string>> {
+  if (!orderIds.length) return new Map();
+  const links = await (await col("order_items")).find({ order_id: { $in: orderIds } }).toArray();
+  const items = links.length
+    ? await (await col("items")).find({ id: { $in: links.map((l) => l.item_id) } }, { projection: { id: 1, title: 1 } }).toArray()
+    : [];
+  const title = new Map(items.map((i) => [i.id, i.title]));
+  const out = new Map<string, string[]>();
+  for (const l of links) {
+    const t = title.get(l.item_id);
+    if (t) out.set(l.order_id, [...(out.get(l.order_id) ?? []), t]);
+  }
+  return new Map([...out].map(([id, titles]) => [id, titles.join(", ")]));
+}
+
+export async function getSellerOverview(sellerId: string) {
+  const shows = await listShowsForSeller(sellerId);
+  const ids = shows.map((s) => s.id);
+  const showTitle = new Map(shows.map((s) => [s.id, s.title]));
+  const orders = await col("orders");
+  const inShows = { $in: ids };
+
+  const [totals, sold, wonClaims, openInvoices, toShip, recent, flagged] = await Promise.all([
+    orders
+      .aggregate<{ collected_cents: number; orders: number }>([
+        { $match: { show_id: inShows, status: { $in: COLLECTED_STATUSES } } },
+        { $group: { _id: null, collected_cents: { $sum: collectedCents }, orders: { $sum: 1 } } },
+      ])
+      .toArray()
+      .then(([r]) => r ?? { collected_cents: 0, orders: 0 }),
+    (await col("items")).countDocuments({ show_id: inShows, status: { $in: SOLD_STATUSES } }),
+    (await col("claims")).find({ show_id: inShows, status: "won" }).toArray(),
+    (await col("invoices")).countDocuments({ show_id: inShows, status: "sent" }),
+    orders.countDocuments({ show_id: inShows, status: "paid", tracking_number: null }),
+    orders.find({ show_id: inShows, status: { $nin: ["created", "failed"] } }).sort({ created_at: -1 }).limit(6).toArray(),
+    (await col("messages")).find({ show_id: inShows, needs_seller: 1 }).sort({ created_at: -1 }).limit(50).toArray(),
+  ]);
+
+  const wonItems = wonClaims.length
+    ? await (await col("items")).find({ id: { $in: wonClaims.map((c) => c.item_id) }, status: "claimed" }).toArray()
+    : [];
+  const claimedPrice = new Map(wonItems.map((i) => [i.id, i.price_cents]));
+  const unpaid = wonClaims.filter((c) => claimedPrice.has(c.item_id));
+
+  const titles = await orderItemTitles(recent.map((o) => o.id));
+  const recentOrders = recent.map((o) => ({
+    id: o.id,
+    show_id: o.show_id,
+    show_title: showTitle.get(o.show_id) ?? "",
+    viewer_name: o.viewer_name,
+    kind: o.kind,
+    status: o.status,
+    total_cents: o.item_cents + o.shipping_cents,
+    tracking_number: o.tracking_number,
+    created_at: o.created_at,
+    items: titles.get(o.id) ?? null,
+  }));
+
   // Questions the shop assistant couldn't answer and the seller hasn't replied to yet.
-  const questions = db
-    .prepare(
-      `SELECT m.id, m.show_id, s.title AS show_title, m.viewer_name, m.text, m.created_at
-       FROM messages m JOIN shows s ON s.id = m.show_id
-       WHERE s.seller_id = ? AND m.needs_seller = 1
-         AND NOT EXISTS (SELECT 1 FROM messages r WHERE r.reply_to = m.id AND r.kind = 'seller')
-       ORDER BY m.created_at DESC LIMIT 5`,
-    )
-    .all(sellerId) as { id: string; show_id: string; show_title: string; viewer_name: string; text: string; created_at: number }[];
+  const replied = flagged.length
+    ? new Set(
+        (await (await col("messages")).find({ reply_to: { $in: flagged.map((m) => m.id) }, kind: "seller" }, { projection: { reply_to: 1 } }).toArray()).map(
+          (r) => r.reply_to,
+        ),
+      )
+    : new Set();
+  const questions = flagged
+    .filter((m) => !replied.has(m.id))
+    .slice(0, 5)
+    .map((m) => ({ id: m.id, show_id: m.show_id, show_title: showTitle.get(m.show_id) ?? "", viewer_name: m.viewer_name, text: m.text, created_at: m.created_at }));
 
   return {
     shows,
@@ -137,45 +137,39 @@ export function getSellerOverview(sellerId: string) {
     nextShow: shows.find((s) => s.status === "scheduled") ?? null,
     collected_cents: totals.collected_cents,
     orders: totals.orders,
-    sold: sold.n,
-    unpaid_items: unpaid.n,
-    unpaid_cents: unpaid.cents,
-    open_invoices: openInvoices.n,
-    to_ship: toShip.n,
+    sold,
+    unpaid_items: unpaid.length,
+    unpaid_cents: unpaid.reduce((sum, c) => sum + (c.bid_cents ?? claimedPrice.get(c.item_id)!), 0),
+    open_invoices: openInvoices,
+    to_ship: toShip,
     recentOrders,
     questions,
   };
 }
 
 // Per-show numbers for the seller's show list.
-export function getShowStats(showIds: string[]) {
-  if (!showIds.length) return new Map<string, { listed: number; sold: number; collected_cents: number }>();
-  const db = getDb();
-  const marks = showIds.map(() => "?").join(",");
-  const rows = db
-    .prepare(
-      `SELECT s.id,
-         (SELECT COUNT(*) FROM items i WHERE i.show_id = s.id AND i.listed_at IS NOT NULL) AS listed,
-         (SELECT COUNT(*) FROM items i WHERE i.show_id = s.id AND i.status IN ('paid', 'shipped', 'on_hold')) AS sold,
-         (SELECT COALESCE(SUM(o.item_cents + o.shipping_cents - o.refunded_cents), 0) FROM orders o
-            WHERE o.show_id = s.id AND o.status IN ('paid', 'partially_refunded', 'refunded')) AS collected_cents
-       FROM shows s WHERE s.id IN (${marks})`,
-    )
-    .all(...showIds) as { id: string; listed: number; sold: number; collected_cents: number }[];
-  return new Map(rows.map((r) => [r.id, r]));
+export async function getShowStats(showIds: string[]) {
+  const stats = new Map<string, { listed: number; sold: number; collected_cents: number }>();
+  if (!showIds.length) return stats;
+  const [counts, collected] = await Promise.all([
+    itemCountsByShow(showIds),
+    (await col("orders"))
+      .aggregate<{ _id: string; cents: number }>([
+        { $match: { show_id: { $in: showIds }, status: { $in: COLLECTED_STATUSES } } },
+        { $group: { _id: "$show_id", cents: { $sum: collectedCents } } },
+      ])
+      .toArray(),
+  ]);
+  const cents = new Map(collected.map((r) => [r._id, r.cents]));
+  for (const id of showIds) stats.set(id, { listed: counts.get(id)?.listed ?? 0, sold: counts.get(id)?.sold ?? 0, collected_cents: cents.get(id) ?? 0 });
+  return stats;
 }
 
 // ----------------------------------------------------------------- buyer activity
 
-// node:sqlite rows have a null prototype, which React can't pass from server to client
-// components. This copies a result into plain objects.
-function plain<T>(value: T): T {
-  return JSON.parse(JSON.stringify(value)) as T;
-}
-
 export type BuyerShowBag = {
   show: Pick<ShowRow, "id" | "title" | "status" | "shipping_cents"> & { seller_name: string };
-  bag: ReturnType<typeof getBag>;
+  bag: Bag;
 };
 
 export type BuyerOrder = {
@@ -194,32 +188,62 @@ export type BuyerOrder = {
   items: string | null;
 };
 
-// Every show this buyer has claimed in, with their bag there (unpaid items, holds, invoices, waiting lines).
-export function getBuyerBags(buyerId: string): BuyerShowBag[] {
-  const db = getDb();
-  const shows = db
-    .prepare(
-      `SELECT s.id, s.title, s.status, s.shipping_cents, u.name AS seller_name, MAX(c.created_at) AS last_at
-       FROM claims c JOIN shows s ON s.id = c.show_id JOIN users u ON u.id = s.seller_id
-       WHERE c.viewer_id = ? GROUP BY s.id ORDER BY last_at DESC LIMIT 20`,
-    )
-    .all(buyerId) as (BuyerShowBag["show"] & { last_at: number })[];
-  return shows.map((s) => ({
-    show: { id: s.id, title: s.title, status: s.status, shipping_cents: s.shipping_cents, seller_name: s.seller_name },
-    bag: plain(getBag(s.id, buyerId)),
-  }));
+// Shows (with their sellers' names) by id, skipping any whose seller is gone.
+async function showsWithSellers(showIds: string[]) {
+  const shows = showIds.length ? await (await col("shows")).find({ id: { $in: showIds } }).toArray() : [];
+  const sellers = shows.length
+    ? await (await col("users")).find({ id: { $in: [...new Set(shows.map((s) => s.seller_id))] } }, { projection: { id: 1, name: 1 } }).toArray()
+    : [];
+  const sellerName = new Map(sellers.map((u) => [u.id, u.name]));
+  return new Map(shows.filter((s) => sellerName.has(s.seller_id)).map((s) => [s.id, { ...s, seller_name: sellerName.get(s.seller_id)! }]));
 }
 
-export function getBuyerOrders(buyerId: string): BuyerOrder[] {
-  return getDb()
-    .prepare(
-      `SELECT o.id, o.show_id, s.title AS show_title, u.name AS seller_name, o.kind, o.status, o.item_cents, o.shipping_cents,
-         o.refunded_cents, o.carrier, o.tracking_number, o.created_at,
-         (SELECT GROUP_CONCAT(i.title, ', ') FROM order_items oi JOIN items i ON i.id = oi.item_id WHERE oi.order_id = o.id) AS items
-       FROM orders o JOIN shows s ON s.id = o.show_id JOIN users u ON u.id = s.seller_id
-       WHERE o.viewer_id = ? AND o.status NOT IN ('created', 'failed')
-       ORDER BY o.created_at DESC LIMIT 50`,
-    )
-    .all(buyerId)
-    .map((r) => ({ ...r })) as BuyerOrder[];
+// Every show this buyer has claimed in, with their bag there (unpaid items, holds, invoices, waiting lines).
+export async function getBuyerBags(buyerId: string): Promise<BuyerShowBag[]> {
+  const recent = await (await col("claims"))
+    .aggregate<{ _id: string }>([
+      { $match: { viewer_id: buyerId } },
+      { $group: { _id: "$show_id", last_at: { $max: "$created_at" } } },
+      { $sort: { last_at: -1 } },
+      { $limit: 20 },
+    ])
+    .toArray();
+  const shows = await showsWithSellers(recent.map((r) => r._id));
+  return Promise.all(
+    recent
+      .filter((r) => shows.has(r._id))
+      .map(async (r) => {
+        const s = shows.get(r._id)!;
+        return {
+          show: { id: s.id, title: s.title, status: s.status, shipping_cents: s.shipping_cents, seller_name: s.seller_name },
+          bag: await getBag(s.id, buyerId),
+        };
+      }),
+  );
+}
+
+export async function getBuyerOrders(buyerId: string): Promise<BuyerOrder[]> {
+  const orders = await (await col("orders"))
+    .find({ viewer_id: buyerId, status: { $nin: ["created", "failed"] } })
+    .sort({ created_at: -1 })
+    .limit(50)
+    .toArray();
+  const [shows, titles] = await Promise.all([showsWithSellers([...new Set(orders.map((o) => o.show_id))]), orderItemTitles(orders.map((o) => o.id))]);
+  return orders
+    .filter((o) => shows.has(o.show_id))
+    .map((o) => ({
+      id: o.id,
+      show_id: o.show_id,
+      show_title: shows.get(o.show_id)!.title,
+      seller_name: shows.get(o.show_id)!.seller_name,
+      kind: o.kind,
+      status: o.status,
+      item_cents: o.item_cents,
+      shipping_cents: o.shipping_cents,
+      refunded_cents: o.refunded_cents ?? 0,
+      carrier: o.carrier,
+      tracking_number: o.tracking_number,
+      created_at: o.created_at,
+      items: titles.get(o.id) ?? null,
+    }));
 }

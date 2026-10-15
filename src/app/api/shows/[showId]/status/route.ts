@@ -9,6 +9,6 @@ export async function POST(req: NextRequest, ctx: RouteContext<"/api/shows/[show
 
   const { status } = await req.json().catch(() => ({}));
   if (status !== "live" && status !== "ended") return NextResponse.json({ error: "Unknown status." }, { status: 400 });
-  setShowStatus(showId, status);
+  await setShowStatus(showId, status);
   return NextResponse.json({ ok: true, status });
 }

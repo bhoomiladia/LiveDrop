@@ -6,7 +6,7 @@ import { getShopInfo, saveShopInfo } from "@/lib/rag";
 export async function GET() {
   const user = await getCurrentUser();
   if (!user) return NextResponse.json({ error: "Please log in." }, { status: 401 });
-  return NextResponse.json({ info: getShopInfo(user.id) });
+  return NextResponse.json({ info: await getShopInfo(user.id) });
 }
 
 export async function PUT(req: Request) {

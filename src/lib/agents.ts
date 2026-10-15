@@ -1,10 +1,10 @@
 import "server-only";
 import crypto from "node:crypto";
 import { SignJWT, jwtVerify } from "jose";
-import { getDb } from "./db";
+import { col, linkOrderItems, newOrder, orderItemIds, withId, type AgentRow } from "./db";
 import { publish } from "./events";
 import { aiEnabled, generateJson, Type } from "./gemini";
-import { getItem, getShow, claimItem, passToNextInLine, shippingDueCents, toPublicItem, type ItemRow } from "./live";
+import { getItem, getShow, claimItem, markItemsPaid, passToNextInLine, publishItem, shippingDueCents, type ItemRow } from "./live";
 import {
   captureAuthorization,
   createPaymentToken,
@@ -22,25 +22,7 @@ import { sendEmail } from "./email";
 // (price, size, weekly budget, expiry) is checked here in plain code against a
 // signed permission slip, and purchases are held (authorized) with an undo window.
 
-export type AgentRow = {
-  id: string;
-  viewer_id: string;
-  viewer_name: string;
-  email: string | null;
-  wish: string;
-  sizes: string | null;
-  max_item_cents: number;
-  weekly_budget_cents: number;
-  undo_minutes: number;
-  expires_at: number;
-  status: "pending" | "active" | "paused" | "deleted";
-  setup_token_id: string | null;
-  vault_id: string | null;
-  slip: string | null;
-  return_show_id: string | null;
-  created_at: number;
-  updated_at: number;
-};
+export type { AgentRow };
 
 const WEEK_MS = 7 * 24 * 60 * 60 * 1000;
 
@@ -61,10 +43,8 @@ export function normalizeSizes(input: string): string | null {
   return sizes.length ? [...new Set(sizes)].join(",").slice(0, 60) : null;
 }
 
-export function getAgentForViewer(viewerId: string): AgentRow | undefined {
-  return getDb()
-    .prepare("SELECT * FROM agents WHERE viewer_id = ? AND status != 'deleted' ORDER BY created_at DESC LIMIT 1")
-    .get(viewerId) as AgentRow | undefined;
+export async function getAgentForViewer(viewerId: string): Promise<AgentRow | undefined> {
+  return (await (await col("agents")).findOne({ viewer_id: viewerId, status: { $ne: "deleted" } }, { sort: { created_at: -1 } })) ?? undefined;
 }
 
 // Step 1: create the agent (pending) and a PayPal "save PayPal" approval link.
@@ -80,9 +60,8 @@ export async function startAgentSetup(opts: {
   returnShowId: string | null;
   origin: string;
 }): Promise<{ agentId: string; approveUrl: string }> {
-  const db = getDb();
   // One agent per viewer: replace a pending/old one.
-  const old = getAgentForViewer(opts.viewer.id);
+  const old = await getAgentForViewer(opts.viewer.id);
   if (old) await deleteAgent(old);
 
   const id = crypto.randomUUID();
@@ -94,28 +73,43 @@ export async function startAgentSetup(opts: {
   if (!approveUrl) throw new Error("PayPal didn't return an approval link.");
 
   const now = Date.now();
-  db.prepare(
-    `INSERT INTO agents (id, viewer_id, viewer_name, email, wish, sizes, max_item_cents, weekly_budget_cents, undo_minutes,
-       expires_at, status, setup_token_id, return_show_id, created_at, updated_at)
-     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'pending', ?, ?, ?, ?)`,
-  ).run(
-    id, opts.viewer.id, opts.viewer.name, opts.email, opts.wish, opts.sizes, opts.maxItemCents, opts.weeklyBudgetCents,
-    opts.undoMinutes, now + opts.days * 24 * 60 * 60 * 1000, setup.id, opts.returnShowId, now, now,
+  await (await col("agents")).insertOne(
+    withId({
+      id,
+      viewer_id: opts.viewer.id,
+      viewer_name: opts.viewer.name,
+      email: opts.email,
+      wish: opts.wish,
+      sizes: opts.sizes,
+      max_item_cents: opts.maxItemCents,
+      weekly_budget_cents: opts.weeklyBudgetCents,
+      undo_minutes: opts.undoMinutes,
+      expires_at: now + opts.days * 24 * 60 * 60 * 1000,
+      status: "pending" as const,
+      setup_token_id: setup.id,
+      vault_id: null,
+      slip: null,
+      return_show_id: opts.returnShowId,
+      created_at: now,
+      updated_at: now,
+    }),
   );
   return { agentId: id, approveUrl };
 }
 
 // Step 2: the buyer approved in PayPal. Save the payment token and sign the permission slip.
 export async function finishAgentSetup(agentId: string): Promise<AgentRow> {
-  const db = getDb();
-  const agent = db.prepare("SELECT * FROM agents WHERE id = ?").get(agentId) as AgentRow | undefined;
+  const agents = await col("agents");
+  const agent = await agents.findOne({ id: agentId });
   if (!agent || agent.status !== "pending" || !agent.setup_token_id) throw new Error("This agent setup has expired.");
   const token = await createPaymentToken(agent.setup_token_id);
   const slip = await signSlip({ ...agent, vault_id: token.id });
-  db.prepare("UPDATE agents SET status = 'active', vault_id = ?, slip = ?, setup_token_id = NULL, updated_at = ? WHERE id = ?").run(
-    token.id, slip, Date.now(), agentId,
+  const updated = await agents.findOneAndUpdate(
+    { id: agentId },
+    { $set: { status: "active", vault_id: token.id, slip, setup_token_id: null, updated_at: Date.now() } },
+    { returnDocument: "after" },
   );
-  return db.prepare("SELECT * FROM agents WHERE id = ?").get(agentId) as AgentRow;
+  return updated!;
 }
 
 // The permission slip: the limits the buyer approved, signed so nobody can quietly change them.
@@ -151,8 +145,8 @@ async function slipAllows(a: AgentRow): Promise<boolean> {
   }
 }
 
-export function setAgentPaused(agent: AgentRow, paused: boolean) {
-  getDb().prepare("UPDATE agents SET status = ?, updated_at = ? WHERE id = ?").run(paused ? "paused" : "active", Date.now(), agent.id);
+export async function setAgentPaused(agent: AgentRow, paused: boolean) {
+  await (await col("agents")).updateOne({ id: agent.id }, { $set: { status: paused ? "paused" : "active", updated_at: Date.now() } });
 }
 
 export async function deleteAgent(agent: AgentRow) {
@@ -163,17 +157,17 @@ export async function deleteAgent(agent: AgentRow) {
       console.warn("[agents] couldn't delete saved PayPal", (err as Error).message);
     }
   }
-  getDb().prepare("UPDATE agents SET status = 'deleted', vault_id = NULL, slip = NULL, updated_at = ? WHERE id = ?").run(Date.now(), agent.id);
+  await (await col("agents")).updateOne({ id: agent.id }, { $set: { status: "deleted", vault_id: null, slip: null, updated_at: Date.now() } });
 }
 
-export function weeklySpentCents(agentId: string): number {
-  const row = getDb()
-    .prepare(
-      `SELECT COALESCE(SUM(item_cents + shipping_cents), 0) AS spent FROM orders
-       WHERE agent_id = ? AND status IN ('on_hold', 'paid') AND created_at > ?`,
-    )
-    .get(agentId, Date.now() - WEEK_MS) as { spent: number };
-  return row.spent;
+export async function weeklySpentCents(agentId: string): Promise<number> {
+  const [row] = await (await col("orders"))
+    .aggregate<{ spent: number }>([
+      { $match: { agent_id: agentId, status: { $in: ["on_hold", "paid"] }, created_at: { $gt: Date.now() - WEEK_MS } } },
+      { $group: { _id: null, spent: { $sum: { $add: ["$item_cents", "$shipping_cents"] } } } },
+    ])
+    .toArray();
+  return row?.spent ?? 0;
 }
 
 // ----------------------------------------------------------------- matching
@@ -181,9 +175,9 @@ export function weeklySpentCents(agentId: string): number {
 const timers = new Map<string, NodeJS.Timeout>();
 
 // Called when an item goes live. Agents wait a few seconds so people watching get first dibs.
-export function scheduleAgentCheck(itemId: string) {
-  const item = getItem(itemId);
-  const show = item && getShow(item.show_id);
+export async function scheduleAgentCheck(itemId: string) {
+  const item = await getItem(itemId);
+  const show = item && (await getShow(item.show_id));
   if (!item || !show) return;
   ensureAgentSweeper();
   clearTimeout(timers.get(itemId));
@@ -203,28 +197,29 @@ function sizeOk(agent: AgentRow, item: ItemRow): boolean {
 }
 
 async function runAgents(itemId: string) {
-  let item = getItem(itemId);
+  let item = await getItem(itemId);
   // A person got it first, or it's being auctioned (agents only buy at fixed prices).
   if (!item || item.status !== "listed" || item.auction_ends_at) return;
-  const show = getShow(item.show_id)!;
+  const listed = item;
+  const show = (await getShow(item.show_id))!;
   const now = Date.now();
 
   // 1. Plain-code limits first: price, size, expiry, weekly budget. Never the seller's own agent.
-  const agents = (getDb().prepare("SELECT * FROM agents WHERE status = 'active' AND expires_at > ? ORDER BY created_at").all(now) as AgentRow[])
-    .filter((a) => {
-      const shipping = shippingDueCents(show.id, a.viewer_id);
-      return (
-        item!.price_cents <= a.max_item_cents &&
-        sizeOk(a, item!) &&
-        weeklySpentCents(a.id) + item!.price_cents + shipping <= a.weekly_budget_cents
-      );
-    });
+  const active = (await (await col("agents")).find({ status: "active", expires_at: { $gt: now } }).sort({ created_at: 1 }).toArray()).filter(
+    (a) => listed.price_cents <= a.max_item_cents && sizeOk(a, listed),
+  );
+  const withinBudget = await Promise.all(
+    active.map(
+      async (a) => (await weeklySpentCents(a.id)) + listed.price_cents + (await shippingDueCents(show.id, a.viewer_id)) <= a.weekly_budget_cents,
+    ),
+  );
+  const agents = active.filter((_, i) => withinBudget[i]);
   if (!agents.length) return;
 
   // 2. The AI only decides whether the item matches each wish.
   const matches = await matchWishes(item, agents);
   for (const agent of agents.filter((a) => matches.has(a.id))) {
-    item = getItem(itemId);
+    item = await getItem(itemId);
     if (!item || item.status !== "listed" || item.auction_ends_at) return;
     if (!(await slipAllows(agent))) {
       console.warn("[agents] permission slip check failed for", agent.id);
@@ -272,12 +267,11 @@ async function matchWishes(item: ItemRow, agents: AgentRow[]): Promise<Map<strin
 // ----------------------------------------------------------------- buying, undo, completing
 
 async function buy(agent: AgentRow, item: ItemRow, reason: string): Promise<boolean> {
-  const db = getDb();
   const agentViewer = { id: agent.viewer_id, name: `${agent.viewer_name}'s agent` };
-  const claim = claimItem(item.id, agentViewer, null, "agent");
+  const claim = await claimItem(item.id, agentViewer, null, "agent");
   if (!claim || claim.status !== "won") return false;
 
-  const shippingCents = shippingDueCents(item.show_id, agent.viewer_id);
+  const shippingCents = await shippingDueCents(item.show_id, agent.viewer_id);
   const orderId = crypto.randomUUID();
   try {
     const order = await createVaultedHoldOrder({
@@ -291,16 +285,28 @@ async function buy(agent: AgentRow, item: ItemRow, reason: string): Promise<bool
     if (!auth) throw new Error("PayPal didn't place a hold.");
     const now = Date.now();
     const undoUntil = now + agent.undo_minutes * 60_000;
-    db.prepare(
-      `INSERT INTO orders (id, show_id, viewer_id, viewer_name, kind, paypal_order_id, status, item_cents, shipping_cents,
-         authorization_id, agent_id, undo_until, created_at, updated_at)
-       VALUES (?, ?, ?, ?, 'agent', ?, 'on_hold', ?, ?, ?, ?, ?, ?, ?)`,
-    ).run(orderId, item.show_id, agent.viewer_id, agentViewer.name, order.id, item.price_cents, shippingCents, auth.id, agent.id, undoUntil, now, now);
-    db.prepare("INSERT INTO order_items (order_id, item_id) VALUES (?, ?)").run(orderId, item.id);
-    db.prepare("UPDATE items SET status = 'on_hold' WHERE id = ?").run(item.id);
+    await (await col("orders")).insertOne(
+      newOrder({
+        id: orderId,
+        show_id: item.show_id,
+        viewer_id: agent.viewer_id,
+        viewer_name: agentViewer.name,
+        kind: "agent",
+        paypal_order_id: order.id,
+        status: "on_hold",
+        item_cents: item.price_cents,
+        shipping_cents: shippingCents,
+        authorization_id: auth.id,
+        agent_id: agent.id,
+        undo_until: undoUntil,
+        created_at: now,
+        updated_at: now,
+      }),
+    );
+    await linkOrderItems(orderId, [item.id]);
+    await (await col("items")).updateOne({ id: item.id }, { $set: { status: "on_hold" } });
 
-    const updated = getItem(item.id)!;
-    publish(item.show_id, { type: "item", item: toPublicItem(updated), audience: "all" });
+    await publishItem(item.id, "all");
     publish(item.show_id, { type: "agent_bought", name: agent.viewer_name, title: item.title, reason });
     publish(item.show_id, { type: "bag", viewer_id: agent.viewer_id });
     void notifyOwner(agent, item, orderId, undoUntil);
@@ -308,16 +314,11 @@ async function buy(agent: AgentRow, item: ItemRow, reason: string): Promise<bool
   } catch (err) {
     console.error("[agents] purchase failed", (err as Error).message);
     // Give the item back to the room.
-    const c = db.prepare("SELECT * FROM claims WHERE id = ?").get(claim.id) as Parameters<typeof passToNextInLine>[0];
-    passToNextInLine(c, Date.now());
+    const c = await (await col("claims")).findOne({ id: claim.id });
+    if (c) await passToNextInLine(c, Date.now());
     return false;
   }
 }
-
-type AgentOrder = {
-  id: string; show_id: string; viewer_id: string; status: string; authorization_id: string; item_cents: number;
-  shipping_cents: number; undo_until: number; viewer_name: string;
-};
 
 export function undoToken(orderId: string): string {
   return crypto.createHmac("sha256", slipKey()).update(`undo:${orderId}`).digest("hex").slice(0, 32);
@@ -325,43 +326,34 @@ export function undoToken(orderId: string): string {
 
 // The buyer taps Undo: release the hold and give the item back to the room.
 export async function undoAgentPurchase(orderId: string, viewerId: string | null, token?: string) {
-  const db = getDb();
-  const order = db.prepare("SELECT * FROM orders WHERE id = ? AND kind = 'agent'").get(orderId) as AgentOrder | undefined;
+  const orders = await col("orders");
+  const order = await orders.findOne({ id: orderId, kind: "agent" });
   if (!order) throw new Error("Purchase not found.");
   const allowed = (viewerId && viewerId === order.viewer_id) || (token && token === undoToken(orderId));
   if (!allowed) throw new Error("Not your purchase.");
   if (order.status !== "on_hold") throw new Error(order.status === "paid" ? "The undo window has already ended." : "Already undone.");
 
-  await voidAuthorization(order.authorization_id, `void-${order.id}`);
-  db.prepare("UPDATE orders SET status = 'voided', updated_at = ? WHERE id = ?").run(Date.now(), order.id);
-  const itemId = (db.prepare("SELECT item_id FROM order_items WHERE order_id = ?").get(order.id) as { item_id: string }).item_id;
-  const claim = db.prepare("SELECT * FROM claims WHERE item_id = ? AND viewer_id = ? AND status = 'won'").get(itemId, order.viewer_id) as
-    | Parameters<typeof passToNextInLine>[0]
-    | undefined;
-  if (claim) passToNextInLine(claim, Date.now());
+  await voidAuthorization(order.authorization_id!, `void-${order.id}`);
+  await orders.updateOne({ id: order.id }, { $set: { status: "voided", updated_at: Date.now() } });
+  const [itemId] = await orderItemIds(order.id);
+  const claim = itemId ? await (await col("claims")).findOne({ item_id: itemId, viewer_id: order.viewer_id, status: "won" }) : null;
+  if (claim) await passToNextInLine(claim, Date.now());
   publish(order.show_id, { type: "agent_undone", name: order.viewer_name });
   publish(order.show_id, { type: "bag", viewer_id: order.viewer_id });
 }
 
 // Undo window over: complete the payment.
 async function completeExpiredHolds() {
-  const db = getDb();
-  const due = db.prepare("SELECT * FROM orders WHERE kind = 'agent' AND status = 'on_hold' AND undo_until <= ?").all(Date.now()) as AgentOrder[];
+  const orders = await col("orders");
+  const due = await orders.find({ kind: "agent", status: "on_hold", undo_until: { $lte: Date.now() } }).toArray();
   for (const order of due) {
     try {
-      const capture = await captureAuthorization(order.authorization_id, `capture-${order.id}`);
-      const itemId = (db.prepare("SELECT item_id FROM order_items WHERE order_id = ?").get(order.id) as { item_id: string }).item_id;
-      db.exec("BEGIN IMMEDIATE");
-      try {
-        db.prepare("UPDATE orders SET status = 'paid', capture_id = ?, updated_at = ? WHERE id = ?").run(capture.id, Date.now(), order.id);
-        db.prepare("UPDATE items SET status = 'paid' WHERE id = ?").run(itemId);
-        db.prepare("UPDATE claims SET status = 'paid' WHERE item_id = ? AND viewer_id = ? AND status = 'won'").run(itemId, order.viewer_id);
-        db.exec("COMMIT");
-      } catch (err) {
-        db.exec("ROLLBACK");
-        throw err;
-      }
-      publish(order.show_id, { type: "item", item: toPublicItem(getItem(itemId)!), audience: "all" });
+      const capture = await captureAuthorization(order.authorization_id!, `capture-${order.id}`);
+      const itemIds = await orderItemIds(order.id);
+      const paid = await orders.updateOne({ id: order.id, status: "on_hold" }, { $set: { status: "paid", capture_id: capture.id, updated_at: Date.now() } });
+      if (!paid.modifiedCount) continue;
+      await markItemsPaid(itemIds, order.viewer_id);
+      for (const id of itemIds) await publishItem(id, "all");
       publish(order.show_id, { type: "paid", name: order.viewer_name, viewer_id: order.viewer_id, total_cents: order.item_cents + order.shipping_cents, item_count: 1 });
       publish(order.show_id, { type: "bag", viewer_id: order.viewer_id });
     } catch (err) {

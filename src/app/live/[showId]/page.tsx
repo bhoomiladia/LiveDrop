@@ -8,14 +8,14 @@ export const dynamic = "force-dynamic";
 
 export async function generateMetadata(props: PageProps<"/live/[showId]">) {
   const { showId } = await props.params;
-  const show = getShow(showId);
+  const show = await getShow(showId);
   return { title: show ? `${show.title} · Live Drop` : "Live Drop" };
 }
 
 export default async function LivePage(props: PageProps<"/live/[showId]">) {
   const { showId } = await props.params;
-  const show = getShow(showId);
+  const show = await getShow(showId);
   if (!show) notFound();
-  if (isDemoShow(showId)) ensureDemo(); // judge mode: make sure the demo director is running
+  if (await isDemoShow(showId)) await ensureDemo(); // judge mode: make sure the demo director is running
   return <LiveRoom showId={showId} paypalClientId={getPayPalClientId()} />;
 }

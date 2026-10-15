@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { getDb, UserRecord } from "@/lib/db";
+import { col } from "@/lib/db";
 import { normalizeEmail, verifyPassword, createSessionToken, setSessionCookie } from "@/lib/auth";
 
 export async function POST(req: Request) {
@@ -12,9 +12,7 @@ export async function POST(req: Request) {
     }
 
     const cleanEmail = normalizeEmail(email);
-    const db = getDb();
-    const userQuery = db.prepare("SELECT * FROM users WHERE email = ?");
-    const user = userQuery.get(cleanEmail) as UserRecord | undefined;
+    const user = await (await col("users")).findOne({ email: cleanEmail });
 
     if (!user) {
       // Use uniform message to avoid account discovery attacks

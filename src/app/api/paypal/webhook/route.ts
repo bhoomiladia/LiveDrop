@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { getDb } from "@/lib/db";
+import { col } from "@/lib/db";
 import { markOrderPaid } from "@/lib/live";
 import { verifyWebhook } from "@/lib/paypal";
 
@@ -23,8 +23,8 @@ export async function POST(req: Request) {
   if (event.event_type === "PAYMENT.CAPTURE.COMPLETED") {
     const paypalOrderId = event.resource.supplementary_data?.related_ids?.order_id;
     if (paypalOrderId) {
-      const order = getDb().prepare("SELECT id FROM orders WHERE paypal_order_id = ?").get(paypalOrderId) as { id: string } | undefined;
-      if (order) markOrderPaid(order.id, event.resource.id);
+      const order = await (await col("orders")).findOne({ paypal_order_id: paypalOrderId }, { projection: { id: 1 } });
+      if (order) await markOrderPaid(order.id, event.resource.id);
     }
   }
 

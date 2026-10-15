@@ -14,6 +14,6 @@ export async function PUT(req: Request) {
   const profile = cleanProfile(role, body);
   if (typeof profile === "string") return NextResponse.json({ error: profile }, { status: 400 });
 
-  const saved = saveProfile(user.id, profile, { role, finishOnboarding: body.finish === true });
+  const saved = await saveProfile(user.id, profile, { role, finishOnboarding: body.finish === true });
   return NextResponse.json({ ok: true, role: saved.role, onboarded: Boolean(saved.onboarded_at) });
 }

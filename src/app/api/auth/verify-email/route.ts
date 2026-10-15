@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { getDb } from "@/lib/db";
+import { col } from "@/lib/db";
 import { hashToken } from "@/lib/auth";
 
 export async function POST(req: Request) {
@@ -12,11 +12,10 @@ export async function POST(req: Request) {
     }
 
     const tokenHash = hashToken(token.trim());
-    const db = getDb();
+    const tokens = await col("verification_tokens");
 
     // Look up token
-    const tokenQuery = db.prepare("SELECT * FROM verification_tokens WHERE token_hash = ?");
-    const record = tokenQuery.get(tokenHash) as { id: string; identifier: string; expires_at: number } | undefined;
+    const record = await tokens.findOne({ token_hash: tokenHash });
 
     if (!record) {
       return NextResponse.json(
@@ -26,7 +25,7 @@ export async function POST(req: Request) {
     }
 
     if (record.expires_at < Date.now()) {
-      db.prepare("DELETE FROM verification_tokens WHERE id = ?").run(record.id);
+      await tokens.deleteOne({ id: record.id });
       return NextResponse.json(
         { error: "This verification link has expired. Please request a new one." },
         { status: 400 }
@@ -34,13 +33,10 @@ export async function POST(req: Request) {
     }
 
     // Mark user verified
-    db.prepare("UPDATE users SET email_verified = 1, updated_at = ? WHERE email = ?").run(
-      Date.now(),
-      record.identifier
-    );
+    await (await col("users")).updateOne({ email: record.identifier }, { $set: { email_verified: 1, updated_at: Date.now() } });
 
     // Invalidate token (single use)
-    db.prepare("DELETE FROM verification_tokens WHERE id = ?").run(record.id);
+    await tokens.deleteOne({ id: record.id });
 
     return NextResponse.json({
       success: true,

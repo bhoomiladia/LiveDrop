@@ -499,7 +499,9 @@ Then open [http://localhost:3000](http://localhost:3000).
 |---|---|---|
 | `NEXT_PUBLIC_APP_URL` | Base URL for links and sign-in callbacks (`http://localhost:3000` locally) | Yes |
 | `AUTH_SECRET` | Signs login sessions. Use 32+ random characters (`openssl rand -base64 32`) | Yes |
-| `DATABASE_PATH` | Where the SQLite database file lives | No (defaults to `.data/`) |
+| `MONGODB_URI` | MongoDB connection string (e.g. from MongoDB Atlas → Connect → Drivers) | Yes |
+| `MONGODB_USERNAME`, `MONGODB_PASSWORD` | Database user, if you'd rather keep it out of the URI (replaces any credentials in it) | No |
+| `MONGODB_DB` | Database name | No (defaults to the name in the URI, else `livedrop`) |
 | `PAYPAL_CLIENT_ID` | Your PayPal sandbox app's client ID | Yes |
 | `PAYPAL_CLIENT_SECRET` | Your PayPal sandbox app's secret | Yes |
 | `PAYPAL_ENVIRONMENT` | `sandbox` | No (defaults to `sandbox`) |
@@ -536,7 +538,7 @@ PayPal can't reach `localhost`. To receive webhooks while developing, use a tunn
 1. Push the repo to GitHub.
 2. In Render, create a new **Web Service** from the repo. Build command: `npm install && npm run build`. Start command: `npm run start`.
 3. Add the environment variables, and set `NEXT_PUBLIC_APP_URL` to your Render URL.
-4. Attach a **persistent disk** (it needs a paid instance), mount it at `/var/data`, and set `DATABASE_PATH=/var/data/livedrop.db`. Without a disk, the database resets on every deploy.
+4. Set `MONGODB_URI` (and `MONGODB_USERNAME` / `MONGODB_PASSWORD` if you keep them separate). In MongoDB Atlas, allow Render's outbound IPs (or `0.0.0.0/0` for a demo) under **Network Access**.
 5. Point your PayPal webhook to `https://<your-app>.onrender.com/api/paypal/webhook`.
 
 ---
@@ -547,7 +549,7 @@ PayPal can't reach `localhost`. To receive webhooks while developing, use a tunn
 |---|---|
 | Web app | Next.js 16 (App Router), React 19, TypeScript, Tailwind CSS 4 |
 | Accounts | Email and password, plus Google sign-in; signed session cookies (`jose`); hashed passwords (`bcryptjs`) |
-| Database | SQLite built into Node.js (`node:sqlite`) |
+| Database | MongoDB (official `mongodb` Node.js driver; Atlas free tier works) |
 | Email | Nodemailer |
 | Live video | LiveKit |
 | AI | Google Gemini Flash and Gemini embeddings (free tier) through `@google/genai` |

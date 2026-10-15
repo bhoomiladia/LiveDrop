@@ -5,8 +5,8 @@ export const metadata = { title: "Judges: try Live Drop in 2 minutes" };
 export const dynamic = "force-dynamic";
 
 // Judge mode landing page, built on the same template and palette as the home page.
-export default function JudgePage() {
-  const demo = ensureDemo();
+export default async function JudgePage() {
+  const demo = await ensureDemo();
   const email = process.env.JUDGE_PAYPAL_EMAIL;
   const password = process.env.JUDGE_PAYPAL_PASSWORD;
 

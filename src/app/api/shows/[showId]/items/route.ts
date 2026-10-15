@@ -21,6 +21,6 @@ export async function POST(req: NextRequest, ctx: RouteContext<"/api/shows/[show
     image = body.image;
   }
 
-  const item = createListing(showId, transcript, image);
+  const item = await createListing(showId, transcript, image);
   return NextResponse.json({ item });
 }

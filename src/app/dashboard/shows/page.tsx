@@ -11,8 +11,8 @@ export const dynamic = "force-dynamic";
 
 export default async function ShowsPage() {
   const user = await requireAccount("/dashboard/shows", "seller");
-  const shows = listShowsForSeller(user.id);
-  const stats = getShowStats(shows.map((s) => s.id));
+  const shows = await listShowsForSeller(user.id);
+  const stats = await getShowStats(shows.map((s) => s.id));
 
   return (
     <>

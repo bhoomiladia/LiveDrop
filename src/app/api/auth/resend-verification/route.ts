@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import crypto from "node:crypto";
-import { getDb, UserRecord } from "@/lib/db";
+import { col, withId } from "@/lib/db";
 import { normalizeEmail, validateEmail, generateSecureToken, hashToken } from "@/lib/auth";
 import { sendVerificationEmail } from "@/lib/email";
 
@@ -14,25 +14,19 @@ export async function POST(req: Request) {
     }
 
     const cleanEmail = normalizeEmail(email);
-    const db = getDb();
-    const user = db.prepare("SELECT * FROM users WHERE email = ?").get(cleanEmail) as UserRecord | undefined;
+    const user = await (await col("users")).findOne({ email: cleanEmail });
 
     if (user && user.email_verified === 0) {
+      const tokens = await col("verification_tokens");
       // Remove old tokens
-      db.prepare("DELETE FROM verification_tokens WHERE identifier = ?").run(cleanEmail);
+      await tokens.deleteMany({ identifier: cleanEmail });
 
       const token = generateSecureToken();
       const tokenHash = hashToken(token);
       const now = Date.now();
       const expiresAt = now + 1000 * 60 * 60 * 24; // 24 hours
 
-      db.prepare("INSERT INTO verification_tokens (id, identifier, token_hash, expires_at, created_at) VALUES (?, ?, ?, ?, ?)").run(
-        crypto.randomUUID(),
-        cleanEmail,
-        tokenHash,
-        expiresAt,
-        now
-      );
+      await tokens.insertOne(withId({ id: crypto.randomUUID(), identifier: cleanEmail, token_hash: tokenHash, expires_at: expiresAt, created_at: now }));
 
       await sendVerificationEmail(cleanEmail, token);
     }

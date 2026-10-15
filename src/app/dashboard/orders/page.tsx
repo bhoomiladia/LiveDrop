@@ -17,12 +17,12 @@ export default async function OrdersPage(props: PageProps<"/dashboard/orders">) 
     return (
       <>
         <PageHeader kicker="Bag & orders" title="Your purchases" description="Pay for what you claimed, undo agent purchases while the window is open, and track what's on its way." />
-        <BuyerOrders bags={getBuyerBags(user.id)} orders={getBuyerOrders(user.id)} paypalClientId={getPayPalClientId()} />
+        <BuyerOrders bags={await getBuyerBags(user.id)} orders={await getBuyerOrders(user.id)} paypalClientId={getPayPalClientId()} />
       </>
     );
   }
 
-  const shows = listShowsForSeller(user.id);
+  const shows = await listShowsForSeller(user.id);
   const { show } = await props.searchParams;
   const selected = shows.find((s) => s.id === show) ?? shows.find((s) => s.status === "live") ?? shows[0];
   return (

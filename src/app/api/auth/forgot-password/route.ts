@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import crypto from "node:crypto";
-import { getDb, UserRecord } from "@/lib/db";
+import { col, withId } from "@/lib/db";
 import { normalizeEmail, validateEmail, generateSecureToken, hashToken } from "@/lib/auth";
 import { sendPasswordResetEmail } from "@/lib/email";
 
@@ -14,25 +14,19 @@ export async function POST(req: Request) {
     }
 
     const cleanEmail = normalizeEmail(email);
-    const db = getDb();
-    const user = db.prepare("SELECT * FROM users WHERE email = ?").get(cleanEmail) as UserRecord | undefined;
+    const user = await (await col("users")).findOne({ email: cleanEmail });
 
     if (user && user.password_hash) {
+      const tokens = await col("password_reset_tokens");
       // Invalidate existing reset tokens for this user
-      db.prepare("DELETE FROM password_reset_tokens WHERE identifier = ?").run(cleanEmail);
+      await tokens.deleteMany({ identifier: cleanEmail });
 
       const token = generateSecureToken();
       const tokenHash = hashToken(token);
       const now = Date.now();
       const expiresAt = now + 1000 * 60 * 60; // 1 hour
 
-      db.prepare("INSERT INTO password_reset_tokens (id, identifier, token_hash, expires_at, created_at) VALUES (?, ?, ?, ?, ?)").run(
-        crypto.randomUUID(),
-        cleanEmail,
-        tokenHash,
-        expiresAt,
-        now
-      );
+      await tokens.insertOne(withId({ id: crypto.randomUUID(), identifier: cleanEmail, token_hash: tokenHash, expires_at: expiresAt, created_at: now }));
 
       await sendPasswordResetEmail(cleanEmail, token);
     }

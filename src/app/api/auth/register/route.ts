@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import crypto from "node:crypto";
-import { getDb } from "@/lib/db";
+import { col, newUser, withId } from "@/lib/db";
 import { normalizeEmail, validateEmail, validatePassword, hashPassword, generateSecureToken, hashToken } from "@/lib/auth";
 import { sendVerificationEmail } from "@/lib/email";
 
@@ -38,11 +38,11 @@ export async function POST(req: Request) {
 
     const cleanEmail = normalizeEmail(email);
     const cleanName = name.trim();
-    const db = getDb();
+    const users = await col("users");
+    const tokens = await col("verification_tokens");
 
     // 2. Check for duplicate account
-    const existingQuery = db.prepare("SELECT id, email_verified FROM users WHERE email = ?");
-    const existingUser = existingQuery.get(cleanEmail) as { id: string; email_verified: number } | undefined;
+    const existingUser = await users.findOne({ email: cleanEmail }, { projection: { id: 1, email_verified: 1 } });
 
     if (existingUser) {
       if (existingUser.email_verified === 1) {
@@ -54,28 +54,16 @@ export async function POST(req: Request) {
         // Unverified account exists: update password & issue a fresh verification token
         const passwordHash = await hashPassword(password);
         const now = Date.now();
-        db.prepare("UPDATE users SET name = ?, password_hash = ?, role = ?, updated_at = ? WHERE id = ?").run(
-          cleanName,
-          passwordHash,
-          role,
-          now,
-          existingUser.id
-        );
+        await users.updateOne({ id: existingUser.id }, { $set: { name: cleanName, password_hash: passwordHash, role, updated_at: now } });
 
         // Invalidate old tokens for this email
-        db.prepare("DELETE FROM verification_tokens WHERE identifier = ?").run(cleanEmail);
+        await tokens.deleteMany({ identifier: cleanEmail });
 
         const token = generateSecureToken();
         const tokenHash = hashToken(token);
         const expiresAt = now + 1000 * 60 * 60 * 24; // 24 hours
 
-        db.prepare("INSERT INTO verification_tokens (id, identifier, token_hash, expires_at, created_at) VALUES (?, ?, ?, ?, ?)").run(
-          crypto.randomUUID(),
-          cleanEmail,
-          tokenHash,
-          expiresAt,
-          now
-        );
+        await tokens.insertOne(withId({ id: crypto.randomUUID(), identifier: cleanEmail, token_hash: tokenHash, expires_at: expiresAt, created_at: now }));
 
         await sendVerificationEmail(cleanEmail, token);
 
@@ -91,28 +79,14 @@ export async function POST(req: Request) {
     const passwordHash = await hashPassword(password);
     const now = Date.now();
 
-    db.prepare("INSERT INTO users (id, name, email, password_hash, email_verified, role, created_at, updated_at) VALUES (?, ?, ?, ?, 0, ?, ?, ?)").run(
-      userId,
-      cleanName,
-      cleanEmail,
-      passwordHash,
-      role,
-      now,
-      now
-    );
+    await users.insertOne(newUser({ id: userId, name: cleanName, email: cleanEmail, password_hash: passwordHash, role, created_at: now, updated_at: now }));
 
     // 4. Generate verification token
     const token = generateSecureToken();
     const tokenHash = hashToken(token);
     const expiresAt = now + 1000 * 60 * 60 * 24; // 24 hours
 
-    db.prepare("INSERT INTO verification_tokens (id, identifier, token_hash, expires_at, created_at) VALUES (?, ?, ?, ?, ?)").run(
-      crypto.randomUUID(),
-      cleanEmail,
-      tokenHash,
-      expiresAt,
-      now
-    );
+    await tokens.insertOne(withId({ id: crypto.randomUUID(), identifier: cleanEmail, token_hash: tokenHash, expires_at: expiresAt, created_at: now }));
 
     // 5. Send verification email
     await sendVerificationEmail(cleanEmail, token);

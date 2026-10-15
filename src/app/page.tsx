@@ -5,10 +5,11 @@ import { listPublicShows } from "@/lib/live";
 // Rendered per request so "Live now" is always current (it also refreshes itself in the browser).
 export const dynamic = "force-dynamic";
 
-export default function Home() {
+export default async function Home() {
+  const shows = await listPublicShows();
   return (
     <OnwardSummitTemplate
-      topSection={<ShowsSection initial={listPublicShows()} />}
+      topSection={<ShowsSection initial={shows} />}
       brand="Live Drop"
       title="Live Drop"
       tagline={"Go live. Say the price.\nGet paid with PayPal."}

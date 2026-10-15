@@ -8,12 +8,15 @@ import { Badge, ButtonLink, Card, CardHeader, EmptyState, PageHeader, Stat, firs
 import { OrderStatus } from "./order-status";
 import ShowCard from "./show-card";
 
-export default function BuyerOverview({ user }: { user: Account }) {
-  const shows = listPublicShows();
-  const bags = getBuyerBags(user.id);
-  const orders = getBuyerOrders(user.id);
-  const agent = getAgentForViewer(user.id);
+export default async function BuyerOverview({ user }: { user: Account }) {
+  const [shows, bags, orders, agent] = await Promise.all([
+    listPublicShows(),
+    getBuyerBags(user.id),
+    getBuyerOrders(user.id),
+    getAgentForViewer(user.id),
+  ]);
   const activeAgent = agent && agent.status !== "pending" ? agent : null;
+  const agentSpentCents = activeAgent ? await weeklySpentCents(activeAgent.id) : 0;
 
   const unpaid = bags.flatMap((b) => b.bag.lines.filter((l) => l.status === "won" || l.status === "invoiced").map((l) => ({ ...l, show: b.show })));
   const unpaidCents = unpaid.reduce((s, l) => s + l.price_cents, 0);
@@ -130,7 +133,7 @@ export default function BuyerOverview({ user }: { user: Account }) {
                 </div>
                 <div>
                   <dt className="text-xs text-muted">Left this week</dt>
-                  <dd className="font-medium tabular-nums">{money(Math.max(0, activeAgent.weekly_budget_cents - weeklySpentCents(activeAgent.id)))}</dd>
+                  <dd className="font-medium tabular-nums">{money(Math.max(0, activeAgent.weekly_budget_cents - agentSpentCents))}</dd>
                 </div>
               </dl>
               <ButtonLink href="/dashboard/agent" variant="secondary" size="sm" className="mt-5">

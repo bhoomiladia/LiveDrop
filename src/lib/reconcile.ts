@@ -1,17 +1,15 @@
 import "server-only";
-import { getDb } from "./db";
-import { getShow } from "./live";
+import { col } from "./db";
+import { COLLECTED_STATUSES, getShow } from "./live";
 import { searchTransactions } from "./paypal";
 
 // Bookkeeping: check every Live Drop sale against PayPal's own records (Transaction Search),
 // and report PayPal's fees and the seller's net.
 
 export async function reconcileShow(showId: string) {
-  const show = getShow(showId);
+  const show = await getShow(showId);
   if (!show) throw new Error("Show not found.");
-  const orders = getDb()
-    .prepare("SELECT id, viewer_name, kind, capture_id, item_cents, shipping_cents, refunded_cents, created_at FROM orders WHERE show_id = ? AND status IN ('paid', 'partially_refunded', 'refunded')")
-    .all(showId) as { id: string; viewer_name: string; kind: string; capture_id: string | null; item_cents: number; shipping_cents: number; refunded_cents: number; created_at: number }[];
+  const orders = await (await col("orders")).find({ show_id: showId, status: { $in: COLLECTED_STATUSES } }).toArray();
   if (!orders.length) return { show: show.title, checked: 0, matched: 0, missing: [], fees: 0, gross: 0, net: 0, note: "No paid orders yet." };
 
   const start = Math.min(...orders.map((o) => o.created_at)) - 86_400_000;

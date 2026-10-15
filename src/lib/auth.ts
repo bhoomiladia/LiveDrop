@@ -2,7 +2,7 @@ import bcrypt from "bcryptjs";
 import crypto from "node:crypto";
 import { SignJWT, jwtVerify } from "jose";
 import { cookies } from "next/headers";
-import { getDb, UserRecord } from "./db";
+import { col, stripId, type UserRecord } from "./db";
 
 const SESSION_COOKIE_NAME = "livedrop_session";
 const SESSION_DURATION_SECONDS = 60 * 60 * 24 * 7; // 7 days
@@ -116,10 +116,8 @@ export async function getCurrentUser(): Promise<UserRecord | null> {
     const session = await verifySessionToken(token);
     if (!session?.userId) return null;
 
-    const db = getDb();
-    const query = db.prepare("SELECT * FROM users WHERE id = ?");
-    const user = query.get(session.userId) as UserRecord | undefined;
-    return user || null;
+    const user = await (await col("users")).findOne({ id: session.userId });
+    return stripId(user) ?? null;
   } catch {
     return null;
   }

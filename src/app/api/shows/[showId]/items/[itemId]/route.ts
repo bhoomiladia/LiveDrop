@@ -1,12 +1,12 @@
 import { NextResponse, type NextRequest } from "next/server";
 import { goLive, updateDraft } from "@/lib/live";
-import { getDb } from "@/lib/db";
+import { col } from "@/lib/db";
 import { requireSeller } from "@/lib/viewer";
 
 async function sellerItem(showId: string, itemId: string) {
   const seller = await requireSeller(showId);
   if (!seller) return null;
-  const row = getDb().prepare("SELECT id FROM items WHERE id = ? AND show_id = ?").get(itemId, showId);
+  const row = await (await col("items")).findOne({ id: itemId, show_id: showId }, { projection: { id: 1 } });
   return row ? seller : null;
 }
 
@@ -26,7 +26,7 @@ export async function PATCH(req: NextRequest, ctx: RouteContext<"/api/shows/[sho
     }
     edits.price_cents = Math.round(price * 100);
   }
-  const item = updateDraft(itemId, edits);
+  const item = await updateDraft(itemId, edits);
   return NextResponse.json({ ok: Boolean(item) });
 }
 
@@ -36,7 +36,7 @@ export async function POST(_req: NextRequest, ctx: RouteContext<"/api/shows/[sho
   const seller = await sellerItem(showId, itemId);
   if (!seller) return NextResponse.json({ error: "Not allowed." }, { status: 403 });
   if (seller.show.status !== "live") return NextResponse.json({ error: "Go live first." }, { status: 400 });
-  const item = goLive(itemId);
+  const item = await goLive(itemId);
   if (!item) return NextResponse.json({ error: "Set a price before going live." }, { status: 400 });
   return NextResponse.json({ ok: true });
 }

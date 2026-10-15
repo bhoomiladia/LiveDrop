@@ -13,7 +13,7 @@ export async function GET(_req: NextRequest, ctx: RouteContext<"/api/shows/[show
     return NextResponse.json({ error: "Live video isn't set up (LiveKit keys missing)." }, { status: 503 });
   }
 
-  const show = getShow(showId);
+  const show = await getShow(showId);
   if (!show) return NextResponse.json({ error: "Show not found." }, { status: 404 });
   if (show.status === "ended") return NextResponse.json({ error: "This show has ended." }, { status: 410 });
 

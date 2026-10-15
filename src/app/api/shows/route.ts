@@ -4,7 +4,7 @@ import { createShow, listPublicShows } from "@/lib/live";
 
 // Public: shows that are live, starting soon, or just ended (for the home page).
 export async function GET() {
-  return NextResponse.json(listPublicShows(), { headers: { "Cache-Control": "no-store" } });
+  return NextResponse.json(await listPublicShows(), { headers: { "Cache-Control": "no-store" } });
 }
 
 export async function POST(req: Request) {
@@ -26,6 +26,6 @@ export async function POST(req: Request) {
     return NextResponse.json({ error: "Time to pay must be 1 to 30 minutes." }, { status: 400 });
   }
 
-  const show = createShow(user.id, title, Math.round(shippingUsd * 100), claimMinutes);
+  const show = await createShow(user.id, title, Math.round(shippingUsd * 100), claimMinutes);
   return NextResponse.json({ show });
 }

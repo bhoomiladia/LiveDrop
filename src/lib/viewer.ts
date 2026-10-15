@@ -14,7 +14,7 @@ export async function getViewer(): Promise<Viewer | null> {
 export async function requireSeller(showId: string): Promise<{ show: ShowRow; userId: string } | null> {
   const user = await getCurrentUser();
   if (!user) return null;
-  const show = getShow(showId);
+  const show = await getShow(showId);
   if (!show || show.seller_id !== user.id) return null;
   return { show, userId: user.id };
 }

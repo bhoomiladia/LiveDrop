@@ -6,9 +6,8 @@ import { IconArrowRight, IconBroadcast, IconChat, IconCheck, IconPlus, IconRecei
 import { ButtonLink, Card, CardHeader, EmptyState, LiveBadge, PageHeader, Stat, cx, firstName, money, timeAgo } from "@/components/ui/kit";
 import { ORDER_KIND, OrderStatus } from "./order-status";
 
-export default function SellerOverview({ user }: { user: Account }) {
-  const o = getSellerOverview(user.id);
-  const info = getShopInfo(user.id);
+export default async function SellerOverview({ user }: { user: Account }) {
+  const [o, info] = await Promise.all([getSellerOverview(user.id), getShopInfo(user.id)]);
   const policies = Object.values(info).filter(Boolean).length;
   const steps = [
     { done: policies > 0, label: "Teach your shop assistant your policies", href: "/dashboard/profile#shop-info" },

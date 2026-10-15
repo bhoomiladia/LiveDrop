@@ -6,5 +6,5 @@ import { requireSeller } from "@/lib/viewer";
 export async function POST(_req: NextRequest, ctx: RouteContext<"/api/shows/[showId]/release">) {
   const { showId } = await ctx.params;
   if (!(await requireSeller(showId))) return NextResponse.json({ error: "Only this show's seller can do that." }, { status: 403 });
-  return NextResponse.json({ released: releaseUnpaidNow(showId) });
+  return NextResponse.json({ released: await releaseUnpaidNow(showId) });
 }

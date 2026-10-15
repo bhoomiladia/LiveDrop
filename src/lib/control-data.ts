@@ -1,5 +1,5 @@
 import "server-only";
-import { getDb } from "./db";
+import { col } from "./db";
 
 // Flat tables of a seller's Live Drop activity for the AG Studio control room.
 // Dollar amounts are plain numbers (USD); dates are ISO strings.
@@ -7,33 +7,49 @@ import { getDb } from "./db";
 const usd = (cents: number | null | undefined) => (cents === null || cents === undefined ? null : Math.round(cents) / 100);
 const iso = (ms: number | null | undefined) => (ms ? new Date(ms).toISOString() : null);
 
-export type ControlData = ReturnType<typeof getControlData>;
+export type ControlData = Awaited<ReturnType<typeof getControlData>>;
 
-export function getControlData(sellerId: string) {
-  const db = getDb();
-  const shows = db
-    .prepare("SELECT id, title, status, created_at, started_at, ended_at FROM shows WHERE seller_id = ? ORDER BY created_at")
-    .all(sellerId) as { id: string; title: string; status: string; created_at: number; started_at: number | null; ended_at: number | null }[];
+export async function getControlData(sellerId: string) {
+  const shows = await (await col("shows"))
+    .find({ seller_id: sellerId }, { projection: { _id: 0, id: 1, title: 1, status: 1, created_at: 1, started_at: 1, ended_at: 1 } })
+    .sort({ created_at: 1 })
+    .toArray();
   const showTitle = new Map(shows.map((s) => [s.id, s.title]));
   const ids = shows.map((s) => s.id);
   if (!ids.length) return { shows: [], items: [], orders: [], claims: [], chat: [], asOf: new Date().toISOString() };
-  const inShows = `(${ids.map(() => "?").join(",")})`;
+  const inShows = { $in: ids };
 
-  const items = (
-    db
-      .prepare(
-        `SELECT i.*,
-           (SELECT MIN(c.won_at) FROM claims c WHERE c.item_id = i.id AND c.won_at IS NOT NULL) AS first_claim,
-           (SELECT c.viewer_name FROM claims c WHERE c.id = i.winner_claim_id) AS buyer,
-           (SELECT c.source FROM claims c WHERE c.id = i.winner_claim_id) AS buyer_source,
-           (SELECT COUNT(*) FROM bids b WHERE b.item_id = i.id) AS bids,
-           (SELECT COUNT(*) FROM claims c WHERE c.item_id = i.id) AS claim_count,
-           (SELECT o.kind FROM orders o JOIN order_items oi ON oi.order_id = o.id
-              WHERE oi.item_id = i.id AND o.status IN ('paid', 'on_hold', 'partially_refunded', 'refunded') LIMIT 1) AS order_kind
-         FROM items i WHERE i.show_id IN ${inShows} AND i.listed_at IS NOT NULL ORDER BY i.listed_at`,
-      )
-      .all(...ids) as Record<string, unknown>[]
-  ).map((i) => {
+  const [itemRows, orderRows, claimRows, chatRows, bidCounts] = await Promise.all([
+    (await col("items")).find({ show_id: inShows, listed_at: { $ne: null } }, { projection: { image_data: 0, transcript: 0 } }).sort({ listed_at: 1 }).toArray(),
+    (await col("orders")).find({ show_id: inShows, status: { $in: ["paid", "on_hold", "partially_refunded", "refunded"] } }).sort({ created_at: 1 }).toArray(),
+    (await col("claims")).find({ show_id: inShows }).sort({ created_at: 1 }).toArray(),
+    (await col("messages")).find({ show_id: inShows }, { projection: { id: 1, show_id: 1, kind: 1, needs_seller: 1, created_at: 1 } }).toArray(),
+    (await col("bids")).aggregate<{ _id: string; n: number }>([{ $match: { show_id: inShows } }, { $group: { _id: "$item_id", n: { $sum: 1 } } }]).toArray(),
+  ]);
+
+  // What the SQL subqueries used to add to each item: first claim, buyer, bids, claims, how it sold.
+  const claimById = new Map(claimRows.map((c) => [c.id, c]));
+  const claimsByItem = new Map<string, typeof claimRows>();
+  for (const c of claimRows) claimsByItem.set(c.item_id, [...(claimsByItem.get(c.item_id) ?? []), c]);
+  const bids = new Map(bidCounts.map((b) => [b._id, b.n]));
+  const links = orderRows.length ? await (await col("order_items")).find({ order_id: { $in: orderRows.map((o) => o.id) } }).toArray() : [];
+  const orderKind = new Map(orderRows.map((o) => [o.id, o.kind]));
+  const kindByItem = new Map<string, string>();
+  for (const l of links) if (!kindByItem.has(l.item_id)) kindByItem.set(l.item_id, orderKind.get(l.order_id)!);
+
+  const items = itemRows.map((row) => {
+    const winner = row.winner_claim_id ? claimById.get(row.winner_claim_id) : undefined;
+    const wonAts = (claimsByItem.get(row.id) ?? []).flatMap((c) => (c.won_at ? [c.won_at] : []));
+    return {
+      ...row,
+      first_claim: wonAts.length ? Math.min(...wonAts) : null,
+      buyer: winner?.viewer_name ?? null,
+      buyer_source: winner?.source ?? null,
+      bids: bids.get(row.id) ?? 0,
+      claim_count: claimsByItem.get(row.id)?.length ?? 0,
+      order_kind: kindByItem.get(row.id) ?? null,
+    } as Record<string, unknown>;
+  }).map((i) => {
     const sold = ["paid", "shipped", "on_hold"].includes(String(i.status));
     const saleType = !sold
       ? "Unsold"
@@ -66,11 +82,7 @@ export function getControlData(sellerId: string) {
     };
   });
 
-  const orders = (
-    db
-      .prepare(`SELECT * FROM orders WHERE show_id IN ${inShows} AND status IN ('paid', 'on_hold', 'partially_refunded', 'refunded') ORDER BY created_at`)
-      .all(...ids) as Record<string, unknown>[]
-  ).map((o) => {
+  const orders = (orderRows as Record<string, unknown>[]).map((o) => {
     const items = Number(o.item_cents);
     const shipping = Number(o.shipping_cents);
     const refunded = Number(o.refunded_cents ?? 0);
@@ -90,9 +102,7 @@ export function getControlData(sellerId: string) {
     };
   });
 
-  const claims = (
-    db.prepare(`SELECT * FROM claims WHERE show_id IN ${inShows} ORDER BY created_at`).all(...ids) as Record<string, unknown>[]
-  ).map((c) => ({
+  const claims = (claimRows as Record<string, unknown>[]).map((c) => ({
     id: String(c.id),
     itemId: String(c.item_id),
     showId: String(c.show_id),
@@ -111,9 +121,7 @@ export function getControlData(sellerId: string) {
     other: "Chat",
     pending: "Chat",
   };
-  const chat = (
-    db.prepare(`SELECT id, show_id, kind, needs_seller, created_at FROM messages WHERE show_id IN ${inShows}`).all(...ids) as Record<string, unknown>[]
-  ).map((m) => ({
+  const chat = (chatRows as Record<string, unknown>[]).map((m) => ({
     id: String(m.id),
     showId: String(m.show_id),
     show: showTitle.get(String(m.show_id)) ?? "",

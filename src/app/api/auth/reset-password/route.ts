@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { getDb, UserRecord } from "@/lib/db";
+import { col } from "@/lib/db";
 import { hashToken, validatePassword, hashPassword } from "@/lib/auth";
 
 export async function POST(req: Request) {
@@ -25,12 +25,11 @@ export async function POST(req: Request) {
     }
 
     const tokenHash = hashToken(token.trim());
-    const db = getDb();
+    const tokens = await col("password_reset_tokens");
+    const users = await col("users");
 
     // Look up token
-    const tokenRecord = db
-      .prepare("SELECT * FROM password_reset_tokens WHERE token_hash = ?")
-      .get(tokenHash) as { id: string; identifier: string; expires_at: number } | undefined;
+    const tokenRecord = await tokens.findOne({ token_hash: tokenHash });
 
     if (!tokenRecord) {
       return NextResponse.json(
@@ -40,7 +39,7 @@ export async function POST(req: Request) {
     }
 
     if (tokenRecord.expires_at < Date.now()) {
-      db.prepare("DELETE FROM password_reset_tokens WHERE id = ?").run(tokenRecord.id);
+      await tokens.deleteOne({ id: tokenRecord.id });
       return NextResponse.json(
         { error: "This password reset link has expired. Please request a new one." },
         { status: 400 }
@@ -48,7 +47,7 @@ export async function POST(req: Request) {
     }
 
     // Find user
-    const user = db.prepare("SELECT * FROM users WHERE email = ?").get(tokenRecord.identifier) as UserRecord | undefined;
+    const user = await users.findOne({ email: tokenRecord.identifier });
     if (!user) {
       return NextResponse.json({ error: "Unable to find associated account." }, { status: 404 });
     }
@@ -57,17 +56,13 @@ export async function POST(req: Request) {
     const newPasswordHash = await hashPassword(password);
     const now = Date.now();
 
-    db.prepare("UPDATE users SET password_hash = ?, email_verified = 1, updated_at = ? WHERE id = ?").run(
-      newPasswordHash,
-      now,
-      user.id
-    );
+    await users.updateOne({ id: user.id }, { $set: { password_hash: newPasswordHash, email_verified: 1, updated_at: now } });
 
     // Invalidate reset token
-    db.prepare("DELETE FROM password_reset_tokens WHERE id = ?").run(tokenRecord.id);
+    await tokens.deleteOne({ id: tokenRecord.id });
 
     // Invalidate existing sessions for this user for security
-    db.prepare("DELETE FROM sessions WHERE user_id = ?").run(user.id);
+    await (await col("sessions")).deleteMany({ user_id: user.id });
 
     return NextResponse.json({
       success: true,

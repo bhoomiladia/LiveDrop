@@ -16,7 +16,7 @@ const HOW = [
 
 export default async function AgentPage() {
   const user = await requireAccount("/dashboard/agent", "buyer");
-  const purchases = getBuyerOrders(user.id).filter((o) => o.kind === "agent");
+  const purchases = (await getBuyerOrders(user.id)).filter((o) => o.kind === "agent");
 
   return (
     <>

@@ -10,7 +10,7 @@ export const dynamic = "force-dynamic";
 
 export default async function BrowsePage() {
   await requireAccount("/dashboard/browse", "buyer");
-  const shows = listPublicShows();
+  const shows = await listPublicShows();
 
   return (
     <>

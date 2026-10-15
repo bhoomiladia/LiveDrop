@@ -21,7 +21,7 @@ export async function POST(req: NextRequest, ctx: RouteContext<"/api/shows/[show
   const viewer = await getViewer();
   if (!viewer) return NextResponse.json({ error: "Sign in with a buyer account first." }, { status: 401 });
 
-  const show = getShow(showId);
+  const show = await getShow(showId);
   if (!show) return NextResponse.json({ error: "Show not found." }, { status: 404 });
   if (show.status !== "live") return NextResponse.json({ error: "The show isn't live." }, { status: 400 });
 
@@ -34,6 +34,6 @@ export async function POST(req: NextRequest, ctx: RouteContext<"/api/shows/[show
   const { text } = await req.json().catch(() => ({}));
   if (typeof text !== "string" || !text.trim()) return NextResponse.json({ error: "Empty message." }, { status: 400 });
 
-  const message = postMessage(showId, viewer, text);
+  const message = await postMessage(showId, viewer, text);
   return NextResponse.json({ ok: Boolean(message), kind: message?.kind });
 }

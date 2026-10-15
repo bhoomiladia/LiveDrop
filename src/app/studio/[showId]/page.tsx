@@ -9,7 +9,7 @@ export const dynamic = "force-dynamic";
 export default async function StudioPage(props: PageProps<"/studio/[showId]">) {
   const { showId } = await props.params;
   const user = await requireAccount(`/studio/${showId}`, "seller");
-  const show = getShow(showId);
+  const show = await getShow(showId);
   if (!show || show.seller_id !== user.id) notFound();
   return <StudioRoom showId={showId} />;
 }
