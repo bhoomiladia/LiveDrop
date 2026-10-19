@@ -58,6 +58,12 @@ export function Textarea({ className, ...rest }: ComponentProps<"textarea">) {
   return <textarea className={cx(inputClass, "h-auto py-2.5 leading-relaxed", className)} {...rest} />;
 }
 
+// Demo video helper, only under `npm run dev`: types `text` into a box letter by letter through its state setter.
+export function typeDemo(text: string | undefined, set: (value: string) => void) {
+  if (process.env.NODE_ENV !== "development" || !text) return;
+  for (let i = 1; i <= text.length; i++) setTimeout(() => set(text.slice(0, i)), i * 35);
+}
+
 export function Select({ className, ...rest }: ComponentProps<"select">) {
   return <select className={cx(inputClass, "pr-8 cursor-pointer", className)} {...rest} />;
 }

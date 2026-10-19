@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { Button, Card, CardHeader, Field, Notice, Textarea } from "@/components/ui/kit";
+import { Button, Card, CardHeader, Field, Notice, Textarea, typeDemo } from "@/components/ui/kit";
 
 type Info = { shipping: string; returns: string; sizing: string; other: string };
 const FIELDS: { key: keyof Info; label: string; placeholder: string }[] = [
@@ -55,6 +55,7 @@ export default function ShopInfoForm({ bare, onSaved, submitLabel }: { bare?: bo
           <Textarea
             value={info[f.key]}
             onChange={(e) => setInfo({ ...info, [f.key]: e.target.value })}
+            onClick={() => !info[f.key] && typeDemo(f.placeholder, (v) => setInfo((cur) => cur && { ...cur, [f.key]: v }))}
             placeholder={f.placeholder}
             rows={3}
             maxLength={3000}

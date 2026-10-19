@@ -3,7 +3,7 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { IconArrowRight } from "@/components/ui/icons";
-import { Button, Card, Field, Input, Notice, Select } from "@/components/ui/kit";
+import { Button, Card, Field, Input, Notice, Select, typeDemo } from "@/components/ui/kit";
 
 // Starts a new show. Shipping and pay window come from the seller's profile defaults.
 export default function NewShowForm({ defaultShippingCents, defaultClaimMinutes }: { defaultShippingCents: number; defaultClaimMinutes: number }) {
@@ -38,7 +38,15 @@ export default function NewShowForm({ defaultShippingCents, defaultClaimMinutes 
         }}
       >
         <Field label="Show title">
-          <Input value={title} onChange={(e) => setTitle(e.target.value)} placeholder="Friday vintage denim drop" required minLength={3} maxLength={80} />
+          <Input
+            value={title}
+            onChange={(e) => setTitle(e.target.value)}
+            onClick={() => !title && typeDemo("Friday Vintage Drop", setTitle)}
+            placeholder="Friday vintage denim drop"
+            required
+            minLength={3}
+            maxLength={80}
+          />
         </Field>
         <Field label="Shipping (USD)">
           <Input value={shipping} onChange={(e) => setShipping(e.target.value)} inputMode="decimal" />
