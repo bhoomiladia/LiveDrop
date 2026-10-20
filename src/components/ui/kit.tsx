@@ -58,10 +58,28 @@ export function Textarea({ className, ...rest }: ComponentProps<"textarea">) {
   return <textarea className={cx(inputClass, "h-auto py-2.5 leading-relaxed", className)} {...rest} />;
 }
 
-// Demo video helper, only under `npm run dev`: types `text` into a box letter by letter through its state setter.
-export function typeDemo(text: string | undefined, set: (value: string) => void) {
-  if (process.env.NODE_ENV !== "development" || !text) return;
-  for (let i = 1; i <= text.length; i++) setTimeout(() => set(text.slice(0, i)), i * 35);
+// ----------------------------------------------------------------- demo video (only under `npm run dev`)
+
+// Types `text` letter by letter through a state setter, like a fast typist. Resolves when it's done.
+export function typeDemo(text: string, set: (value: string) => void): Promise<void> {
+  const perLetter = Math.min(20, 1200 / text.length);
+  return new Promise((done) => {
+    for (let i = 0; i <= text.length; i++)
+      setTimeout(() => {
+        set(text.slice(0, i));
+        if (i === text.length) done();
+      }, i * perLetter);
+  });
+}
+
+// "Fill" button next to a form: types the demo script into it. Hidden outside `npm run dev`.
+export function FillButton(props: ComponentProps<"button"> & { size?: Size }) {
+  if (process.env.NODE_ENV !== "development") return null;
+  return (
+    <Button type="button" variant="secondary" {...props}>
+      Fill
+    </Button>
+  );
 }
 
 export function Select({ className, ...rest }: ComponentProps<"select">) {

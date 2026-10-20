@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { IconAgent, IconShield } from "@/components/ui/icons";
-import { Badge, Button, Card, Field, Input, Notice, Select, money, typeDemo } from "@/components/ui/kit";
+import { Badge, Button, Card, Field, FillButton, Input, Notice, Select, money, typeDemo } from "@/components/ui/kit";
 
 type Agent = {
   id: string;
@@ -185,22 +185,11 @@ export default function AgentPanel({
           <p className="text-[13px] text-muted mt-1">It only buys within the limits you set here.</p>
         </div>
         <Field label="What should it look for?">
-          <Input
-            required
-            placeholder="Vintage denim jacket, no rips"
-            value={form.wish}
-            onChange={(e) => setForm({ ...form, wish: e.target.value })}
-            onClick={() => !form.wish && typeDemo("Vintage denim jacket, no rips", (wish) => setForm((f) => ({ ...f, wish })))}
-          />
+          <Input required placeholder="Vintage denim jacket, no rips" value={form.wish} onChange={(e) => setForm({ ...form, wish: e.target.value })} />
         </Field>
         <div className={full ? "grid gap-4 sm:grid-cols-3" : "grid grid-cols-3 gap-3"}>
           <Field label="Sizes">
-            <Input
-              placeholder="M, L"
-              value={form.sizes}
-              onChange={(e) => setForm({ ...form, sizes: e.target.value })}
-              onClick={() => !form.sizes && typeDemo("M", (sizes) => setForm((f) => ({ ...f, sizes })))}
-            />
+            <Input placeholder="M, L" value={form.sizes} onChange={(e) => setForm({ ...form, sizes: e.target.value })} />
           </Field>
           <Field label="Max each ($)">
             <Input inputMode="decimal" value={form.maxItemUsd} onChange={(e) => setForm({ ...form, maxItemUsd: e.target.value })} />
@@ -228,6 +217,13 @@ export default function AgentPanel({
           <Button disabled={busy} variant="paypal" className="flex-1">
             {busy ? "Opening PayPal…" : "Save PayPal and activate"}
           </Button>
+          <FillButton
+            onClick={async () => {
+              setForm((f) => ({ ...f, undoMinutes: "1" }));
+              await typeDemo("Vintage denim jacket, no rips", (wish) => setForm((f) => ({ ...f, wish })));
+              await typeDemo("M", (sizes) => setForm((f) => ({ ...f, sizes })));
+            }}
+          />
           {!full && (
             <Button type="button" onClick={() => setOpen(false)} variant="ghost">
               Cancel

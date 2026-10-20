@@ -2,7 +2,7 @@
 
 import { useCallback, useEffect, useRef, useState } from "react";
 import { IconCamera, IconReceipt, IconTruck } from "@/components/ui/icons";
-import { Badge, Button, Card, CardHeader, EmptyState, Input, Select, cx, money, typeDemo } from "@/components/ui/kit";
+import { Badge, Button, Card, CardHeader, EmptyState, FillButton, Input, Select, cx, money, typeDemo } from "@/components/ui/kit";
 
 type OrderItem = { id: string; title: string; size: string | null; price_cents: number; status: string };
 type Order = {
@@ -203,13 +203,8 @@ function OrderCard({
                 <option key={c}>{c}</option>
               ))}
             </Select>
-            <Input
-              value={number}
-              onChange={(e) => setNumber(e.target.value)}
-              onClick={() => !number && typeDemo("9400111899223197428490", setNumber)}
-              placeholder="Tracking number"
-              className="h-8 flex-1 min-w-[140px] text-xs"
-            />
+            <Input value={number} onChange={(e) => setNumber(e.target.value)} placeholder="Tracking number" className="h-8 flex-1 min-w-[140px] text-xs" />
+            <FillButton size="sm" onClick={() => void typeDemo("9400111899223197428490", setNumber)} />
             <input ref={fileRef} type="file" accept="image/*" capture="environment" hidden onChange={(e) => e.target.files?.[0] && readLabel(e.target.files[0])} />
             <Button onClick={() => fileRef.current?.click()} disabled={reading} variant="secondary" size="sm" title="Snap the shipping label and AI reads the tracking number">
               <IconCamera size={14} /> {reading ? "Reading…" : "Read label"}

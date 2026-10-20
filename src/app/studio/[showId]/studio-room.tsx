@@ -10,9 +10,9 @@ import ToastStack from "@/components/live/toasts";
 import type { ChatMessage } from "@/components/live/use-show";
 import { savings, useShow, type LiveItem } from "@/components/live/use-show";
 import { IconArrowLeft, IconBolt, IconBroadcast, IconCamera, IconChart, IconCopy, IconEye, IconMic, IconSpark, IconTag } from "@/components/ui/icons";
-import { Badge, Button, ButtonLink, Card, Input, LiveBadge, Thumb, cx, money, typeDemo } from "@/components/ui/kit";
+import { Badge, Button, ButtonLink, Card, FillButton, Input, LiveBadge, Thumb, cx, money, typeDemo } from "@/components/ui/kit";
 
-// Demo video: each click on the empty "Or type it" box types the next item.
+// Demo video: each Fill types the next item into the "Or type it" box.
 const DEMO_ITEMS = ["Black bucket hat, twenty dollars", "Grey wool scarf, fifteen dollars", "Vintage denim jacket, size medium, forty-five dollars"];
 
 // Minimal typing for the browser's speech recognition (Chrome exposes it as webkitSpeechRecognition).
@@ -329,12 +329,8 @@ export default function StudioRoom({ showId }: { showId: string }) {
                 void listIt(typed);
               }}
             >
-              <Input
-                value={typed}
-                onChange={(e) => setTyped(e.target.value)}
-                onClick={() => !typed && typeDemo(DEMO_ITEMS[demoStep.current++], setTyped)}
-                placeholder="Or type it: wool scarf, forty dollars"
-              />
+              <Input value={typed} onChange={(e) => setTyped(e.target.value)} placeholder="Or type it: wool scarf, forty dollars" />
+              <FillButton onClick={() => void typeDemo(DEMO_ITEMS[demoStep.current++ % DEMO_ITEMS.length], setTyped)} />
               <Button disabled={!typed.trim() || listing} variant="secondary">
                 List
               </Button>
