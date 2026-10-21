@@ -1,7 +1,8 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { Button, Card, CardHeader, Field, FillButton, Notice, Textarea, typeDemo } from "@/components/ui/kit";
+import { Button, Card, CardHeader, Field, Notice, Textarea } from "@/components/ui/kit";
+import { DEMO } from "@/lib/demo-script";
 
 type Info = { shipping: string; returns: string; sizing: string; other: string };
 const FIELDS: { key: keyof Info; label: string; placeholder: string }[] = [
@@ -58,18 +59,12 @@ export default function ShopInfoForm({ bare, onSaved, submitLabel }: { bare?: bo
             placeholder={f.placeholder}
             rows={3}
             maxLength={3000}
+            demo={DEMO.shopInfo[f.key]}
           />
         </Field>
       ))}
       {note && <Notice tone={note.tone}>{note.text}</Notice>}
-      <div className="flex gap-2">
-        <Button disabled={busy}>{busy ? "Teaching your assistant…" : (submitLabel ?? "Save shop info")}</Button>
-        <FillButton
-          onClick={async () => {
-            for (const f of FIELDS) await typeDemo(f.placeholder, (v) => setInfo((cur) => cur && { ...cur, [f.key]: v }));
-          }}
-        />
-      </div>
+      <Button disabled={busy}>{busy ? "Teaching your assistant…" : (submitLabel ?? "Save shop info")}</Button>
     </form>
   );
 

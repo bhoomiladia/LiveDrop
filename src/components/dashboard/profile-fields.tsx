@@ -1,6 +1,7 @@
 "use client";
 
 import { Field, Input, Select, Textarea } from "@/components/ui/kit";
+import { DEMO } from "@/lib/demo-script";
 import type { ProfileValues } from "@/lib/profile-values";
 
 export type { ProfileValues };
@@ -13,11 +14,11 @@ export function IdentityFields({ role, values, onChange }: Props & { role: "sell
   return (
     <div className="space-y-4">
       <Field label={role === "seller" ? "Your name" : "Display name"} hint={role === "buyer" ? "Sellers and other viewers see this when you claim an item." : undefined}>
-        <Input value={values.name} onChange={set("name")} required minLength={2} maxLength={60} autoComplete="name" />
+        <Input value={values.name} onChange={set("name")} required minLength={2} maxLength={60} autoComplete="name" demo={DEMO[role].name} />
       </Field>
       {role === "seller" && (
         <Field label="Shop name" hint="Shown to viewers on your shows.">
-          <Input value={values.shop_name} onChange={set("shop_name")} required maxLength={60} placeholder="Rosa's Vintage" />
+          <Input value={values.shop_name} onChange={set("shop_name")} required maxLength={60} placeholder="Rosa's Vintage" demo={DEMO.seller.shopName} />
         </Field>
       )}
       <Field label={role === "seller" ? "About your shop" : "About you"} hint="Optional. A sentence or two.">
@@ -27,6 +28,7 @@ export function IdentityFields({ role, values, onChange }: Props & { role: "sell
           rows={3}
           maxLength={280}
           placeholder={role === "seller" ? "Hand-picked 70s to 90s denim and outerwear, cleaned and checked." : "Collector of vintage denim and odd hats."}
+          demo={DEMO[role].bio}
         />
       </Field>
     </div>
@@ -61,7 +63,14 @@ export function PreferenceFields({ values, onChange }: Props) {
         <Input value={values.sizes} onChange={(e) => onChange({ ...values, sizes: e.target.value })} maxLength={60} placeholder="M, L" />
       </Field>
       <Field label="What you love" hint="Your AI agent starts from this when you set it up.">
-        <Textarea value={values.interests} onChange={(e) => onChange({ ...values, interests: e.target.value })} rows={3} maxLength={200} placeholder="Vintage denim jackets, wool cardigans, statement boots" />
+        <Textarea
+          value={values.interests}
+          onChange={(e) => onChange({ ...values, interests: e.target.value })}
+          rows={3}
+          maxLength={200}
+          placeholder="Vintage denim jackets, wool cardigans, statement boots"
+          demo={DEMO.buyer.interests}
+        />
       </Field>
     </div>
   );

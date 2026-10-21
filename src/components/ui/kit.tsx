@@ -1,7 +1,8 @@
 // Shared building blocks for the app, styled after the landing page (brand palette, 5px buttons,
 // uppercase kickers, hairline borders). No hooks, so they work in server and client components.
 import Link from "next/link";
-import type { ComponentProps, ReactNode } from "react";
+import type { ComponentProps, MouseEvent, MouseEventHandler, ReactNode } from "react";
+import { demoMode } from "@/lib/demo-script";
 
 export function cx(...parts: (string | false | null | undefined)[]) {
   return parts.filter(Boolean).join(" ");
@@ -50,36 +51,49 @@ export function ButtonLink({ variant, size, className, ...rest }: ComponentProps
 export const inputClass =
   "w-full h-10 px-3 rounded-[6px] bg-paper text-sm text-ink shadow-[inset_0_0_0_1px_var(--line-strong)] outline-none transition-shadow placeholder:text-muted/70 hover:shadow-[inset_0_0_0_1px_#b4bdcc] focus:shadow-[inset_0_0_0_1.5px_var(--brand),0_0_0_4px_rgba(38,89,217,.14)] disabled:bg-canvas disabled:text-muted";
 
-export function Input({ className, ...rest }: ComponentProps<"input">) {
-  return <input className={cx(inputClass, className)} {...rest} />;
+// `demo`: what the field types when clicked in demo mode (see below).
+export function Input({ className, demo, onClick, ...rest }: ComponentProps<"input"> & { demo?: DemoText }) {
+  return <input className={cx(inputClass, className)} onClick={demoClick(demo, onClick)} {...rest} />;
 }
 
-export function Textarea({ className, ...rest }: ComponentProps<"textarea">) {
-  return <textarea className={cx(inputClass, "h-auto py-2.5 leading-relaxed", className)} {...rest} />;
+export function Textarea({ className, demo, onClick, ...rest }: ComponentProps<"textarea"> & { demo?: DemoText }) {
+  return <textarea className={cx(inputClass, "h-auto py-2.5 leading-relaxed", className)} onClick={demoClick(demo, onClick)} {...rest} />;
 }
 
-// ----------------------------------------------------------------- demo video (only under `npm run dev`)
+// ----------------------------------------------------------------- demo video (NEXT_PUBLIC_DEMO_MODE=on)
 
-// Types `text` letter by letter through a state setter, like a fast typist. Resolves when it's done.
-export function typeDemo(text: string, set: (value: string) => void): Promise<void> {
-  const perLetter = Math.min(20, 1200 / text.length);
-  return new Promise((done) => {
-    for (let i = 0; i <= text.length; i++)
-      setTimeout(() => {
-        set(text.slice(0, i));
-        if (i === text.length) done();
-      }, i * perLetter);
-  });
+// A field's scripted text: fixed, or decided at click time (e.g. the next chat line). Lines live in lib/demo-script.ts.
+export type DemoText = string | (() => string | undefined);
+
+let demoTyping = false;
+
+// Demo video: clicking an empty field types its scripted text like a fast typist. It goes through the
+// field's own onChange, so the app reacts exactly as if someone typed it. Does nothing outside demo mode.
+export function demoClick<E extends HTMLInputElement | HTMLTextAreaElement>(demo: DemoText | undefined, onClick?: MouseEventHandler<E>) {
+  if (!demoMode || !demo) return onClick;
+  return (e: MouseEvent<E>) => {
+    onClick?.(e);
+    const field = e.currentTarget;
+    if (demoTyping || field.value || field.readOnly) return;
+    const text = typeof demo === "function" ? demo() : demo;
+    if (text) typeInto(field, text);
+  };
 }
 
-// "Fill" button next to a form: types the demo script into it. Hidden outside `npm run dev`.
-export function FillButton(props: ComponentProps<"button"> & { size?: Size }) {
-  if (process.env.NODE_ENV !== "development") return null;
-  return (
-    <Button type="button" variant="secondary" {...props}>
-      Fill
-    </Button>
-  );
+function typeInto(field: HTMLInputElement | HTMLTextAreaElement, text: string) {
+  // The prototype's setter changes the value behind React's back, so the input event below reads as typing.
+  const setValue = Object.getOwnPropertyDescriptor(Object.getPrototypeOf(field), "value")!.set!;
+  const perLetter = Math.min(70, Math.max(14, 2200 / text.length)); // short text at typing speed, long text in about 2s
+  let typed = 0;
+  demoTyping = true;
+  const next = () => {
+    if (!field.isConnected) return void (demoTyping = false);
+    setValue.call(field, text.slice(0, ++typed));
+    field.dispatchEvent(new Event("input", { bubbles: true }));
+    if (typed < text.length) setTimeout(next, perLetter * (0.5 + Math.random()));
+    else demoTyping = false;
+  };
+  next();
 }
 
 export function Select({ className, ...rest }: ComponentProps<"select">) {

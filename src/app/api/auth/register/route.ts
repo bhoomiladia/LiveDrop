@@ -3,6 +3,8 @@ import crypto from "node:crypto";
 import { col, newUser, withId } from "@/lib/db";
 import { normalizeEmail, validateEmail, validatePassword, hashPassword, generateSecureToken, hashToken } from "@/lib/auth";
 import { sendVerificationEmail } from "@/lib/email";
+import { demoMode, isDemoEmail } from "@/lib/demo-script";
+import { resetDemoAccount } from "@/lib/demo-video";
 
 export async function POST(req: Request) {
   try {
@@ -40,6 +42,11 @@ export async function POST(req: Request) {
     const cleanName = name.trim();
     const users = await col("users");
     const tokens = await col("verification_tokens");
+
+    // Demo video: a scripted account starts over on every take, and gets its verification link back
+    // here instead of by email (the addresses aren't real inboxes).
+    const demo = demoMode && isDemoEmail(cleanEmail);
+    if (demo) await resetDemoAccount(cleanEmail);
 
     // 2. Check for duplicate account
     const existingUser = await users.findOne({ email: cleanEmail }, { projection: { id: 1, email_verified: 1 } });
@@ -79,7 +86,9 @@ export async function POST(req: Request) {
     const passwordHash = await hashPassword(password);
     const now = Date.now();
 
-    await users.insertOne(newUser({ id: userId, name: cleanName, email: cleanEmail, password_hash: passwordHash, role, created_at: now, updated_at: now }));
+    await users.insertOne(
+      newUser({ id: userId, name: cleanName, email: cleanEmail, password_hash: passwordHash, role, created_at: now, updated_at: now, ...(demo ? { demo: 1 } : {}) }),
+    );
 
     // 4. Generate verification token
     const token = generateSecureToken();
@@ -89,6 +98,9 @@ export async function POST(req: Request) {
     await tokens.insertOne(withId({ id: crypto.randomUUID(), identifier: cleanEmail, token_hash: tokenHash, expires_at: expiresAt, created_at: now }));
 
     // 5. Send verification email
+    if (demo) {
+      return NextResponse.json({ success: true, message: "Account created. Verify your email to sign in.", demoVerifyLink: `/verify-email?token=${token}` });
+    }
     await sendVerificationEmail(cleanEmail, token);
 
     return NextResponse.json({

@@ -6,6 +6,24 @@ import AuthShell, { AuthHeading } from "@/components/auth/auth-shell";
 import { IconAlert, IconCheck } from "@/components/ui/icons";
 import { Button, ButtonLink, Field, Input, Notice } from "@/components/ui/kit";
 
+// One request per link, even when React runs the effect twice in development: a link only works once,
+// so a second request would report it as already used.
+const verifying = new Map<string, Promise<{ ok: boolean; message?: string; error?: string }>>();
+
+function verifyOnce(token: string) {
+  let request = verifying.get(token);
+  if (!request) {
+    request = fetch("/api/auth/verify-email", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ token }),
+    }).then(async (res) => ({ ok: res.ok, ...(await res.json()) }));
+    request.catch(() => verifying.delete(token)); // network trouble: let a reload try again
+    verifying.set(token, request);
+  }
+  return request;
+}
+
 function VerifyEmailContent() {
   const searchParams = useSearchParams();
   const token = searchParams.get("token");
@@ -25,19 +43,13 @@ function VerifyEmailContent() {
 
     let isMounted = true;
 
-    async function verify() {
+    async function verify(token: string) {
       try {
-        const res = await fetch("/api/auth/verify-email", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ token }),
-        });
-
-        const data = await res.json();
+        const data = await verifyOnce(token);
 
         if (!isMounted) return;
 
-        if (res.ok) {
+        if (data.ok) {
           setStatus("success");
           setMessage(data.message || "Your email has been verified successfully.");
         } else {
@@ -51,7 +63,7 @@ function VerifyEmailContent() {
       }
     }
 
-    verify();
+    verify(token);
 
     return () => {
       isMounted = false;

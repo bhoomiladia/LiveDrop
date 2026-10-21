@@ -4,6 +4,7 @@ import * as React from "react";
 import Link from "next/link";
 import { GlyphField, PALETTES } from "@/components/ui/onward-summit-template";
 import BrandLogo from "@/components/brand/brand-logo";
+import { demoClick, type DemoText } from "@/components/ui/kit";
 
 interface AuthShellProps {
   children: React.ReactNode;
@@ -99,6 +100,7 @@ export function PasswordInput({
   show,
   onToggle,
   autoComplete,
+  demo,
 }: {
   id: string;
   value: string;
@@ -106,6 +108,7 @@ export function PasswordInput({
   show: boolean;
   onToggle?: () => void;
   autoComplete: string;
+  demo?: DemoText;
 }) {
   return (
     <div className="relative">
@@ -116,6 +119,7 @@ export function PasswordInput({
         autoComplete={autoComplete}
         value={value}
         onChange={(e) => onChange(e.target.value)}
+        onClick={demoClick(demo)}
         className="w-full h-10 px-3 pr-14 rounded-[6px] bg-paper text-sm text-ink shadow-[inset_0_0_0_1px_var(--line-strong)] outline-none transition-shadow hover:shadow-[inset_0_0_0_1px_#b4bdcc] focus:shadow-[inset_0_0_0_1.5px_var(--brand),0_0_0_4px_rgba(38,89,217,.14)]"
       />
       {onToggle && (

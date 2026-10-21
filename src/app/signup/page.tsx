@@ -7,6 +7,7 @@ import AuthShell, { AuthHeading, GoogleButton, OrDivider, PasswordChecklist, Pas
 import RoleChoice from "@/components/auth/role-choice";
 import { IconCheck } from "@/components/ui/icons";
 import { Button, ButtonLink, Field, Input, Notice } from "@/components/ui/kit";
+import { DEMO, rememberDemoRole } from "@/lib/demo-script";
 
 function SignupContent() {
   const searchParams = useSearchParams();
@@ -25,6 +26,9 @@ function SignupContent() {
   const [success, setSuccess] = React.useState(false);
   const [resending, setResending] = React.useState(false);
   const [resendStatus, setResendStatus] = React.useState("");
+  const [demoVerifyLink, setDemoVerifyLink] = React.useState<string | null>(null);
+  // Demo video: the fields type the scripted account for the chosen role.
+  const demo = role ? DEMO[role] : null;
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -46,6 +50,10 @@ function SignupContent() {
       if (!res.ok) {
         setError(data.error || "Couldn't create your account. Please check your details.");
         return;
+      }
+      if (data.demoVerifyLink) {
+        setDemoVerifyLink(data.demoVerifyLink);
+        rememberDemoRole(role);
       }
       setSuccess(true);
     } catch {
@@ -79,6 +87,7 @@ function SignupContent() {
           <IconCheck size={22} />
         </div>
         <AuthHeading title="Verify your email" text={`We sent a link to ${email}. Click it, then sign in to set up your ${role === "seller" ? "shop" : "profile"}.`} />
+        {demoVerifyLink && <DemoInboxEmail href={demoVerifyLink} />}
         {resendStatus && (
           <Notice tone="success" className="mb-4">
             {resendStatus}
@@ -116,23 +125,31 @@ function SignupContent() {
           <p className="text-xs text-muted mt-2">Seller and buyer accounts are separate. You can&apos;t switch later.</p>
         </div>
         <Field label="Name">
-          <Input id="name" type="text" required autoComplete="name" value={name} onChange={(e) => setName(e.target.value)} placeholder="Alex Morgan" />
+          <Input id="name" type="text" required autoComplete="name" value={name} onChange={(e) => setName(e.target.value)} placeholder="Alex Morgan" demo={demo?.name} />
         </Field>
         <Field label="Email">
-          <Input id="email" type="email" required autoComplete="email" value={email} onChange={(e) => setEmail(e.target.value)} placeholder="you@example.com" />
+          <Input id="email" type="email" required autoComplete="email" value={email} onChange={(e) => setEmail(e.target.value)} placeholder="you@example.com" demo={demo?.email} />
         </Field>
         <div>
           <label htmlFor="password" className="block text-[13px] font-medium mb-1.5">
             Password
           </label>
-          <PasswordInput id="password" value={password} onChange={setPassword} show={showPassword} onToggle={() => setShowPassword(!showPassword)} autoComplete="new-password" />
+          <PasswordInput
+            id="password"
+            value={password}
+            onChange={setPassword}
+            show={showPassword}
+            onToggle={() => setShowPassword(!showPassword)}
+            autoComplete="new-password"
+            demo={demo?.password}
+          />
           <PasswordChecklist password={password} />
         </div>
         <div>
           <label htmlFor="confirm-password" className="block text-[13px] font-medium mb-1.5">
             Confirm password
           </label>
-          <PasswordInput id="confirm-password" value={confirmPassword} onChange={setConfirmPassword} show={showPassword} autoComplete="new-password" />
+          <PasswordInput id="confirm-password" value={confirmPassword} onChange={setConfirmPassword} show={showPassword} autoComplete="new-password" demo={demo?.password} />
         </div>
         <Button type="submit" disabled={loading} size="lg" className="w-full mt-2">
           {loading ? "Creating account…" : "Create account"}
@@ -150,6 +167,20 @@ function SignupContent() {
         </Link>
       </p>
     </AuthShell>
+  );
+}
+
+// Demo video: scripted accounts get no real email, so the verification email shows up here instead.
+function DemoInboxEmail({ href }: { href: string }) {
+  return (
+    <div className="mb-5 rounded-[10px] border border-line bg-canvas p-4">
+      <p className="text-[11px] font-semibold uppercase tracking-[0.08em] text-muted">Inbox · Live Drop · just now</p>
+      <p className="mt-2 text-sm font-semibold">Verify your Live Drop account</p>
+      <p className="mt-1 text-[13px] text-muted leading-relaxed">Thanks for signing up for Live Drop. Please confirm your email address to get started.</p>
+      <ButtonLink href={href} variant="brand" size="sm" className="mt-3">
+        Verify email address
+      </ButtonLink>
+    </div>
   );
 }
 

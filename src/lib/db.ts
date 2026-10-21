@@ -26,6 +26,7 @@ export type UserRecord = {
   default_claim_minutes: number | null;
   sizes: string | null;
   interests: string | null;
+  demo?: number; // 1 = a scripted demo-video account (demo-script.ts); signing up again starts it over
 };
 
 export type AccountRow = { id: string; user_id: string; provider: string; provider_account_id: string; created_at: number };

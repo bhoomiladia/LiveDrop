@@ -2,7 +2,8 @@
 
 import { useEffect, useState } from "react";
 import { IconAgent, IconShield } from "@/components/ui/icons";
-import { Badge, Button, Card, Field, FillButton, Input, Notice, Select, money, typeDemo } from "@/components/ui/kit";
+import { Badge, Button, Card, Field, Input, Notice, Select, money } from "@/components/ui/kit";
+import { DEMO, demoMode } from "@/lib/demo-script";
 
 type Agent = {
   id: string;
@@ -39,7 +40,7 @@ export default function AgentPanel({
     sizes: defaults?.sizes ?? "",
     maxItemUsd: "60",
     weeklyBudgetUsd: "150",
-    undoMinutes: "30",
+    undoMinutes: demoMode ? "1" : "30", // demo video: the held payment completes while the camera is still rolling
     email: defaults?.email ?? "",
   });
 
@@ -185,7 +186,7 @@ export default function AgentPanel({
           <p className="text-[13px] text-muted mt-1">It only buys within the limits you set here.</p>
         </div>
         <Field label="What should it look for?">
-          <Input required placeholder="Vintage denim jacket, no rips" value={form.wish} onChange={(e) => setForm({ ...form, wish: e.target.value })} />
+          <Input required placeholder="Vintage denim jacket, no rips" value={form.wish} onChange={(e) => setForm({ ...form, wish: e.target.value })} demo={DEMO.agentWish} />
         </Field>
         <div className={full ? "grid gap-4 sm:grid-cols-3" : "grid grid-cols-3 gap-3"}>
           <Field label="Sizes">
@@ -217,13 +218,6 @@ export default function AgentPanel({
           <Button disabled={busy} variant="paypal" className="flex-1">
             {busy ? "Opening PayPal…" : "Save PayPal and activate"}
           </Button>
-          <FillButton
-            onClick={async () => {
-              setForm((f) => ({ ...f, undoMinutes: "1" }));
-              await typeDemo("Vintage denim jacket, no rips", (wish) => setForm((f) => ({ ...f, wish })));
-              await typeDemo("M", (sizes) => setForm((f) => ({ ...f, sizes })));
-            }}
-          />
           {!full && (
             <Button type="button" onClick={() => setOpen(false)} variant="ghost">
               Cancel

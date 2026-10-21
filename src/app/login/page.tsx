@@ -5,6 +5,13 @@ import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import AuthShell, { AuthHeading, GoogleButton, OrDivider, PasswordInput } from "@/components/auth/auth-shell";
 import { Button, Field, Input, Notice } from "@/components/ui/kit";
+import { DEMO, demoRoleOnThisDevice } from "@/lib/demo-script";
+
+// Demo video: the account this device signed up.
+const demoAccount = () => {
+  const role = demoRoleOnThisDevice();
+  return role ? DEMO[role] : undefined;
+};
 
 const OAUTH_ERRORS: Record<string, string> = {
   google_unconfigured: "Google sign-in isn't set up on this server yet. Use email and password instead.",
@@ -110,7 +117,16 @@ function LoginContent() {
 
       <form onSubmit={handleSubmit} className="space-y-4" noValidate>
         <Field label="Email">
-          <Input id="email" type="email" required autoComplete="email" value={email} onChange={(e) => setEmail(e.target.value)} placeholder="you@example.com" />
+          <Input
+            id="email"
+            type="email"
+            required
+            autoComplete="email"
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
+            placeholder="you@example.com"
+            demo={() => demoAccount()?.email}
+          />
         </Field>
         <div>
           <div className="flex justify-between items-center mb-1.5">
@@ -121,7 +137,15 @@ function LoginContent() {
               Forgot password?
             </Link>
           </div>
-          <PasswordInput id="password" value={password} onChange={setPassword} show={showPassword} onToggle={() => setShowPassword(!showPassword)} autoComplete="current-password" />
+          <PasswordInput
+            id="password"
+            value={password}
+            onChange={setPassword}
+            show={showPassword}
+            onToggle={() => setShowPassword(!showPassword)}
+            autoComplete="current-password"
+            demo={() => demoAccount()?.password}
+          />
         </div>
         <Button type="submit" disabled={loading} size="lg" className="w-full mt-2">
           {loading ? "Signing in…" : "Sign in"}

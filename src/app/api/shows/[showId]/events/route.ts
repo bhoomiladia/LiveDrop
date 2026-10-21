@@ -1,4 +1,5 @@
 import type { NextRequest } from "next/server";
+import { ensureCrowd } from "@/lib/demo-video";
 import { subscribe, viewerCount, publish, type ShowEvent } from "@/lib/events";
 import { getShow } from "@/lib/live";
 import { getViewer, requireSeller } from "@/lib/viewer";
@@ -9,6 +10,7 @@ const PRIVATE_EVENTS = new Set(["bag", "bid_too_low", "shipped", "refunded"]);
 export async function GET(req: NextRequest, ctx: RouteContext<"/api/shows/[showId]/events">) {
   const { showId } = await ctx.params;
   if (!(await getShow(showId))) return new Response("Show not found", { status: 404 });
+  void ensureCrowd(showId).catch(() => {}); // demo video: brings the crowd back after a server restart
 
   const isSeller = Boolean(await requireSeller(showId));
   const viewer = await getViewer();

@@ -3,14 +3,16 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { IconArrowRight } from "@/components/ui/icons";
-import { Button, Card, Field, FillButton, Input, Notice, Select, typeDemo } from "@/components/ui/kit";
+import { Button, Card, Field, Input, Notice, Select } from "@/components/ui/kit";
+import { DEMO, demoMode } from "@/lib/demo-script";
 
 // Starts a new show. Shipping and pay window come from the seller's profile defaults.
 export default function NewShowForm({ defaultShippingCents, defaultClaimMinutes }: { defaultShippingCents: number; defaultClaimMinutes: number }) {
   const router = useRouter();
   const [title, setTitle] = useState("");
   const [shipping, setShipping] = useState(String(defaultShippingCents / 100));
-  const [claimMinutes, setClaimMinutes] = useState(String(defaultClaimMinutes));
+  // Demo video: a long pay window, so a slow PayPal sandbox login never passes an item to a simulated viewer.
+  const [claimMinutes, setClaimMinutes] = useState(String(demoMode ? 30 : defaultClaimMinutes));
   const [err, setErr] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
 
@@ -38,7 +40,7 @@ export default function NewShowForm({ defaultShippingCents, defaultClaimMinutes 
         }}
       >
         <Field label="Show title">
-          <Input value={title} onChange={(e) => setTitle(e.target.value)} placeholder="Friday vintage denim drop" required minLength={3} maxLength={80} />
+          <Input value={title} onChange={(e) => setTitle(e.target.value)} placeholder="Friday vintage denim drop" required minLength={3} maxLength={80} demo={DEMO.showTitle} />
         </Field>
         <Field label="Shipping (USD)">
           <Input value={shipping} onChange={(e) => setShipping(e.target.value)} inputMode="decimal" />
@@ -52,17 +54,9 @@ export default function NewShowForm({ defaultShippingCents, defaultClaimMinutes 
             ))}
           </Select>
         </Field>
-        <div className="flex gap-2">
-          <Button disabled={busy || title.trim().length < 3}>
-            {busy ? "Creating…" : "Create show"} {!busy && <IconArrowRight size={15} />}
-          </Button>
-          <FillButton
-            onClick={() => {
-              setClaimMinutes("30");
-              void typeDemo("Friday Vintage Drop", setTitle);
-            }}
-          />
-        </div>
+        <Button disabled={busy || title.trim().length < 3}>
+          {busy ? "Creating…" : "Create show"} {!busy && <IconArrowRight size={15} />}
+        </Button>
       </form>
       {err && <Notice tone="error" className="mt-4">{err}</Notice>}
     </Card>

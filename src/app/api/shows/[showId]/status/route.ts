@@ -1,4 +1,5 @@
 import { NextResponse, type NextRequest } from "next/server";
+import { ensureCrowd } from "@/lib/demo-video";
 import { setShowStatus } from "@/lib/live";
 import { requireSeller } from "@/lib/viewer";
 
@@ -10,5 +11,6 @@ export async function POST(req: NextRequest, ctx: RouteContext<"/api/shows/[show
   const { status } = await req.json().catch(() => ({}));
   if (status !== "live" && status !== "ended") return NextResponse.json({ error: "Unknown status." }, { status: 400 });
   await setShowStatus(showId, status);
+  if (status === "live") void ensureCrowd(showId).catch((err) => console.error("[demo crowd] start failed", err)); // demo video only
   return NextResponse.json({ ok: true, status });
 }

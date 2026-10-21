@@ -10,10 +10,8 @@ import ToastStack from "@/components/live/toasts";
 import type { ChatMessage } from "@/components/live/use-show";
 import { savings, useShow, type LiveItem } from "@/components/live/use-show";
 import { IconArrowLeft, IconBolt, IconBroadcast, IconCamera, IconChart, IconCopy, IconEye, IconMic, IconSpark, IconTag } from "@/components/ui/icons";
-import { Badge, Button, ButtonLink, Card, FillButton, Input, LiveBadge, Thumb, cx, money, typeDemo } from "@/components/ui/kit";
-
-// Demo video: each Fill types the next item into the "Or type it" box.
-const DEMO_ITEMS = ["Black bucket hat, twenty dollars", "Grey wool scarf, fifteen dollars", "Vintage denim jacket, size medium, forty-five dollars"];
+import { Badge, Button, ButtonLink, Card, Input, LiveBadge, Thumb, cx, money } from "@/components/ui/kit";
+import { DEMO, demoMode } from "@/lib/demo-script";
 
 // Minimal typing for the browser's speech recognition (Chrome exposes it as webkitSpeechRecognition).
 type Recognition = {
@@ -111,9 +109,27 @@ export default function StudioRoom({ showId }: { showId: string }) {
   const [heard, setHeard] = useState(""); // final words since the last listing
   const [interim, setInterim] = useState("");
   const wantListening = useRef(false);
-  const speechSupported = typeof window !== "undefined" && ("webkitSpeechRecognition" in window || "SpeechRecognition" in window);
+  const speechSupported = demoMode || (typeof window !== "undefined" && ("webkitSpeechRecognition" in window || "SpeechRecognition" in window));
+
+  // Demo video: "Start talking" plays the seller's next scripted line word by word, the way the browser
+  // shows what it hears, while they say it out loud on camera. Then it stops listening, ready for "List it".
+  const demoLine = useRef(0);
+  function hearDemoLine() {
+    const words = DEMO.items[demoLine.current++ % DEMO.items.length].split(" ");
+    const start = 700; // the browser takes a moment to pick up the first word
+    const perWord = 380;
+    setHeard("");
+    setListening(true);
+    words.forEach((_, i) => setTimeout(() => setInterim(words.slice(0, i + 1).join(" ")), start + i * perWord));
+    setTimeout(() => {
+      setHeard(words.join(" "));
+      setInterim("");
+      setListening(false);
+    }, start + words.length * perWord + 300);
+  }
 
   function startListening() {
+    if (demoMode) return hearDemoLine();
     const Ctor = (window as unknown as { SpeechRecognition?: new () => Recognition; webkitSpeechRecognition?: new () => Recognition })
       .SpeechRecognition ?? (window as unknown as { webkitSpeechRecognition: new () => Recognition }).webkitSpeechRecognition;
     if (!Ctor) return;
@@ -170,7 +186,6 @@ export default function StudioRoom({ showId }: { showId: string }) {
   // ---- listing
   const [typed, setTyped] = useState("");
   const [listing, setListing] = useState(false);
-  const demoStep = useRef(0);
 
   const listIt = useCallback(
     async (words: string) => {
@@ -330,7 +345,6 @@ export default function StudioRoom({ showId }: { showId: string }) {
               }}
             >
               <Input value={typed} onChange={(e) => setTyped(e.target.value)} placeholder="Or type it: wool scarf, forty dollars" />
-              <FillButton onClick={() => void typeDemo(DEMO_ITEMS[demoStep.current++ % DEMO_ITEMS.length], setTyped)} />
               <Button disabled={!typed.trim() || listing} variant="secondary">
                 List
               </Button>
@@ -488,7 +502,13 @@ function SellerChatBox({
         </p>
       )}
       <div className="flex gap-2">
-        <Input value={text} onChange={(e) => setText(e.target.value)} maxLength={280} placeholder={replyTo ? "Your answer (your assistant will remember it)" : "Say something to viewers"} />
+        <Input
+          value={text}
+          onChange={(e) => setText(e.target.value)}
+          maxLength={280}
+          placeholder={replyTo ? "Your answer (your assistant will remember it)" : "Say something to viewers"}
+          demo={replyTo ? DEMO.sellerChat.reply : DEMO.sellerChat.hello}
+        />
         <Button disabled={busy || !text.trim()}>Send</Button>
       </div>
     </form>
@@ -508,7 +528,8 @@ function MiniStat({ label, value }: { label: string; value: string | number }) {
 function AuctionButton({ showId, item, onError }: { showId: string; item: LiveItem; onError: (m: string) => void }) {
   const [busy, setBusy] = useState(false);
   async function start() {
-    const input = prompt("Starting bid in USD (30-second auction):", String(Math.max(1, Math.round(item.price_cents / 100))));
+    // Demo video: open below the price, so the bidding has somewhere to go.
+    const input = prompt("Starting bid in USD (30-second auction):", String(Math.max(1, Math.round((item.price_cents / 100) * (demoMode ? 0.6 : 1)))));
     if (input === null) return;
     setBusy(true);
     const res = await fetch(`/api/shows/${showId}/items/${item.id}/auction`, {
