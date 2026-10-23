@@ -1,5 +1,4 @@
 import ControlRoom from "@/components/control/control-room";
-import InsightsShowPicker from "@/components/dashboard/insights-show-picker";
 import { IconChart } from "@/components/ui/icons";
 import { ButtonLink, Card, EmptyState, PageHeader } from "@/components/ui/kit";
 import { getControlData } from "@/lib/control-data";
@@ -19,14 +18,15 @@ export default async function InsightsPage(props: PageProps<"/dashboard/insights
 
   return (
     <>
-      <PageHeader
-        kicker="Insights"
-        title="Control room"
-        description="Dashboards across all your shows. Ask the Show Producer what to bring next time, or to chase unpaid buyers. It asks before it touches money."
-        actions={selected && <InsightsShowPicker shows={shows.map((s) => ({ id: s.id, title: s.title }))} selectedId={selected.id} />}
-      />
+      <PageHeader kicker="Insights" title="Control room" description="Every show at a glance. Ask the Show Producer what to bring next time or who still owes you. It asks before it touches money." />
       {selected ? (
-        <ControlRoom showId={selected.id} data={await getControlData(user.id)} licenseKey={process.env.AG_STUDIO_LICENSE_KEY || undefined} aiEnabled={Boolean(process.env.GEMINI_API_KEY)} />
+        <ControlRoom
+          showId={selected.id}
+          shows={shows.map((s) => ({ id: s.id, title: s.title, status: s.status, at: s.started_at ?? s.created_at }))}
+          data={await getControlData(user.id)}
+          licenseKey={process.env.AG_STUDIO_LICENSE_KEY || undefined}
+          aiEnabled={Boolean(process.env.GEMINI_API_KEY)}
+        />
       ) : (
         <Card>
           <EmptyState icon={<IconChart size={20} />} title="Nothing to chart yet" action={<ButtonLink href="/dashboard/shows" size="sm">Create a show</ButtonLink>}>

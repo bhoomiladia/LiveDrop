@@ -79,7 +79,8 @@ export default function AppShell({ role, user, children }: { role: Role; user: {
       </header>
 
       <main className="min-w-0 px-4 sm:px-8 lg:px-12 pt-8 pb-28 lg:pb-16">
-        <div className="max-w-[1080px] mx-auto">{children}</div>
+        {/* Pages with a [data-wide] element (the Insights dashboards) get the full width. */}
+        <div className="max-w-[1080px] has-[[data-wide]]:max-w-[1600px] mx-auto">{children}</div>
       </main>
 
       {/* Mobile tab bar */}

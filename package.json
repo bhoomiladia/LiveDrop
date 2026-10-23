@@ -9,7 +9,8 @@
     "lint": "eslint",
     "test": "node --test --disable-warning=MODULE_TYPELESS_PACKAGE_JSON \"src/**/*.test.ts\"",
     "db:check": "node --env-file-if-exists=.env.local --disable-warning=MODULE_TYPELESS_PACKAGE_JSON --disable-warning=ExperimentalWarning scripts/check-mongo.ts",
-    "db:migrate": "node --env-file-if-exists=.env.local --disable-warning=MODULE_TYPELESS_PACKAGE_JSON --disable-warning=ExperimentalWarning scripts/migrate-sqlite-to-mongo.ts"
+    "db:migrate": "node --env-file-if-exists=.env.local --disable-warning=MODULE_TYPELESS_PACKAGE_JSON --disable-warning=ExperimentalWarning scripts/migrate-sqlite-to-mongo.ts",
+    "db:seed-demo": "node --env-file-if-exists=.env.local --disable-warning=MODULE_TYPELESS_PACKAGE_JSON --disable-warning=ExperimentalWarning scripts/seed-demo-insights.ts"
   },
   "dependencies": {
     "@google/genai": "^2.29.1",

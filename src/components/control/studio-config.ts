@@ -156,7 +156,7 @@ const recap: AgPageState = {
     "sold-via": {
       type: "donut-chart",
       dataMapping: { categoryKey: [{ id: "items.saleType" }], valueKey: [sum("items.sold")] },
-      format: title("How items sold (incl. unsold)"),
+      format: title("How items sold"),
     },
     items: {
       type: "grid",
@@ -177,42 +177,53 @@ const recap: AgPageState = {
       sort: [{ field: { id: "items.listedAt" }, direction: "desc" }],
       format: title("Every item"),
     },
+    "sold-by-category": {
+      type: "bar-chart-grouped",
+      dataMapping: { categoryKey: [{ id: "items.category" }], valueKey: [sum("items.sold"), avg("items.minutesToClaim")] },
+      format: title("Sold and minutes to claim, by category"),
+    },
     chat: {
       type: "bar-chart-grouped",
       dataMapping: { categoryKey: [{ id: "chat.kind" }], valueKey: [countd("chat.id")] },
       format: title("Chat activity"),
     },
   },
+  // 24 columns. Nothing narrower than a third, so titles and legends fit with the Producer panel open.
   widgetLayout: {
-    "show-filter": at(0, 0, 24, 5),
-    "kpi-listed": at(0, 5, 6, 7),
-    "kpi-sold": at(6, 5, 6, 7),
-    "kpi-collected": at(12, 5, 6, 7),
-    "kpi-speed": at(18, 5, 6, 7),
-    "collected-by-show": at(0, 12, 14, 18),
-    "sold-via": at(14, 12, 10, 18),
-    items: at(0, 30, 16, 24),
-    chat: at(16, 30, 8, 24),
+    "show-filter": at(0, 0, 24, 4),
+    "kpi-listed": at(0, 4, 6, 7),
+    "kpi-sold": at(6, 4, 6, 7),
+    "kpi-collected": at(12, 4, 6, 7),
+    "kpi-speed": at(18, 4, 6, 7),
+    "collected-by-show": at(0, 11, 14, 18),
+    "sold-via": at(14, 11, 10, 18),
+    "sold-by-category": at(0, 29, 14, 18),
+    chat: at(14, 29, 10, 18),
+    items: at(0, 47, 24, 26),
   },
 };
 
 const buyers: AgPageState = {
   id: "buyers",
   widgets: {
+    "kpi-buyers": kpi("Buyers", countd("orders.buyer")),
+    "kpi-orders": kpi("PayPal orders", countd("orders.id")),
+    "kpi-collected": kpi("Collected", sum("orders.collected")),
+    "kpi-refunded": kpi("Refunded", sum("orders.refunded")),
     "top-buyers": {
       type: "bar-chart-grouped",
       dataMapping: { categoryKey: [{ id: "orders.buyer" }], valueKey: [sum("orders.collected")] },
-      format: title("Top buyers by amount collected"),
+      format: title("Top buyers (collected)"),
     },
     "paid-via": {
       type: "donut-chart",
       dataMapping: { categoryKey: [{ id: "orders.channel" }], valueKey: [sum("orders.collected")] },
-      format: title("Collected by payment channel"),
+      format: title("Collected by channel"),
     },
     "people-vs-agents": {
       type: "donut-chart",
       dataMapping: { categoryKey: [{ id: "claims.who" }], valueKey: [countd("claims.id")] },
-      format: title("Claims: people vs AI agents"),
+      format: title("People vs AI agents"),
     },
     orders: {
       type: "grid",
@@ -234,10 +245,14 @@ const buyers: AgPageState = {
     },
   },
   widgetLayout: {
-    "top-buyers": at(0, 0, 10, 20),
-    "paid-via": at(10, 0, 7, 20),
-    "people-vs-agents": at(17, 0, 7, 20),
-    orders: at(0, 20, 24, 24),
+    "kpi-buyers": at(0, 0, 6, 7),
+    "kpi-orders": at(6, 0, 6, 7),
+    "kpi-collected": at(12, 0, 6, 7),
+    "kpi-refunded": at(18, 0, 6, 7),
+    "top-buyers": at(0, 7, 14, 20),
+    "paid-via": at(14, 7, 10, 20),
+    orders: at(0, 27, 16, 24),
+    "people-vs-agents": at(16, 27, 8, 24),
   },
 };
 
