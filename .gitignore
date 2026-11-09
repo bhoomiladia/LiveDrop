@@ -48,12 +48,11 @@ next-env.d.ts
 /video-voice-sample/
 
 /.claude/demo-film/rec/
-/demo-film/footage/
-/demo-film/out/
 
-/demo-film/tools
+
 
 /.claude
 
-/demo-film/rec
-/demo-film/voice/
+
+/demo-film
+

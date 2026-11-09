@@ -13,7 +13,7 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "Live Drop — Go live. Say the price. Get paid.",
+  title: "Live Drop · Go live. Say the price. Get paid.",
   description:
     "Live Drop is an AI co-host for live sellers: speak to list, first claim wins, and buyers pay with PayPal in one tap.",
 };
