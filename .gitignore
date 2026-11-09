@@ -43,3 +43,17 @@ next-env.d.ts
 
 # local database
 /.data/
+
+# voice samples for the demo narration (keep out of git)
+/video-voice-sample/
+
+/.claude/demo-film/rec/
+/demo-film/footage/
+/demo-film/out/
+
+/demo-film/tools
+
+/.claude
+
+/demo-film/rec
+/demo-film/voice/

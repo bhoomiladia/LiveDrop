@@ -1,0 +1,54 @@
+<template>
+  <style>
+
+:root { --paper:#ffffff; --canvas:#f6f8fc; --ink:#0c0e13; --ink-soft:#2a2f3a; --muted:#686c75; --line:#e4e8ef;
+  --line-strong:#d0d6e1; --brand:#2659d9; --tint:#e9f0fd; --live:#d6453d; --paypal:#ffc439; --success:#1f7a4d; }
+* { margin:0; padding:0; box-sizing:border-box; }
+#root { position:absolute; inset:0; background:var(--canvas); font-family:Inter, sans-serif; color:var(--ink); overflow:hidden; }
+em { font-style:normal; color:var(--brand); }
+.hl { font-size:76px; font-weight:700; letter-spacing:-.035em; line-height:1.04; }
+.hl .w { display:inline-block; }
+.sub { font-size:30px; color:var(--muted); margin-top:22px; line-height:1.3; letter-spacing:-.01em; }
+.card { position:absolute; background:var(--paper); border:1px solid var(--line-strong); border-radius:26px;
+  box-shadow:0 30px 60px -34px rgba(12,14,19,.32); overflow:hidden; }
+.pill { position:absolute; display:inline-flex; align-items:center; gap:10px; border-radius:999px; font-weight:700; }
+.live { background:var(--live); color:#fff; font-size:22px; letter-spacing:.06em; padding:9px 18px; }
+.live i { width:10px; height:10px; border-radius:50%; background:#fff; display:block; }
+.bub { position:absolute; background:var(--paper); border:1px solid var(--line); border-radius:22px; padding:12px 20px;
+  font-size:24px; box-shadow:0 14px 30px -20px rgba(12,14,19,.35); white-space:nowrap; }
+.bub b { font-weight:700; margin-right:8px; }
+
+  </style>
+  <div id="root" data-composition-id="s3" data-width="1920" data-height="1080">
+
+    <svg id="s3-ring" width="1920" height="1080" style="position:absolute; inset:0">
+      <circle cx="960" cy="420" r="10" fill="none" stroke="#2659d9" stroke-width="4" id="s3-c1"/>
+      <circle cx="960" cy="420" r="10" fill="none" stroke="#a9c3f3" stroke-width="3" id="s3-c2"/></svg>
+    <div style="position:absolute; left:0; right:0; top:270px; text-align:center">
+      <div id="s3-name" style="display:inline-flex; align-items:center; gap:26px; font-size:170px; font-weight:700; letter-spacing:-.05em; line-height:1">
+        <span><span class="ch" style="display:inline-block">L</span><span class="ch" style="display:inline-block">i</span><span class="ch" style="display:inline-block">v</span><span class="ch" style="display:inline-block">e</span><span class="ch" style="display:inline-block">&nbsp;</span><span class="ch" style="display:inline-block">D</span><span class="ch" style="display:inline-block">r</span><span class="ch" style="display:inline-block">o</span><span class="ch" style="display:inline-block">p</span></span><span id="s3-arrow" style="width:120px; height:120px; display:block"><svg viewBox="0 0 24 24" fill="none" stroke="#2659d9" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path class="ar1" d="M5 19 C 10 16, 14 11, 18.5 5.5" pathLength="100" stroke-dasharray="100 120" stroke-dashoffset="110"/><path class="ar2" d="M10.5 5.5 h8 v8" pathLength="100" stroke-dasharray="100 120" stroke-dashoffset="110"/></svg></span></div>
+      <div id="s3-sub" style="font-size:36px; color:var(--muted); margin-top:30px; opacity:0">An AI co-host for small sellers who sell on live video</div>
+      <div style="margin-top:62px; display:flex; justify-content:center; gap:28px"><div id="s3-b0" style="display:inline-flex; align-items:center; gap:18px; background:var(--paper); border:1px solid var(--line); border-radius:999px; padding:18px 34px 18px 26px; box-shadow:0 18px 40px -28px rgba(12,14,19,.35); opacity:0"><span style="width:18px; height:18px; border-radius:50%; background:var(--live); display:block" id="s3-dot"></span><span style="font-size:52px; font-weight:700; letter-spacing:-.03em">Go live.</span></div><div id="s3-b1" style="display:inline-flex; align-items:center; gap:18px; background:var(--paper); border:1px solid var(--line); border-radius:999px; padding:18px 34px 18px 26px; box-shadow:0 18px 40px -28px rgba(12,14,19,.35); opacity:0"><span style="display:flex; gap:5px; align-items:center; height:34px"><i class="s3-bar" style="display:block; width:7px; height:30px; border-radius:4px; background:var(--brand); transform-origin:50% 50%"></i><i class="s3-bar" style="display:block; width:7px; height:30px; border-radius:4px; background:var(--brand); transform-origin:50% 50%"></i><i class="s3-bar" style="display:block; width:7px; height:30px; border-radius:4px; background:var(--brand); transform-origin:50% 50%"></i><i class="s3-bar" style="display:block; width:7px; height:30px; border-radius:4px; background:var(--brand); transform-origin:50% 50%"></i><i class="s3-bar" style="display:block; width:7px; height:30px; border-radius:4px; background:var(--brand); transform-origin:50% 50%"></i></span><span style="font-size:52px; font-weight:700; letter-spacing:-.03em">Say the price.</span></div><div id="s3-b2" style="display:inline-flex; align-items:center; gap:18px; background:var(--paper); border:1px solid var(--line); border-radius:999px; padding:18px 34px 18px 26px; box-shadow:0 18px 40px -28px rgba(12,14,19,.35); opacity:0"><span style="width:38px; height:38px; border-radius:50%; background:var(--paypal); display:grid; place-items:center"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#0c0e13" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path id="s3-tick" d="M5 12.5l4.5 4.5L19 7.5" pathLength="100" stroke-dasharray="100 120" stroke-dashoffset="110"/></svg></span><span style="font-size:52px; font-weight:700; letter-spacing:-.03em; color:var(--brand)">Get paid.</span></div></div>
+    </div>
+<div id="s3-fade" style="position:absolute; inset:0; background:var(--canvas); z-index:90"></div>
+  </div>
+  <script>
+    const tl = gsap.timeline({ paused: true });
+    tl.fromTo("#s3-fade", {opacity:1}, {opacity:0, duration:0.35, ease:"power1.out"}, 0);
+    tl.fromTo("#s3-c1", {attr:{r:10}, opacity:1}, {attr:{r:1300}, opacity:0, duration:1.4, ease:"power2.out"}, 0.05);
+    tl.fromTo("#s3-c2", {attr:{r:10}, opacity:1}, {attr:{r:1100}, opacity:0, duration:1.6, ease:"power2.out"}, 0.25);
+    tl.fromTo("#s3-name .ch", {opacity:0, y:90, rotation:8}, {opacity:1, y:0, rotation:0, duration:0.6, ease:"power4.out", stagger:0.04}, 1.62);
+    tl.to("#s3-arrow .ar1", {strokeDashoffset:0, duration:0.45, ease:"power2.out"}, 2.12);
+    tl.to("#s3-arrow .ar2", {strokeDashoffset:0, duration:0.3, ease:"power2.out"}, 2.47);
+    tl.fromTo("#s3-arrow", {x:0, y:0}, {x:10, y:-10, duration:0.3, ease:"power2.out", yoyo:true, repeat:1}, 2.77);
+    tl.fromTo("#s3-sub", {opacity:0, y:16}, {opacity:1, y:0, duration:0.5, ease:"power2.out"}, 2.77);
+    tl.fromTo("#s3-b0", {opacity:0, y:40, scale:0.9}, {opacity:1, y:0, scale:1, duration:0.45, ease:"back.out(1.8)"}, 5.31);
+    tl.fromTo("#s3-b1", {opacity:0, y:40, scale:0.9}, {opacity:1, y:0, scale:1, duration:0.45, ease:"back.out(1.8)"}, 6.29);
+    tl.fromTo("#s3-b2", {opacity:0, y:40, scale:0.9}, {opacity:1, y:0, scale:1, duration:0.45, ease:"back.out(1.8)"}, 7.39);
+    tl.fromTo("#s3-dot", {scale:1}, {scale:1.35, duration:0.4, ease:"sine.inOut", yoyo:true, repeat:5}, 5.71);
+    tl.fromTo(".s3-bar", {scaleY:0.3}, {scaleY:1.2, duration:0.18, ease:"sine.inOut", yoyo:true, repeat:9, stagger:0.06}, 6.59);
+    tl.to("#s3-tick", {strokeDashoffset:0, duration:0.35, ease:"power2.out"}, 7.74);
+    tl.set({}, {}, 8.904);
+    window.__timelines["s3"] = tl;
+  </script>
+</template>

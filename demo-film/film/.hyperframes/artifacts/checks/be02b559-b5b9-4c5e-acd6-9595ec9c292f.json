@@ -1,0 +1,2315 @@
+{
+  "ok": true,
+  "strict": false,
+  "browserSkipped": false,
+  "lint": {
+    "ok": true,
+    "errorCount": 0,
+    "warningCount": 26,
+    "infoCount": 0,
+    "findings": [
+      {
+        "code": "nested_media_start_basis_ambiguous",
+        "severity": "warning",
+        "message": "<video id=\"s1-s1\"> has data-start=\"4.488\" inside a sub-composition. Nested media timing is local to its composition by default; a nonzero value can be confused with a legacy root-global timestamp.",
+        "selector": "#s1-s1",
+        "dataAttributes": {},
+        "sourceFile": "/Users/bhoomiladia/my-projects/paypal/demo-film/film/compositions/s1.html",
+        "bbox": {
+          "x": 0,
+          "y": 0,
+          "width": 0,
+          "height": 0
+        },
+        "time": 0,
+        "fixHint": "Keep data-start=\"4.488\" if it is composition-local. If this is a legacy root-global timestamp, add data-hf-media-start-basis=\"global\"; otherwise convert it to local time by subtracting the host start."
+      },
+      {
+        "code": "nested_media_start_basis_ambiguous",
+        "severity": "warning",
+        "message": "<video id=\"s1-s2\"> has data-start=\"7.480\" inside a sub-composition. Nested media timing is local to its composition by default; a nonzero value can be confused with a legacy root-global timestamp.",
+        "selector": "#s1-s2",
+        "dataAttributes": {},
+        "sourceFile": "/Users/bhoomiladia/my-projects/paypal/demo-film/film/compositions/s1.html",
+        "bbox": {
+          "x": 0,
+          "y": 0,
+          "width": 0,
+          "height": 0
+        },
+        "time": 0,
+        "fixHint": "Keep data-start=\"7.480\" if it is composition-local. If this is a legacy root-global timestamp, add data-hf-media-start-basis=\"global\"; otherwise convert it to local time by subtracting the host start."
+      },
+      {
+        "code": "nested_media_start_basis_ambiguous",
+        "severity": "warning",
+        "message": "<video id=\"s1-b1\"> has data-start=\"4.488\" inside a sub-composition. Nested media timing is local to its composition by default; a nonzero value can be confused with a legacy root-global timestamp.",
+        "selector": "#s1-b1",
+        "dataAttributes": {},
+        "sourceFile": "/Users/bhoomiladia/my-projects/paypal/demo-film/film/compositions/s1.html",
+        "bbox": {
+          "x": 0,
+          "y": 0,
+          "width": 0,
+          "height": 0
+        },
+        "time": 0,
+        "fixHint": "Keep data-start=\"4.488\" if it is composition-local. If this is a legacy root-global timestamp, add data-hf-media-start-basis=\"global\"; otherwise convert it to local time by subtracting the host start."
+      },
+      {
+        "code": "nested_media_start_basis_ambiguous",
+        "severity": "warning",
+        "message": "<video id=\"s1-b2\"> has data-start=\"7.480\" inside a sub-composition. Nested media timing is local to its composition by default; a nonzero value can be confused with a legacy root-global timestamp.",
+        "selector": "#s1-b2",
+        "dataAttributes": {},
+        "sourceFile": "/Users/bhoomiladia/my-projects/paypal/demo-film/film/compositions/s1.html",
+        "bbox": {
+          "x": 0,
+          "y": 0,
+          "width": 0,
+          "height": 0
+        },
+        "time": 0,
+        "fixHint": "Keep data-start=\"7.480\" if it is composition-local. If this is a legacy root-global timestamp, add data-hf-media-start-basis=\"global\"; otherwise convert it to local time by subtracting the host start."
+      },
+      {
+        "code": "nested_media_start_basis_ambiguous",
+        "severity": "warning",
+        "message": "<video id=\"s10-s1\"> has data-start=\"5.454\" inside a sub-composition. Nested media timing is local to its composition by default; a nonzero value can be confused with a legacy root-global timestamp.",
+        "selector": "#s10-s1",
+        "dataAttributes": {},
+        "sourceFile": "/Users/bhoomiladia/my-projects/paypal/demo-film/film/compositions/s10.html",
+        "bbox": {
+          "x": 0,
+          "y": 0,
+          "width": 0,
+          "height": 0
+        },
+        "time": 0,
+        "fixHint": "Keep data-start=\"5.454\" if it is composition-local. If this is a legacy root-global timestamp, add data-hf-media-start-basis=\"global\"; otherwise convert it to local time by subtracting the host start."
+      },
+      {
+        "code": "nested_media_start_basis_ambiguous",
+        "severity": "warning",
+        "message": "<video id=\"s10-s2\"> has data-start=\"8.635\" inside a sub-composition. Nested media timing is local to its composition by default; a nonzero value can be confused with a legacy root-global timestamp.",
+        "selector": "#s10-s2",
+        "dataAttributes": {},
+        "sourceFile": "/Users/bhoomiladia/my-projects/paypal/demo-film/film/compositions/s10.html",
+        "bbox": {
+          "x": 0,
+          "y": 0,
+          "width": 0,
+          "height": 0
+        },
+        "time": 0,
+        "fixHint": "Keep data-start=\"8.635\" if it is composition-local. If this is a legacy root-global timestamp, add data-hf-media-start-basis=\"global\"; otherwise convert it to local time by subtracting the host start."
+      },
+      {
+        "code": "nested_media_start_basis_ambiguous",
+        "severity": "warning",
+        "message": "<video id=\"s10-s3\"> has data-start=\"12.725\" inside a sub-composition. Nested media timing is local to its composition by default; a nonzero value can be confused with a legacy root-global timestamp.",
+        "selector": "#s10-s3",
+        "dataAttributes": {},
+        "sourceFile": "/Users/bhoomiladia/my-projects/paypal/demo-film/film/compositions/s10.html",
+        "bbox": {
+          "x": 0,
+          "y": 0,
+          "width": 0,
+          "height": 0
+        },
+        "time": 0,
+        "fixHint": "Keep data-start=\"12.725\" if it is composition-local. If this is a legacy root-global timestamp, add data-hf-media-start-basis=\"global\"; otherwise convert it to local time by subtracting the host start."
+      },
+      {
+        "code": "nested_media_start_basis_ambiguous",
+        "severity": "warning",
+        "message": "<video id=\"s10-b1\"> has data-start=\"5.454\" inside a sub-composition. Nested media timing is local to its composition by default; a nonzero value can be confused with a legacy root-global timestamp.",
+        "selector": "#s10-b1",
+        "dataAttributes": {},
+        "sourceFile": "/Users/bhoomiladia/my-projects/paypal/demo-film/film/compositions/s10.html",
+        "bbox": {
+          "x": 0,
+          "y": 0,
+          "width": 0,
+          "height": 0
+        },
+        "time": 0,
+        "fixHint": "Keep data-start=\"5.454\" if it is composition-local. If this is a legacy root-global timestamp, add data-hf-media-start-basis=\"global\"; otherwise convert it to local time by subtracting the host start."
+      },
+      {
+        "code": "nested_media_start_basis_ambiguous",
+        "severity": "warning",
+        "message": "<video id=\"s10-b2\"> has data-start=\"8.635\" inside a sub-composition. Nested media timing is local to its composition by default; a nonzero value can be confused with a legacy root-global timestamp.",
+        "selector": "#s10-b2",
+        "dataAttributes": {},
+        "sourceFile": "/Users/bhoomiladia/my-projects/paypal/demo-film/film/compositions/s10.html",
+        "bbox": {
+          "x": 0,
+          "y": 0,
+          "width": 0,
+          "height": 0
+        },
+        "time": 0,
+        "fixHint": "Keep data-start=\"8.635\" if it is composition-local. If this is a legacy root-global timestamp, add data-hf-media-start-basis=\"global\"; otherwise convert it to local time by subtracting the host start."
+      },
+      {
+        "code": "nested_media_start_basis_ambiguous",
+        "severity": "warning",
+        "message": "<video id=\"s10-b3\"> has data-start=\"12.725\" inside a sub-composition. Nested media timing is local to its composition by default; a nonzero value can be confused with a legacy root-global timestamp.",
+        "selector": "#s10-b3",
+        "dataAttributes": {},
+        "sourceFile": "/Users/bhoomiladia/my-projects/paypal/demo-film/film/compositions/s10.html",
+        "bbox": {
+          "x": 0,
+          "y": 0,
+          "width": 0,
+          "height": 0
+        },
+        "time": 0,
+        "fixHint": "Keep data-start=\"12.725\" if it is composition-local. If this is a legacy root-global timestamp, add data-hf-media-start-basis=\"global\"; otherwise convert it to local time by subtracting the host start."
+      },
+      {
+        "code": "nested_media_start_basis_ambiguous",
+        "severity": "warning",
+        "message": "<video id=\"s5-s1\"> has data-start=\"2.017\" inside a sub-composition. Nested media timing is local to its composition by default; a nonzero value can be confused with a legacy root-global timestamp.",
+        "selector": "#s5-s1",
+        "dataAttributes": {},
+        "sourceFile": "/Users/bhoomiladia/my-projects/paypal/demo-film/film/compositions/s5.html",
+        "bbox": {
+          "x": 0,
+          "y": 0,
+          "width": 0,
+          "height": 0
+        },
+        "time": 0,
+        "fixHint": "Keep data-start=\"2.017\" if it is composition-local. If this is a legacy root-global timestamp, add data-hf-media-start-basis=\"global\"; otherwise convert it to local time by subtracting the host start."
+      },
+      {
+        "code": "nested_media_start_basis_ambiguous",
+        "severity": "warning",
+        "message": "<video id=\"s5-s2\"> has data-start=\"3.724\" inside a sub-composition. Nested media timing is local to its composition by default; a nonzero value can be confused with a legacy root-global timestamp.",
+        "selector": "#s5-s2",
+        "dataAttributes": {},
+        "sourceFile": "/Users/bhoomiladia/my-projects/paypal/demo-film/film/compositions/s5.html",
+        "bbox": {
+          "x": 0,
+          "y": 0,
+          "width": 0,
+          "height": 0
+        },
+        "time": 0,
+        "fixHint": "Keep data-start=\"3.724\" if it is composition-local. If this is a legacy root-global timestamp, add data-hf-media-start-basis=\"global\"; otherwise convert it to local time by subtracting the host start."
+      },
+      {
+        "code": "nested_media_start_basis_ambiguous",
+        "severity": "warning",
+        "message": "<video id=\"s5-s3\"> has data-start=\"5.276\" inside a sub-composition. Nested media timing is local to its composition by default; a nonzero value can be confused with a legacy root-global timestamp.",
+        "selector": "#s5-s3",
+        "dataAttributes": {},
+        "sourceFile": "/Users/bhoomiladia/my-projects/paypal/demo-film/film/compositions/s5.html",
+        "bbox": {
+          "x": 0,
+          "y": 0,
+          "width": 0,
+          "height": 0
+        },
+        "time": 0,
+        "fixHint": "Keep data-start=\"5.276\" if it is composition-local. If this is a legacy root-global timestamp, add data-hf-media-start-basis=\"global\"; otherwise convert it to local time by subtracting the host start."
+      },
+      {
+        "code": "nested_media_start_basis_ambiguous",
+        "severity": "warning",
+        "message": "<video id=\"s5-b1\"> has data-start=\"2.017\" inside a sub-composition. Nested media timing is local to its composition by default; a nonzero value can be confused with a legacy root-global timestamp.",
+        "selector": "#s5-b1",
+        "dataAttributes": {},
+        "sourceFile": "/Users/bhoomiladia/my-projects/paypal/demo-film/film/compositions/s5.html",
+        "bbox": {
+          "x": 0,
+          "y": 0,
+          "width": 0,
+          "height": 0
+        },
+        "time": 0,
+        "fixHint": "Keep data-start=\"2.017\" if it is composition-local. If this is a legacy root-global timestamp, add data-hf-media-start-basis=\"global\"; otherwise convert it to local time by subtracting the host start."
+      },
+      {
+        "code": "nested_media_start_basis_ambiguous",
+        "severity": "warning",
+        "message": "<video id=\"s5-b2\"> has data-start=\"3.724\" inside a sub-composition. Nested media timing is local to its composition by default; a nonzero value can be confused with a legacy root-global timestamp.",
+        "selector": "#s5-b2",
+        "dataAttributes": {},
+        "sourceFile": "/Users/bhoomiladia/my-projects/paypal/demo-film/film/compositions/s5.html",
+        "bbox": {
+          "x": 0,
+          "y": 0,
+          "width": 0,
+          "height": 0
+        },
+        "time": 0,
+        "fixHint": "Keep data-start=\"3.724\" if it is composition-local. If this is a legacy root-global timestamp, add data-hf-media-start-basis=\"global\"; otherwise convert it to local time by subtracting the host start."
+      },
+      {
+        "code": "nested_media_start_basis_ambiguous",
+        "severity": "warning",
+        "message": "<video id=\"s5-b3\"> has data-start=\"5.276\" inside a sub-composition. Nested media timing is local to its composition by default; a nonzero value can be confused with a legacy root-global timestamp.",
+        "selector": "#s5-b3",
+        "dataAttributes": {},
+        "sourceFile": "/Users/bhoomiladia/my-projects/paypal/demo-film/film/compositions/s5.html",
+        "bbox": {
+          "x": 0,
+          "y": 0,
+          "width": 0,
+          "height": 0
+        },
+        "time": 0,
+        "fixHint": "Keep data-start=\"5.276\" if it is composition-local. If this is a legacy root-global timestamp, add data-hf-media-start-basis=\"global\"; otherwise convert it to local time by subtracting the host start."
+      },
+      {
+        "code": "nested_media_start_basis_ambiguous",
+        "severity": "warning",
+        "message": "<video id=\"s7-s1\"> has data-start=\"3.089\" inside a sub-composition. Nested media timing is local to its composition by default; a nonzero value can be confused with a legacy root-global timestamp.",
+        "selector": "#s7-s1",
+        "dataAttributes": {},
+        "sourceFile": "/Users/bhoomiladia/my-projects/paypal/demo-film/film/compositions/s7.html",
+        "bbox": {
+          "x": 0,
+          "y": 0,
+          "width": 0,
+          "height": 0
+        },
+        "time": 0,
+        "fixHint": "Keep data-start=\"3.089\" if it is composition-local. If this is a legacy root-global timestamp, add data-hf-media-start-basis=\"global\"; otherwise convert it to local time by subtracting the host start."
+      },
+      {
+        "code": "nested_media_start_basis_ambiguous",
+        "severity": "warning",
+        "message": "<video id=\"s7-s2\"> has data-start=\"5.491\" inside a sub-composition. Nested media timing is local to its composition by default; a nonzero value can be confused with a legacy root-global timestamp.",
+        "selector": "#s7-s2",
+        "dataAttributes": {},
+        "sourceFile": "/Users/bhoomiladia/my-projects/paypal/demo-film/film/compositions/s7.html",
+        "bbox": {
+          "x": 0,
+          "y": 0,
+          "width": 0,
+          "height": 0
+        },
+        "time": 0,
+        "fixHint": "Keep data-start=\"5.491\" if it is composition-local. If this is a legacy root-global timestamp, add data-hf-media-start-basis=\"global\"; otherwise convert it to local time by subtracting the host start."
+      },
+      {
+        "code": "nested_media_start_basis_ambiguous",
+        "severity": "warning",
+        "message": "<video id=\"s7-s3\"> has data-start=\"11.564\" inside a sub-composition. Nested media timing is local to its composition by default; a nonzero value can be confused with a legacy root-global timestamp.",
+        "selector": "#s7-s3",
+        "dataAttributes": {},
+        "sourceFile": "/Users/bhoomiladia/my-projects/paypal/demo-film/film/compositions/s7.html",
+        "bbox": {
+          "x": 0,
+          "y": 0,
+          "width": 0,
+          "height": 0
+        },
+        "time": 0,
+        "fixHint": "Keep data-start=\"11.564\" if it is composition-local. If this is a legacy root-global timestamp, add data-hf-media-start-basis=\"global\"; otherwise convert it to local time by subtracting the host start."
+      },
+      {
+        "code": "nested_media_start_basis_ambiguous",
+        "severity": "warning",
+        "message": "<video id=\"s7-b1\"> has data-start=\"3.089\" inside a sub-composition. Nested media timing is local to its composition by default; a nonzero value can be confused with a legacy root-global timestamp.",
+        "selector": "#s7-b1",
+        "dataAttributes": {},
+        "sourceFile": "/Users/bhoomiladia/my-projects/paypal/demo-film/film/compositions/s7.html",
+        "bbox": {
+          "x": 0,
+          "y": 0,
+          "width": 0,
+          "height": 0
+        },
+        "time": 0,
+        "fixHint": "Keep data-start=\"3.089\" if it is composition-local. If this is a legacy root-global timestamp, add data-hf-media-start-basis=\"global\"; otherwise convert it to local time by subtracting the host start."
+      },
+      {
+        "code": "nested_media_start_basis_ambiguous",
+        "severity": "warning",
+        "message": "<video id=\"s7-b2\"> has data-start=\"5.491\" inside a sub-composition. Nested media timing is local to its composition by default; a nonzero value can be confused with a legacy root-global timestamp.",
+        "selector": "#s7-b2",
+        "dataAttributes": {},
+        "sourceFile": "/Users/bhoomiladia/my-projects/paypal/demo-film/film/compositions/s7.html",
+        "bbox": {
+          "x": 0,
+          "y": 0,
+          "width": 0,
+          "height": 0
+        },
+        "time": 0,
+        "fixHint": "Keep data-start=\"5.491\" if it is composition-local. If this is a legacy root-global timestamp, add data-hf-media-start-basis=\"global\"; otherwise convert it to local time by subtracting the host start."
+      },
+      {
+        "code": "nested_media_start_basis_ambiguous",
+        "severity": "warning",
+        "message": "<video id=\"s7-b3\"> has data-start=\"11.564\" inside a sub-composition. Nested media timing is local to its composition by default; a nonzero value can be confused with a legacy root-global timestamp.",
+        "selector": "#s7-b3",
+        "dataAttributes": {},
+        "sourceFile": "/Users/bhoomiladia/my-projects/paypal/demo-film/film/compositions/s7.html",
+        "bbox": {
+          "x": 0,
+          "y": 0,
+          "width": 0,
+          "height": 0
+        },
+        "time": 0,
+        "fixHint": "Keep data-start=\"11.564\" if it is composition-local. If this is a legacy root-global timestamp, add data-hf-media-start-basis=\"global\"; otherwise convert it to local time by subtracting the host start."
+      },
+      {
+        "code": "nested_media_start_basis_ambiguous",
+        "severity": "warning",
+        "message": "<video id=\"s8-s1\"> has data-start=\"6.470\" inside a sub-composition. Nested media timing is local to its composition by default; a nonzero value can be confused with a legacy root-global timestamp.",
+        "selector": "#s8-s1",
+        "dataAttributes": {},
+        "sourceFile": "/Users/bhoomiladia/my-projects/paypal/demo-film/film/compositions/s8.html",
+        "bbox": {
+          "x": 0,
+          "y": 0,
+          "width": 0,
+          "height": 0
+        },
+        "time": 0,
+        "fixHint": "Keep data-start=\"6.470\" if it is composition-local. If this is a legacy root-global timestamp, add data-hf-media-start-basis=\"global\"; otherwise convert it to local time by subtracting the host start."
+      },
+      {
+        "code": "nested_media_start_basis_ambiguous",
+        "severity": "warning",
+        "message": "<video id=\"s8-s2\"> has data-start=\"20.812\" inside a sub-composition. Nested media timing is local to its composition by default; a nonzero value can be confused with a legacy root-global timestamp.",
+        "selector": "#s8-s2",
+        "dataAttributes": {},
+        "sourceFile": "/Users/bhoomiladia/my-projects/paypal/demo-film/film/compositions/s8.html",
+        "bbox": {
+          "x": 0,
+          "y": 0,
+          "width": 0,
+          "height": 0
+        },
+        "time": 0,
+        "fixHint": "Keep data-start=\"20.812\" if it is composition-local. If this is a legacy root-global timestamp, add data-hf-media-start-basis=\"global\"; otherwise convert it to local time by subtracting the host start."
+      },
+      {
+        "code": "nested_media_start_basis_ambiguous",
+        "severity": "warning",
+        "message": "<video id=\"s8-b1\"> has data-start=\"6.470\" inside a sub-composition. Nested media timing is local to its composition by default; a nonzero value can be confused with a legacy root-global timestamp.",
+        "selector": "#s8-b1",
+        "dataAttributes": {},
+        "sourceFile": "/Users/bhoomiladia/my-projects/paypal/demo-film/film/compositions/s8.html",
+        "bbox": {
+          "x": 0,
+          "y": 0,
+          "width": 0,
+          "height": 0
+        },
+        "time": 0,
+        "fixHint": "Keep data-start=\"6.470\" if it is composition-local. If this is a legacy root-global timestamp, add data-hf-media-start-basis=\"global\"; otherwise convert it to local time by subtracting the host start."
+      },
+      {
+        "code": "nested_media_start_basis_ambiguous",
+        "severity": "warning",
+        "message": "<video id=\"s8-b2\"> has data-start=\"20.812\" inside a sub-composition. Nested media timing is local to its composition by default; a nonzero value can be confused with a legacy root-global timestamp.",
+        "selector": "#s8-b2",
+        "dataAttributes": {},
+        "sourceFile": "/Users/bhoomiladia/my-projects/paypal/demo-film/film/compositions/s8.html",
+        "bbox": {
+          "x": 0,
+          "y": 0,
+          "width": 0,
+          "height": 0
+        },
+        "time": 0,
+        "fixHint": "Keep data-start=\"20.812\" if it is composition-local. If this is a legacy root-global timestamp, add data-hf-media-start-basis=\"global\"; otherwise convert it to local time by subtracting the host start."
+      }
+    ],
+    "filesScanned": 12
+  },
+  "runtime": {
+    "ok": true,
+    "errorCount": 0,
+    "warningCount": 0,
+    "infoCount": 0,
+    "findings": []
+  },
+  "layout": {
+    "ok": true,
+    "errorCount": 0,
+    "warningCount": 0,
+    "infoCount": 16,
+    "findings": [
+      {
+        "code": "canvas_overflow",
+        "severity": "info",
+        "time": 28.357,
+        "selector": "#s2-m0",
+        "message": "Text extends outside the composition canvas.",
+        "rect": {
+          "left": 250.77,
+          "top": -104,
+          "right": 319.28,
+          "bottom": -79,
+          "width": 68.51,
+          "height": 25
+        },
+        "containerSelector": "#root",
+        "text": "SOLD!",
+        "fixHint": "Move the text inward, reduce its size, or mark intentional off-canvas animation with data-layout-allow-overflow.",
+        "containerRect": {
+          "left": 0,
+          "top": 0,
+          "right": 1920,
+          "bottom": 1080,
+          "width": 1920,
+          "height": 1080
+        },
+        "overflow": {
+          "top": 104
+        },
+        "dataAttributes": {},
+        "sourceFile": "compositions/s2.html",
+        "bbox": {
+          "x": 250.77,
+          "y": -104,
+          "width": 68.51,
+          "height": 25
+        },
+        "firstSeen": 28.357,
+        "lastSeen": 28.357,
+        "occurrences": 1,
+        "heldMs": 0,
+        "times": [
+          28.357
+        ]
+      },
+      {
+        "code": "canvas_overflow",
+        "severity": "info",
+        "time": 28.357,
+        "selector": "#s2-m0 > b:nth-of-type(1)",
+        "message": "Text extends outside the composition canvas.",
+        "rect": {
+          "left": 193,
+          "top": -104,
+          "right": 244.77,
+          "bottom": -79,
+          "width": 51.77,
+          "height": 25
+        },
+        "containerSelector": "#root",
+        "text": "Priya",
+        "fixHint": "Move the text inward, reduce its size, or mark intentional off-canvas animation with data-layout-allow-overflow.",
+        "containerRect": {
+          "left": 0,
+          "top": 0,
+          "right": 1920,
+          "bottom": 1080,
+          "width": 1920,
+          "height": 1080
+        },
+        "overflow": {
+          "top": 104
+        },
+        "dataAttributes": {},
+        "sourceFile": "compositions/s2.html",
+        "bbox": {
+          "x": 193,
+          "y": -104,
+          "width": 51.77,
+          "height": 25
+        },
+        "firstSeen": 28.357,
+        "lastSeen": 28.357,
+        "occurrences": 1,
+        "heldMs": 0,
+        "times": [
+          28.357
+        ]
+      },
+      {
+        "code": "canvas_overflow",
+        "severity": "info",
+        "time": 28.357,
+        "selector": "#s2-m1",
+        "message": "Text extends outside the composition canvas.",
+        "rect": {
+          "left": 263.33,
+          "top": -59.75,
+          "right": 329.45,
+          "bottom": -34.75,
+          "width": 66.12,
+          "height": 25
+        },
+        "containerSelector": "#root",
+        "text": "mine!!",
+        "fixHint": "Move the text inward, reduce its size, or mark intentional off-canvas animation with data-layout-allow-overflow.",
+        "containerRect": {
+          "left": 0,
+          "top": 0,
+          "right": 1920,
+          "bottom": 1080,
+          "width": 1920,
+          "height": 1080
+        },
+        "overflow": {
+          "top": 59.75
+        },
+        "dataAttributes": {},
+        "sourceFile": "compositions/s2.html",
+        "bbox": {
+          "x": 263.33,
+          "y": -59.75,
+          "width": 66.12,
+          "height": 25
+        },
+        "firstSeen": 28.357,
+        "lastSeen": 28.357,
+        "occurrences": 1,
+        "heldMs": 0,
+        "times": [
+          28.357
+        ]
+      },
+      {
+        "code": "canvas_overflow",
+        "severity": "info",
+        "time": 28.357,
+        "selector": "#s2-m1 > b:nth-of-type(1)",
+        "message": "Text extends outside the composition canvas.",
+        "rect": {
+          "left": 193,
+          "top": -59.75,
+          "right": 257.33,
+          "bottom": -34.75,
+          "width": 64.33,
+          "height": 25
+        },
+        "containerSelector": "#root",
+        "text": "Marco",
+        "fixHint": "Move the text inward, reduce its size, or mark intentional off-canvas animation with data-layout-allow-overflow.",
+        "containerRect": {
+          "left": 0,
+          "top": 0,
+          "right": 1920,
+          "bottom": 1080,
+          "width": 1920,
+          "height": 1080
+        },
+        "overflow": {
+          "top": 59.75
+        },
+        "dataAttributes": {},
+        "sourceFile": "compositions/s2.html",
+        "bbox": {
+          "x": 193,
+          "y": -59.75,
+          "width": 64.33,
+          "height": 25
+        },
+        "firstSeen": 28.357,
+        "lastSeen": 28.357,
+        "occurrences": 1,
+        "heldMs": 0,
+        "times": [
+          28.357
+        ]
+      },
+      {
+        "code": "canvas_overflow",
+        "severity": "info",
+        "time": 28.357,
+        "selector": "#s2-m2",
+        "message": "Text extends outside the composition canvas.",
+        "rect": {
+          "left": 236.45,
+          "top": -15.5,
+          "right": 383.48,
+          "bottom": 9.5,
+          "width": 147.03,
+          "height": 25
+        },
+        "containerSelector": "#root",
+        "text": "is it still there?",
+        "fixHint": "Move the text inward, reduce its size, or mark intentional off-canvas animation with data-layout-allow-overflow.",
+        "containerRect": {
+          "left": 0,
+          "top": 0,
+          "right": 1920,
+          "bottom": 1080,
+          "width": 1920,
+          "height": 1080
+        },
+        "overflow": {
+          "top": 15.5
+        },
+        "dataAttributes": {},
+        "sourceFile": "compositions/s2.html",
+        "bbox": {
+          "x": 236.45,
+          "y": -15.5,
+          "width": 147.03,
+          "height": 25
+        },
+        "firstSeen": 28.357,
+        "lastSeen": 28.357,
+        "occurrences": 1,
+        "heldMs": 0,
+        "times": [
+          28.357
+        ]
+      },
+      {
+        "code": "canvas_overflow",
+        "severity": "info",
+        "time": 28.357,
+        "selector": "#s2-m2 > b:nth-of-type(1)",
+        "message": "Text extends outside the composition canvas.",
+        "rect": {
+          "left": 193,
+          "top": -15.5,
+          "right": 230.45,
+          "bottom": 9.5,
+          "width": 37.45,
+          "height": 25
+        },
+        "containerSelector": "#root",
+        "text": "Jen",
+        "fixHint": "Move the text inward, reduce its size, or mark intentional off-canvas animation with data-layout-allow-overflow.",
+        "containerRect": {
+          "left": 0,
+          "top": 0,
+          "right": 1920,
+          "bottom": 1080,
+          "width": 1920,
+          "height": 1080
+        },
+        "overflow": {
+          "top": 15.5
+        },
+        "dataAttributes": {},
+        "sourceFile": "compositions/s2.html",
+        "bbox": {
+          "x": 193,
+          "y": -15.5,
+          "width": 37.45,
+          "height": 25
+        },
+        "firstSeen": 28.357,
+        "lastSeen": 28.357,
+        "occurrences": 1,
+        "heldMs": 0,
+        "times": [
+          28.357
+        ]
+      },
+      {
+        "code": "text_box_overflow",
+        "severity": "info",
+        "time": 28.357,
+        "selector": "#s2-m7",
+        "message": "Text extends outside its nearest visual/container box.",
+        "rect": {
+          "left": 238.39,
+          "top": 209.97,
+          "right": 389.45,
+          "bottom": 230.28,
+          "width": 151.06,
+          "height": 20.31
+        },
+        "containerSelector": "#s2-feed",
+        "text": "wait who got it",
+        "fixHint": "Text is 151px x 20px inside 518px x 716px and overflows by up to 3px; increase the container height to at least ~719px, or allow wrapping with max-width/fitTextFontSize.",
+        "containerRect": {
+          "left": 171,
+          "top": 213,
+          "right": 689,
+          "bottom": 929,
+          "width": 518,
+          "height": 716
+        },
+        "overflow": {
+          "top": 3.03
+        },
+        "dataAttributes": {},
+        "sourceFile": "compositions/s2.html",
+        "bbox": {
+          "x": 238.39,
+          "y": 209.97,
+          "width": 151.06,
+          "height": 20.31
+        },
+        "firstSeen": 28.357,
+        "lastSeen": 28.357,
+        "occurrences": 1,
+        "heldMs": 0,
+        "times": [
+          28.357
+        ]
+      },
+      {
+        "code": "text_box_overflow",
+        "severity": "info",
+        "time": 28.357,
+        "selector": "#s2-m7 > b:nth-of-type(1)",
+        "message": "Text extends outside its nearest visual/container box.",
+        "rect": {
+          "left": 193,
+          "top": 209.74,
+          "right": 232.39,
+          "bottom": 225.75,
+          "width": 39.39,
+          "height": 16.01
+        },
+        "containerSelector": "#s2-feed",
+        "text": "Kim",
+        "fixHint": "Text is 39px x 16px inside 518px x 716px and overflows by up to 3px; increase the container height to at least ~719px, or allow wrapping with max-width/fitTextFontSize.",
+        "containerRect": {
+          "left": 171,
+          "top": 213,
+          "right": 689,
+          "bottom": 929,
+          "width": 518,
+          "height": 716
+        },
+        "overflow": {
+          "top": 3.26
+        },
+        "dataAttributes": {},
+        "sourceFile": "compositions/s2.html",
+        "bbox": {
+          "x": 193,
+          "y": 209.74,
+          "width": 39.39,
+          "height": 16.01
+        },
+        "firstSeen": 28.357,
+        "lastSeen": 28.357,
+        "occurrences": 1,
+        "heldMs": 0,
+        "times": [
+          28.357
+        ]
+      },
+      {
+        "code": "container_overflow",
+        "severity": "info",
+        "time": 28.357,
+        "selector": "#s2-col",
+        "message": "Element extends outside a clipping layout container.",
+        "rect": {
+          "left": 171,
+          "top": -127,
+          "right": 689,
+          "bottom": 697.5,
+          "width": 518,
+          "height": 824.5
+        },
+        "containerSelector": "#s2-feed",
+        "fixHint": "Resize/reposition the child or container, or mark intentional overflow with data-layout-allow-overflow.",
+        "containerRect": {
+          "left": 171,
+          "top": 213,
+          "right": 689,
+          "bottom": 929,
+          "width": 518,
+          "height": 716
+        },
+        "overflow": {
+          "top": 340
+        },
+        "dataAttributes": {},
+        "sourceFile": "compositions/s2.html",
+        "bbox": {
+          "x": 171,
+          "y": -127,
+          "width": 518,
+          "height": 824.5
+        },
+        "firstSeen": 28.357,
+        "lastSeen": 28.357,
+        "occurrences": 1,
+        "heldMs": 0,
+        "times": [
+          28.357
+        ]
+      },
+      {
+        "code": "text_occluded",
+        "severity": "info",
+        "time": 47.261,
+        "selector": "#s4 > div:nth-of-type(1) > div:nth-of-type(1) > span:nth-of-type(1)",
+        "message": "Text is hidden beneath an opaque element.",
+        "rect": {
+          "left": 92,
+          "top": 63,
+          "right": 148.91,
+          "bottom": 79,
+          "width": 56.91,
+          "height": 16
+        },
+        "containerSelector": "#s4-fade",
+        "text": "Seller",
+        "fixHint": "Give the text its own zone, raise its stacking order above the covering element, or mark intentional layering with data-layout-allow-occlusion.",
+        "coveredFraction": 1,
+        "dataAttributes": {},
+        "sourceFile": "compositions/s4.html",
+        "bbox": {
+          "x": 92,
+          "y": 63,
+          "width": 56.91,
+          "height": 16
+        },
+        "firstSeen": 47.261,
+        "lastSeen": 47.261,
+        "occurrences": 1,
+        "heldMs": 0,
+        "times": [
+          47.261
+        ]
+      },
+      {
+        "code": "text_occluded",
+        "severity": "info",
+        "time": 47.261,
+        "selector": "#s4 > div:nth-of-type(1) > div:nth-of-type(1) > span:nth-of-type(2)",
+        "message": "Text is hidden beneath an opaque element.",
+        "rect": {
+          "left": 160.91,
+          "top": 56,
+          "right": 298.5,
+          "bottom": 81,
+          "width": 137.59,
+          "height": 25
+        },
+        "containerSelector": "#s4-fade",
+        "text": "Kabir's studio",
+        "fixHint": "Give the text its own zone, raise its stacking order above the covering element, or mark intentional layering with data-layout-allow-occlusion.",
+        "coveredFraction": 1,
+        "dataAttributes": {},
+        "sourceFile": "compositions/s4.html",
+        "bbox": {
+          "x": 160.91,
+          "y": 56,
+          "width": 137.59,
+          "height": 25
+        },
+        "firstSeen": 47.261,
+        "lastSeen": 47.261,
+        "occurrences": 1,
+        "heldMs": 0,
+        "times": [
+          47.261
+        ]
+      },
+      {
+        "code": "text_occluded",
+        "severity": "info",
+        "time": 47.261,
+        "selector": "#s4 > div:nth-of-type(1) > div:nth-of-type(2) > span:nth-of-type(1)",
+        "message": "Text is hidden beneath an opaque element.",
+        "rect": {
+          "left": 1434,
+          "top": 63,
+          "right": 1485.86,
+          "bottom": 79,
+          "width": 51.86,
+          "height": 16
+        },
+        "containerSelector": "#s4-fade",
+        "text": "Buyer",
+        "fixHint": "Give the text its own zone, raise its stacking order above the covering element, or mark intentional layering with data-layout-allow-occlusion.",
+        "coveredFraction": 1,
+        "dataAttributes": {},
+        "sourceFile": "compositions/s4.html",
+        "bbox": {
+          "x": 1434,
+          "y": 63,
+          "width": 51.86,
+          "height": 16
+        },
+        "firstSeen": 47.261,
+        "lastSeen": 47.261,
+        "occurrences": 1,
+        "heldMs": 0,
+        "times": [
+          47.261
+        ]
+      },
+      {
+        "code": "text_occluded",
+        "severity": "info",
+        "time": 47.261,
+        "selector": "#s4 > div:nth-of-type(1) > div:nth-of-type(2) > span:nth-of-type(2)",
+        "message": "Text is hidden beneath an opaque element.",
+        "rect": {
+          "left": 1497.86,
+          "top": 56,
+          "right": 1627.22,
+          "bottom": 81,
+          "width": 129.36,
+          "height": 25
+        },
+        "containerSelector": "#s4-fade",
+        "text": "Tara's phone",
+        "fixHint": "Give the text its own zone, raise its stacking order above the covering element, or mark intentional layering with data-layout-allow-occlusion.",
+        "coveredFraction": 1,
+        "dataAttributes": {},
+        "sourceFile": "compositions/s4.html",
+        "bbox": {
+          "x": 1497.86,
+          "y": 56,
+          "width": 129.36,
+          "height": 25
+        },
+        "firstSeen": 47.261,
+        "lastSeen": 47.261,
+        "occurrences": 1,
+        "heldMs": 0,
+        "times": [
+          47.261
+        ]
+      },
+      {
+        "code": "text_occluded",
+        "severity": "info",
+        "time": 47.261,
+        "selector": "#s4 > div:nth-of-type(1) > div:nth-of-type(3) > div:nth-of-type(1) > span:nth-of-type(4)",
+        "message": "Text is hidden beneath an opaque element.",
+        "rect": {
+          "left": 708.58,
+          "top": 109.5,
+          "right": 817.42,
+          "bottom": 125.5,
+          "width": 108.84,
+          "height": 16
+        },
+        "containerSelector": "#s4-fade",
+        "text": "Live Drop · Studio",
+        "fixHint": "Give the text its own zone, raise its stacking order above the covering element, or mark intentional layering with data-layout-allow-occlusion.",
+        "coveredFraction": 1,
+        "dataAttributes": {},
+        "sourceFile": "compositions/s4.html",
+        "bbox": {
+          "x": 708.58,
+          "y": 109.5,
+          "width": 108.84,
+          "height": 16
+        },
+        "firstSeen": 47.261,
+        "lastSeen": 47.261,
+        "occurrences": 1,
+        "heldMs": 0,
+        "times": [
+          47.261
+        ]
+      },
+      {
+        "code": "canvas_covered",
+        "severity": "info",
+        "time": 47.261,
+        "selector": "#s4 > div:nth-of-type(1)",
+        "message": "An opaque element covers the canvas above every other visible clip, so the frame shows only it.",
+        "rect": {
+          "left": 0,
+          "top": 0,
+          "right": 1920,
+          "bottom": 1080,
+          "width": 1920,
+          "height": 1080
+        },
+        "fixHint": "Move the full-frame element below the content (earlier in the DOM or a lower z-index / track), or mark a deliberate full-frame card with data-layout-allow-occlusion.",
+        "dataAttributes": {
+          "data-hf-inner-root": "true",
+          "data-hf-authored-id": "root",
+          "data-width": "1920",
+          "data-height": "1080"
+        },
+        "sourceFile": "compositions/s4.html",
+        "bbox": {
+          "x": 0,
+          "y": 0,
+          "width": 1920,
+          "height": 1080
+        },
+        "firstSeen": 47.261,
+        "lastSeen": 47.261,
+        "occurrences": 1,
+        "heldMs": 0,
+        "times": [
+          47.261
+        ]
+      },
+      {
+        "code": "escaped_container",
+        "severity": "info",
+        "time": 122.879,
+        "selector": "#s8-r1",
+        "message": "Positioned element renders far outside its offset parent — its coordinates were likely computed in a different frame (canvas/viewport pixels).",
+        "rect": {
+          "left": 1449,
+          "top": 1047,
+          "right": 1802,
+          "bottom": 1115,
+          "width": 353,
+          "height": 68
+        },
+        "containerSelector": "#s8-zb",
+        "text": "",
+        "fixHint": "Compute left/top in the offset parent's frame (subtract its rect), or mark intentional placement with data-layout-allow-overflow.",
+        "containerRect": {
+          "left": 1439,
+          "top": 118,
+          "right": 1813,
+          "bottom": 928,
+          "width": 374,
+          "height": 810
+        },
+        "dataAttributes": {},
+        "sourceFile": "compositions/s8.html",
+        "bbox": {
+          "x": 1449,
+          "y": 1047,
+          "width": 353,
+          "height": 68
+        },
+        "firstSeen": 122.879,
+        "lastSeen": 122.879,
+        "occurrences": 1,
+        "heldMs": 0,
+        "times": [
+          122.879
+        ]
+      }
+    ],
+    "duration": 170.14,
+    "samples": [
+      9.452,
+      28.357,
+      47.261,
+      66.166,
+      85.07,
+      103.974,
+      122.879,
+      141.783,
+      160.688
+    ],
+    "transitionSamples": [],
+    "transitionSamplesDropped": 0,
+    "tolerance": 2,
+    "totalIssueCount": 16,
+    "truncated": false
+  },
+  "motion": {
+    "ok": true,
+    "errorCount": 0,
+    "warningCount": 0,
+    "infoCount": 0,
+    "findings": [],
+    "enabled": false,
+    "samples": 0
+  },
+  "contrast": {
+    "ok": true,
+    "errorCount": 0,
+    "warningCount": 0,
+    "infoCount": 0,
+    "findings": [],
+    "enabled": true,
+    "samples": [
+      9.452,
+      47.261,
+      85.07,
+      122.879,
+      160.688
+    ],
+    "checked": 26,
+    "passed": 26
+  },
+  "craft": {
+    "ok": true,
+    "errorCount": 0,
+    "warningCount": 15,
+    "infoCount": 0,
+    "findings": [
+      {
+        "code": "first_frame_empty",
+        "severity": "warning",
+        "message": "Frame 0 is covered by #s1 > div:nth-of-type(1): an opaque element over the canvas hides every other clip, and the first frame is the thumbnail on social players. Move it below the content; see canvas_covered.",
+        "selector": "[data-composition-id]",
+        "dataAttributes": {},
+        "sourceFile": "index.html",
+        "bbox": {
+          "x": 0,
+          "y": 0,
+          "width": 0,
+          "height": 0
+        },
+        "time": 0
+      },
+      {
+        "code": "text_below_floor",
+        "severity": "warning",
+        "message": "Type floor is 28 px (2.6% of the 1080 px short side, what a phone can read) and 6 text elements stay under it for 0.5 s or more, the smallest \"Seller\" at 13 px: set reading text to at least 28 px, or put data-layout-ignore on text that is texture rather than reading; see references/look.md.",
+        "text": "Seller",
+        "selector": "#s1 > div:nth-of-type(1) > div:nth-of-type(1) > span:nth-of-type(1)",
+        "dataAttributes": {},
+        "sourceFile": "compositions/s1.html",
+        "bbox": {
+          "x": 92,
+          "y": 63,
+          "width": 56.91,
+          "height": 16
+        },
+        "time": 0,
+        "times": [
+          0,
+          0,
+          0,
+          0,
+          0,
+          0.284
+        ],
+        "fontPx": 13,
+        "floorPx": 28,
+        "seconds": 14.77,
+        "elements": [
+          {
+            "selector": "#s1 > div:nth-of-type(1) > div:nth-of-type(1) > span:nth-of-type(1)",
+            "text": "Seller",
+            "fontPx": 13,
+            "time": 0,
+            "seconds": 14.77
+          },
+          {
+            "selector": "#s1 > div:nth-of-type(1) > div:nth-of-type(2) > span:nth-of-type(1)",
+            "text": "Buyer",
+            "fontPx": 13,
+            "time": 0,
+            "seconds": 14.77
+          },
+          {
+            "selector": "#s1 > div:nth-of-type(1) > div:nth-of-type(3) > div:nth-of-type(1) > span:nth-of-type(4)",
+            "text": "Live Drop · Studio",
+            "fontPx": 13,
+            "time": 0,
+            "seconds": 14.77
+          },
+          {
+            "selector": "#s1 > div:nth-of-type(1) > div:nth-of-type(1) > span:nth-of-type(2)",
+            "text": "Kabir's studio",
+            "fontPx": 21,
+            "time": 0,
+            "seconds": 14.77
+          },
+          {
+            "selector": "#s1 > div:nth-of-type(1) > div:nth-of-type(2) > span:nth-of-type(2)",
+            "text": "Tara's phone",
+            "fontPx": 21,
+            "time": 0,
+            "seconds": 14.77
+          },
+          {
+            "selector": "#s1-chip",
+            "text": "Friday night, going live",
+            "fontPx": 21,
+            "time": 0.284,
+            "seconds": 14.486
+          }
+        ]
+      },
+      {
+        "code": "text_below_floor",
+        "severity": "warning",
+        "message": "Type floor is 28 px (2.6% of the 1080 px short side, what a phone can read) and 36 text elements stay under it for 0.5 s or more, the smallest \"LIVE\" at 12 px: set reading text to at least 28 px, or put data-layout-ignore on text that is texture rather than reading; see references/look.md.",
+        "text": "LIVE",
+        "selector": "span.live",
+        "dataAttributes": {},
+        "sourceFile": "compositions/s2.html",
+        "bbox": {
+          "x": 201,
+          "y": 174,
+          "width": 29.3,
+          "height": 15
+        },
+        "time": 14.77,
+        "times": [
+          14.77,
+          14.77,
+          14.77,
+          15.054,
+          15.054,
+          15.338,
+          15.338,
+          15.338,
+          15.338,
+          15.338,
+          15.338,
+          15.622,
+          15.622,
+          15.622,
+          15.622,
+          15.906,
+          15.906,
+          15.906,
+          15.906,
+          16.19,
+          16.19,
+          16.19,
+          16.19,
+          16.19,
+          16.19,
+          16.474,
+          16.474,
+          16.474,
+          16.474,
+          16.758,
+          16.758,
+          16.758,
+          16.758,
+          20.167,
+          23.575,
+          26.7
+        ],
+        "fontPx": 12,
+        "floorPx": 28,
+        "seconds": 2.556,
+        "elements": [
+          {
+            "selector": "span.live",
+            "text": "LIVE",
+            "fontPx": 12,
+            "time": 14.77,
+            "seconds": 2.556
+          },
+          {
+            "selector": "#s2-kick",
+            "text": "The old way",
+            "fontPx": 13,
+            "time": 14.77,
+            "seconds": 15.054
+          },
+          {
+            "selector": "div.hd",
+            "text": "Live chat",
+            "fontPx": 20,
+            "time": 14.77,
+            "seconds": 2.556
+          },
+          {
+            "selector": "#s2-m2",
+            "text": "is it still there?",
+            "fontPx": 21,
+            "time": 15.054,
+            "seconds": 0.568
+          },
+          {
+            "selector": "#s2-m2 > b:nth-of-type(1)",
+            "text": "Jen",
+            "fontPx": 21,
+            "time": 15.054,
+            "seconds": 0.568
+          },
+          {
+            "selector": "#s2-m3",
+            "text": "SOLD",
+            "fontPx": 21,
+            "time": 15.338,
+            "seconds": 0.568
+          },
+          {
+            "selector": "#s2-m3 > b:nth-of-type(1)",
+            "text": "Dev",
+            "fontPx": 21,
+            "time": 15.338,
+            "seconds": 0.568
+          },
+          {
+            "selector": "#s2-m4",
+            "text": "me me me",
+            "fontPx": 21,
+            "time": 15.338,
+            "seconds": 0.852
+          },
+          {
+            "selector": "#s2-m4 > b:nth-of-type(1)",
+            "text": "Ana",
+            "fontPx": 21,
+            "time": 15.338,
+            "seconds": 0.852
+          },
+          {
+            "selector": "#s2-m5",
+            "text": "how much?",
+            "fontPx": 21,
+            "time": 15.338,
+            "seconds": 1.136
+          },
+          {
+            "selector": "#s2-m5 > b:nth-of-type(1)",
+            "text": "Sam",
+            "fontPx": 21,
+            "time": 15.338,
+            "seconds": 1.136
+          },
+          {
+            "selector": "#s2-m6",
+            "text": "SOLD SOLD",
+            "fontPx": 21,
+            "time": 15.622,
+            "seconds": 1.136
+          },
+          {
+            "selector": "#s2-m6 > b:nth-of-type(1)",
+            "text": "Lee",
+            "fontPx": 21,
+            "time": 15.622,
+            "seconds": 1.136
+          },
+          {
+            "selector": "#s2-m7",
+            "text": "wait who got it",
+            "fontPx": 21,
+            "time": 15.622,
+            "seconds": 1.704
+          },
+          {
+            "selector": "#s2-m7 > b:nth-of-type(1)",
+            "text": "Kim",
+            "fontPx": 21,
+            "time": 15.622,
+            "seconds": 1.704
+          },
+          {
+            "selector": "#s2-m8",
+            "text": "sold!!",
+            "fontPx": 21,
+            "time": 15.906,
+            "seconds": 1.42
+          },
+          {
+            "selector": "#s2-m8 > b:nth-of-type(1)",
+            "text": "Noor",
+            "fontPx": 21,
+            "time": 15.906,
+            "seconds": 1.42
+          },
+          {
+            "selector": "#s2-m9",
+            "text": "dm me",
+            "fontPx": 21,
+            "time": 15.906,
+            "seconds": 1.42
+          },
+          {
+            "selector": "#s2-m9 > b:nth-of-type(1)",
+            "text": "Raj",
+            "fontPx": 21,
+            "time": 15.906,
+            "seconds": 1.42
+          },
+          {
+            "selector": "#s2-m10",
+            "text": "is the blue one sold?",
+            "fontPx": 21,
+            "time": 16.19,
+            "seconds": 1.136
+          },
+          {
+            "selector": "#s2-m10 > b:nth-of-type(1)",
+            "text": "Ola",
+            "fontPx": 21,
+            "time": 16.19,
+            "seconds": 1.136
+          },
+          {
+            "selector": "#s2-m11",
+            "text": "SOLD",
+            "fontPx": 21,
+            "time": 16.19,
+            "seconds": 1.136
+          },
+          {
+            "selector": "#s2-m11 > b:nth-of-type(1)",
+            "text": "Ben",
+            "fontPx": 21,
+            "time": 16.19,
+            "seconds": 1.136
+          },
+          {
+            "selector": "#s2-m12",
+            "text": "mine",
+            "fontPx": 21,
+            "time": 16.19,
+            "seconds": 1.136
+          },
+          {
+            "selector": "#s2-m12 > b:nth-of-type(1)",
+            "text": "Ivy",
+            "fontPx": 21,
+            "time": 16.19,
+            "seconds": 1.136
+          },
+          {
+            "selector": "#s2-m13",
+            "text": "link??",
+            "fontPx": 21,
+            "time": 16.474,
+            "seconds": 0.852
+          },
+          {
+            "selector": "#s2-m13 > b:nth-of-type(1)",
+            "text": "Tom",
+            "fontPx": 21,
+            "time": 16.474,
+            "seconds": 0.852
+          },
+          {
+            "selector": "#s2-m14",
+            "text": "SOLD!",
+            "fontPx": 21,
+            "time": 16.474,
+            "seconds": 0.852
+          },
+          {
+            "selector": "#s2-m14 > b:nth-of-type(1)",
+            "text": "Zed",
+            "fontPx": 21,
+            "time": 16.474,
+            "seconds": 0.852
+          },
+          {
+            "selector": "#s2-m15",
+            "text": "did I get it?",
+            "fontPx": 21,
+            "time": 16.758,
+            "seconds": 0.568
+          },
+          {
+            "selector": "#s2-m15 > b:nth-of-type(1)",
+            "text": "Mia",
+            "fontPx": 21,
+            "time": 16.758,
+            "seconds": 0.568
+          },
+          {
+            "selector": "#s2-m16",
+            "text": "sent you a DM",
+            "fontPx": 21,
+            "time": 16.758,
+            "seconds": 0.568
+          },
+          {
+            "selector": "#s2-m16 > b:nth-of-type(1)",
+            "text": "Leo",
+            "fontPx": 21,
+            "time": 16.758,
+            "seconds": 0.568
+          },
+          {
+            "selector": "#s2-l0 > div:nth-of-type(2)",
+            "text": "Scrolling back through hundreds of comments.",
+            "fontPx": 25,
+            "time": 20.167,
+            "seconds": 9.657
+          },
+          {
+            "selector": "#s2-l1 > div:nth-of-type(2)",
+            "text": "Every buyer, a separate message.",
+            "fontPx": 25,
+            "time": 23.575,
+            "seconds": 6.249
+          },
+          {
+            "selector": "#s2-l2 > div:nth-of-type(2)",
+            "text": "Unpaid items sit in limbo.",
+            "fontPx": 25,
+            "time": 26.7,
+            "seconds": 3.124
+          }
+        ]
+      },
+      {
+        "code": "text_below_floor",
+        "severity": "warning",
+        "message": "Type floor is 28 px (2.6% of the 1080 px short side, what a phone can read) and 6 text elements stay under it for 0.5 s or more, the smallest \"Seller\" at 13 px: set reading text to at least 28 px, or put data-layout-ignore on text that is texture rather than reading; see references/look.md.",
+        "text": "Seller",
+        "selector": "#s4 > div:nth-of-type(1) > div:nth-of-type(1) > span:nth-of-type(1)",
+        "dataAttributes": {},
+        "sourceFile": "compositions/s4.html",
+        "bbox": {
+          "x": 92,
+          "y": 63,
+          "width": 56.91,
+          "height": 16
+        },
+        "time": 38.345,
+        "times": [
+          38.345,
+          38.345,
+          38.345,
+          38.345,
+          38.345,
+          38.345
+        ],
+        "fontPx": 13,
+        "floorPx": 28,
+        "seconds": 15.907,
+        "elements": [
+          {
+            "selector": "#s4 > div:nth-of-type(1) > div:nth-of-type(1) > span:nth-of-type(1)",
+            "text": "Seller",
+            "fontPx": 13,
+            "time": 38.345,
+            "seconds": 15.907
+          },
+          {
+            "selector": "#s4 > div:nth-of-type(1) > div:nth-of-type(2) > span:nth-of-type(1)",
+            "text": "Buyer",
+            "fontPx": 13,
+            "time": 38.345,
+            "seconds": 15.907
+          },
+          {
+            "selector": "#s4 > div:nth-of-type(1) > div:nth-of-type(3) > div:nth-of-type(1) > span:nth-of-type(4)",
+            "text": "Live Drop · Studio",
+            "fontPx": 13,
+            "time": 38.345,
+            "seconds": 15.907
+          },
+          {
+            "selector": "#s4 > div:nth-of-type(1) > div:nth-of-type(1) > span:nth-of-type(2)",
+            "text": "Kabir's studio",
+            "fontPx": 21,
+            "time": 38.345,
+            "seconds": 15.907
+          },
+          {
+            "selector": "#s4 > div:nth-of-type(1) > div:nth-of-type(2) > span:nth-of-type(2)",
+            "text": "Tara's phone",
+            "fontPx": 21,
+            "time": 38.345,
+            "seconds": 15.907
+          },
+          {
+            "selector": "#s4-chip",
+            "text": "Speak to list",
+            "fontPx": 21,
+            "time": 38.345,
+            "seconds": 15.907
+          }
+        ]
+      },
+      {
+        "code": "text_below_floor",
+        "severity": "warning",
+        "message": "Type floor is 28 px (2.6% of the 1080 px short side, what a phone can read) and 6 text elements stay under it for 0.5 s or more, the smallest \"Seller\" at 13 px: set reading text to at least 28 px, or put data-layout-ignore on text that is texture rather than reading; see references/look.md.",
+        "text": "Seller",
+        "selector": "#s5 > div:nth-of-type(1) > div:nth-of-type(1) > span:nth-of-type(1)",
+        "dataAttributes": {},
+        "sourceFile": "compositions/s5.html",
+        "bbox": {
+          "x": 92,
+          "y": 63,
+          "width": 56.91,
+          "height": 16
+        },
+        "time": 54.252,
+        "times": [
+          54.252,
+          54.252,
+          54.252,
+          54.252,
+          54.252,
+          54.536
+        ],
+        "fontPx": 13,
+        "floorPx": 28,
+        "seconds": 17.326,
+        "elements": [
+          {
+            "selector": "#s5 > div:nth-of-type(1) > div:nth-of-type(1) > span:nth-of-type(1)",
+            "text": "Seller",
+            "fontPx": 13,
+            "time": 54.252,
+            "seconds": 17.326
+          },
+          {
+            "selector": "#s5 > div:nth-of-type(1) > div:nth-of-type(2) > span:nth-of-type(1)",
+            "text": "Buyer",
+            "fontPx": 13,
+            "time": 54.252,
+            "seconds": 17.326
+          },
+          {
+            "selector": "#s5 > div:nth-of-type(1) > div:nth-of-type(3) > div:nth-of-type(1) > span:nth-of-type(4)",
+            "text": "Live Drop · Studio",
+            "fontPx": 13,
+            "time": 54.252,
+            "seconds": 17.326
+          },
+          {
+            "selector": "#s5 > div:nth-of-type(1) > div:nth-of-type(1) > span:nth-of-type(2)",
+            "text": "Kabir's studio",
+            "fontPx": 21,
+            "time": 54.252,
+            "seconds": 17.326
+          },
+          {
+            "selector": "#s5 > div:nth-of-type(1) > div:nth-of-type(2) > span:nth-of-type(2)",
+            "text": "Tara's phone",
+            "fontPx": 21,
+            "time": 54.252,
+            "seconds": 17.326
+          },
+          {
+            "selector": "#s5-chip",
+            "text": "The shop assistant answers",
+            "fontPx": 21,
+            "time": 54.536,
+            "seconds": 17.042
+          }
+        ]
+      },
+      {
+        "code": "text_below_floor",
+        "severity": "warning",
+        "message": "Type floor is 28 px (2.6% of the 1080 px short side, what a phone can read) and 6 text elements stay under it for 0.5 s or more, the smallest \"Seller\" at 13 px: set reading text to at least 28 px, or put data-layout-ignore on text that is texture rather than reading; see references/look.md.",
+        "text": "Seller",
+        "selector": "#s6 > div:nth-of-type(1) > div:nth-of-type(1) > span:nth-of-type(1)",
+        "dataAttributes": {},
+        "sourceFile": "compositions/s6.html",
+        "bbox": {
+          "x": 92,
+          "y": 63,
+          "width": 56.91,
+          "height": 16
+        },
+        "time": 71.578,
+        "times": [
+          71.578,
+          71.578,
+          71.578,
+          71.578,
+          71.578,
+          71.862
+        ],
+        "fontPx": 13,
+        "floorPx": 28,
+        "seconds": 14.486,
+        "elements": [
+          {
+            "selector": "#s6 > div:nth-of-type(1) > div:nth-of-type(1) > span:nth-of-type(1)",
+            "text": "Seller",
+            "fontPx": 13,
+            "time": 71.578,
+            "seconds": 14.486
+          },
+          {
+            "selector": "#s6 > div:nth-of-type(1) > div:nth-of-type(2) > span:nth-of-type(1)",
+            "text": "Buyer",
+            "fontPx": 13,
+            "time": 71.578,
+            "seconds": 14.486
+          },
+          {
+            "selector": "#s6 > div:nth-of-type(1) > div:nth-of-type(3) > div:nth-of-type(1) > span:nth-of-type(4)",
+            "text": "Live Drop · Studio",
+            "fontPx": 13,
+            "time": 71.578,
+            "seconds": 14.486
+          },
+          {
+            "selector": "#s6 > div:nth-of-type(1) > div:nth-of-type(1) > span:nth-of-type(2)",
+            "text": "Kabir's studio",
+            "fontPx": 21,
+            "time": 71.578,
+            "seconds": 14.486
+          },
+          {
+            "selector": "#s6 > div:nth-of-type(1) > div:nth-of-type(2) > span:nth-of-type(2)",
+            "text": "Tara's phone",
+            "fontPx": 21,
+            "time": 71.578,
+            "seconds": 14.486
+          },
+          {
+            "selector": "#s6-chip",
+            "text": "First claim wins, pay with PayPal",
+            "fontPx": 21,
+            "time": 71.862,
+            "seconds": 14.202
+          }
+        ]
+      },
+      {
+        "code": "text_below_floor",
+        "severity": "warning",
+        "message": "Type floor is 28 px (2.6% of the 1080 px short side, what a phone can read) and 6 text elements stay under it for 0.5 s or more, the smallest \"Seller\" at 13 px: set reading text to at least 28 px, or put data-layout-ignore on text that is texture rather than reading; see references/look.md.",
+        "text": "Seller",
+        "selector": "#s7 > div:nth-of-type(1) > div:nth-of-type(1) > span:nth-of-type(1)",
+        "dataAttributes": {},
+        "sourceFile": "compositions/s7.html",
+        "bbox": {
+          "x": 92,
+          "y": 63,
+          "width": 56.91,
+          "height": 16
+        },
+        "time": 86.064,
+        "times": [
+          86.064,
+          86.064,
+          86.064,
+          86.064,
+          86.064,
+          86.348
+        ],
+        "fontPx": 13,
+        "floorPx": 28,
+        "seconds": 14.486,
+        "elements": [
+          {
+            "selector": "#s7 > div:nth-of-type(1) > div:nth-of-type(1) > span:nth-of-type(1)",
+            "text": "Seller",
+            "fontPx": 13,
+            "time": 86.064,
+            "seconds": 14.486
+          },
+          {
+            "selector": "#s7 > div:nth-of-type(1) > div:nth-of-type(2) > span:nth-of-type(1)",
+            "text": "Buyer",
+            "fontPx": 13,
+            "time": 86.064,
+            "seconds": 14.486
+          },
+          {
+            "selector": "#s7 > div:nth-of-type(1) > div:nth-of-type(3) > div:nth-of-type(1) > span:nth-of-type(4)",
+            "text": "Live Drop · Studio",
+            "fontPx": 13,
+            "time": 86.064,
+            "seconds": 14.486
+          },
+          {
+            "selector": "#s7 > div:nth-of-type(1) > div:nth-of-type(1) > span:nth-of-type(2)",
+            "text": "Kabir's studio",
+            "fontPx": 21,
+            "time": 86.064,
+            "seconds": 14.486
+          },
+          {
+            "selector": "#s7 > div:nth-of-type(1) > div:nth-of-type(2) > span:nth-of-type(2)",
+            "text": "Tara's phone",
+            "fontPx": 21,
+            "time": 86.064,
+            "seconds": 14.486
+          },
+          {
+            "selector": "#s7-chip",
+            "text": "Flash auction",
+            "fontPx": 21,
+            "time": 86.348,
+            "seconds": 14.202
+          }
+        ]
+      },
+      {
+        "code": "text_below_floor",
+        "severity": "warning",
+        "message": "Type floor is 28 px (2.6% of the 1080 px short side, what a phone can read) and 6 text elements stay under it for 0.5 s or more, the smallest \"Seller\" at 13 px: set reading text to at least 28 px, or put data-layout-ignore on text that is texture rather than reading; see references/look.md.",
+        "text": "Seller",
+        "selector": "#s8 > div:nth-of-type(1) > div:nth-of-type(1) > span:nth-of-type(1)",
+        "dataAttributes": {},
+        "sourceFile": "compositions/s8.html",
+        "bbox": {
+          "x": 92,
+          "y": 63,
+          "width": 56.91,
+          "height": 16
+        },
+        "time": 100.55,
+        "times": [
+          100.55,
+          100.55,
+          100.55,
+          100.55,
+          100.55,
+          100.55
+        ],
+        "fontPx": 13,
+        "floorPx": 28,
+        "seconds": 23.007,
+        "elements": [
+          {
+            "selector": "#s8 > div:nth-of-type(1) > div:nth-of-type(1) > span:nth-of-type(1)",
+            "text": "Seller",
+            "fontPx": 13,
+            "time": 100.55,
+            "seconds": 23.007
+          },
+          {
+            "selector": "#s8 > div:nth-of-type(1) > div:nth-of-type(2) > span:nth-of-type(1)",
+            "text": "Buyer",
+            "fontPx": 13,
+            "time": 100.55,
+            "seconds": 23.007
+          },
+          {
+            "selector": "#s8 > div:nth-of-type(1) > div:nth-of-type(3) > div:nth-of-type(1) > span:nth-of-type(4)",
+            "text": "Live Drop · Studio",
+            "fontPx": 13,
+            "time": 100.55,
+            "seconds": 23.007
+          },
+          {
+            "selector": "#s8 > div:nth-of-type(1) > div:nth-of-type(1) > span:nth-of-type(2)",
+            "text": "Kabir's studio",
+            "fontPx": 21,
+            "time": 100.55,
+            "seconds": 23.007
+          },
+          {
+            "selector": "#s8 > div:nth-of-type(1) > div:nth-of-type(2) > span:nth-of-type(2)",
+            "text": "Tara's phone",
+            "fontPx": 21,
+            "time": 100.55,
+            "seconds": 23.007
+          },
+          {
+            "selector": "#s8-chip",
+            "text": "The AI shopping agent",
+            "fontPx": 21,
+            "time": 100.55,
+            "seconds": 23.007
+          }
+        ]
+      },
+      {
+        "code": "text_below_floor",
+        "severity": "warning",
+        "message": "Type floor is 28 px (2.6% of the 1080 px short side, what a phone can read) and 6 text elements stay under it for 0.5 s or more, the smallest \"Seller\" at 13 px: set reading text to at least 28 px, or put data-layout-ignore on text that is texture rather than reading; see references/look.md.",
+        "text": "Seller",
+        "selector": "#s9 > div:nth-of-type(1) > div:nth-of-type(1) > span:nth-of-type(1)",
+        "dataAttributes": {},
+        "sourceFile": "compositions/s9.html",
+        "bbox": {
+          "x": 92,
+          "y": 63,
+          "width": 56.91,
+          "height": 16
+        },
+        "time": 123.557,
+        "times": [
+          123.557,
+          123.557,
+          123.557,
+          123.557,
+          123.557,
+          123.841
+        ],
+        "fontPx": 13,
+        "floorPx": 28,
+        "seconds": 15.339,
+        "elements": [
+          {
+            "selector": "#s9 > div:nth-of-type(1) > div:nth-of-type(1) > span:nth-of-type(1)",
+            "text": "Seller",
+            "fontPx": 13,
+            "time": 123.557,
+            "seconds": 15.339
+          },
+          {
+            "selector": "#s9 > div:nth-of-type(1) > div:nth-of-type(2) > span:nth-of-type(1)",
+            "text": "Buyer",
+            "fontPx": 13,
+            "time": 123.557,
+            "seconds": 15.339
+          },
+          {
+            "selector": "#s9 > div:nth-of-type(1) > div:nth-of-type(3) > div:nth-of-type(1) > span:nth-of-type(4)",
+            "text": "Live Drop · Studio",
+            "fontPx": 13,
+            "time": 123.557,
+            "seconds": 15.339
+          },
+          {
+            "selector": "#s9 > div:nth-of-type(1) > div:nth-of-type(1) > span:nth-of-type(2)",
+            "text": "Kabir's studio",
+            "fontPx": 21,
+            "time": 123.557,
+            "seconds": 15.339
+          },
+          {
+            "selector": "#s9 > div:nth-of-type(1) > div:nth-of-type(2) > span:nth-of-type(2)",
+            "text": "Tara's phone",
+            "fontPx": 21,
+            "time": 123.557,
+            "seconds": 15.339
+          },
+          {
+            "selector": "#s9-chip",
+            "text": "Chat is data, never instructions",
+            "fontPx": 21,
+            "time": 123.841,
+            "seconds": 15.055
+          }
+        ]
+      },
+      {
+        "code": "text_below_floor",
+        "severity": "warning",
+        "message": "Type floor is 28 px (2.6% of the 1080 px short side, what a phone can read) and 6 text elements stay under it for 0.5 s or more, the smallest \"Seller\" at 13 px: set reading text to at least 28 px, or put data-layout-ignore on text that is texture rather than reading; see references/look.md.",
+        "text": "Seller",
+        "selector": "#s10 > div:nth-of-type(1) > div:nth-of-type(1) > span:nth-of-type(1)",
+        "dataAttributes": {},
+        "sourceFile": "compositions/s10.html",
+        "bbox": {
+          "x": 92,
+          "y": 63,
+          "width": 56.91,
+          "height": 16
+        },
+        "time": 138.896,
+        "times": [
+          138.896,
+          138.896,
+          138.896,
+          138.896,
+          138.896,
+          139.18
+        ],
+        "fontPx": 13,
+        "floorPx": 28,
+        "seconds": 17.326,
+        "elements": [
+          {
+            "selector": "#s10 > div:nth-of-type(1) > div:nth-of-type(1) > span:nth-of-type(1)",
+            "text": "Seller",
+            "fontPx": 13,
+            "time": 138.896,
+            "seconds": 17.326
+          },
+          {
+            "selector": "#s10 > div:nth-of-type(1) > div:nth-of-type(2) > span:nth-of-type(1)",
+            "text": "Buyer",
+            "fontPx": 13,
+            "time": 138.896,
+            "seconds": 17.326
+          },
+          {
+            "selector": "#s10 > div:nth-of-type(1) > div:nth-of-type(3) > div:nth-of-type(1) > span:nth-of-type(4)",
+            "text": "Live Drop · Studio",
+            "fontPx": 13,
+            "time": 138.896,
+            "seconds": 17.326
+          },
+          {
+            "selector": "#s10 > div:nth-of-type(1) > div:nth-of-type(1) > span:nth-of-type(2)",
+            "text": "Kabir's studio",
+            "fontPx": 21,
+            "time": 138.896,
+            "seconds": 17.326
+          },
+          {
+            "selector": "#s10 > div:nth-of-type(1) > div:nth-of-type(2) > span:nth-of-type(2)",
+            "text": "Tara's phone",
+            "fontPx": 21,
+            "time": 138.896,
+            "seconds": 17.326
+          },
+          {
+            "selector": "#s10-chip",
+            "text": "After the show",
+            "fontPx": 21,
+            "time": 139.18,
+            "seconds": 17.042
+          }
+        ]
+      },
+      {
+        "code": "text_below_floor",
+        "severity": "warning",
+        "message": "Type floor is 28 px (2.6% of the 1080 px short side, what a phone can read) and 2 text elements stay under it for 0.5 s or more, the smallest \"· PayPal Checkout, Vault, Invoicing ·...\" at 22 px: set reading text to at least 28 px, or put data-layout-ignore on text that is texture rather than reading; see references/look.md.",
+        "text": "· PayPal Checkout, Vault, Invoicing · Gemini · AG Studio · LiveKit",
+        "selector": "#s11-foot",
+        "dataAttributes": {},
+        "sourceFile": "compositions/s11.html",
+        "bbox": {
+          "x": 767.16,
+          "y": 962,
+          "width": 667.22,
+          "height": 26
+        },
+        "time": 166.732,
+        "times": [
+          166.732,
+          166.732
+        ],
+        "fontPx": 22,
+        "floorPx": 28,
+        "seconds": 1.988,
+        "elements": [
+          {
+            "selector": "#s11-foot",
+            "text": "· PayPal Checkout, Vault, Invoicing · Gemini · AG Studio · LiveKit",
+            "fontPx": 22,
+            "time": 166.732,
+            "seconds": 1.988
+          },
+          {
+            "selector": "#s11-foot > b:nth-of-type(1)",
+            "text": "PayPal AI Hackathon 2026",
+            "fontPx": 22,
+            "time": 166.732,
+            "seconds": 1.988
+          }
+        ]
+      },
+      {
+        "code": "line_unread",
+        "severity": "warning",
+        "message": "The film's last line \"Live Drop Go live. Say the price. Get paid.\" (9 words) is on screen 1.41 s (±0.01 s), under the 2.40 s a closing line needs: hold it about 0.5 s + 0.3 s a word and at least 2 s before the film ends; see references/motion.md.",
+        "text": "Live Drop Go live. Say the price. Get paid.",
+        "selector": "#s11-card",
+        "dataAttributes": {},
+        "sourceFile": "compositions/s11.html",
+        "bbox": {
+          "x": 589.81,
+          "y": 284,
+          "width": 622.3800000000001,
+          "height": 181
+        },
+        "time": 168.738,
+        "words": 9,
+        "seconds": 1.411,
+        "floorSeconds": 2.4,
+        "measured": [
+          {
+            "time": 168.152,
+            "opacity": 1,
+            "heightPx": 181
+          },
+          {
+            "time": 168.436,
+            "opacity": 1,
+            "heightPx": 181
+          },
+          {
+            "time": 168.72,
+            "opacity": null,
+            "heightPx": null
+          },
+          {
+            "time": 169.004,
+            "opacity": 1,
+            "heightPx": 181
+          },
+          {
+            "time": 169.288,
+            "opacity": 1,
+            "heightPx": 181
+          },
+          {
+            "time": 169.572,
+            "opacity": 1,
+            "heightPx": 181
+          },
+          {
+            "time": 169.856,
+            "opacity": 1,
+            "heightPx": 181
+          }
+        ]
+      },
+      {
+        "code": "line_unread",
+        "severity": "warning",
+        "message": "The film's last line \"Go live.\" (2 words) is on screen 1.41 s (±0.01 s), under the 2.00 s a closing line needs: hold it about 0.5 s + 0.3 s a word and at least 2 s before the film ends; see references/motion.md.",
+        "text": "Go live.",
+        "selector": "#s11-b0",
+        "dataAttributes": {},
+        "sourceFile": "compositions/s11.html",
+        "bbox": {
+          "x": 552.28,
+          "y": 498,
+          "width": 184.36,
+          "height": 65
+        },
+        "time": 168.738,
+        "words": 2,
+        "seconds": 1.411,
+        "floorSeconds": 2,
+        "measured": [
+          {
+            "time": 168.152,
+            "opacity": 1,
+            "heightPx": 65
+          },
+          {
+            "time": 168.436,
+            "opacity": 1,
+            "heightPx": 65
+          },
+          {
+            "time": 168.72,
+            "opacity": null,
+            "heightPx": null
+          },
+          {
+            "time": 169.004,
+            "opacity": 1,
+            "heightPx": 65
+          },
+          {
+            "time": 169.288,
+            "opacity": 1,
+            "heightPx": 65
+          },
+          {
+            "time": 169.572,
+            "opacity": 1,
+            "heightPx": 65
+          },
+          {
+            "time": 169.856,
+            "opacity": 1,
+            "heightPx": 65
+          }
+        ]
+      },
+      {
+        "code": "line_unread",
+        "severity": "warning",
+        "message": "The film's last line \"Say the price.\" (3 words) is on screen 1.41 s (±0.01 s), under the 2.00 s a closing line needs: hold it about 0.5 s + 0.3 s a word and at least 2 s before the film ends; see references/motion.md.",
+        "text": "Say the price.",
+        "selector": "#s11-b1",
+        "dataAttributes": {},
+        "sourceFile": "compositions/s11.html",
+        "bbox": {
+          "x": 770.64,
+          "y": 498,
+          "width": 339.76999999999987,
+          "height": 65
+        },
+        "time": 168.738,
+        "words": 3,
+        "seconds": 1.411,
+        "floorSeconds": 2,
+        "measured": [
+          {
+            "time": 168.152,
+            "opacity": 1,
+            "heightPx": 65
+          },
+          {
+            "time": 168.436,
+            "opacity": 1,
+            "heightPx": 65
+          },
+          {
+            "time": 168.72,
+            "opacity": null,
+            "heightPx": null
+          },
+          {
+            "time": 169.004,
+            "opacity": 1,
+            "heightPx": 65
+          },
+          {
+            "time": 169.288,
+            "opacity": 1,
+            "heightPx": 65
+          },
+          {
+            "time": 169.572,
+            "opacity": 1,
+            "heightPx": 65
+          },
+          {
+            "time": 169.856,
+            "opacity": 1,
+            "heightPx": 65
+          }
+        ]
+      },
+      {
+        "code": "line_unread",
+        "severity": "warning",
+        "message": "The film's last line \"Get paid.\" (2 words) is on screen 1.41 s (±0.01 s), under the 2.00 s a closing line needs: hold it about 0.5 s + 0.3 s a word and at least 2 s before the film ends; see references/motion.md.",
+        "text": "Get paid.",
+        "selector": "#s11-b2",
+        "dataAttributes": {},
+        "sourceFile": "compositions/s11.html",
+        "bbox": {
+          "x": 1144.41,
+          "y": 498,
+          "width": 223.30999999999995,
+          "height": 65
+        },
+        "time": 168.738,
+        "words": 2,
+        "seconds": 1.411,
+        "floorSeconds": 2,
+        "measured": [
+          {
+            "time": 168.152,
+            "opacity": null,
+            "heightPx": null
+          },
+          {
+            "time": 168.436,
+            "opacity": null,
+            "heightPx": null
+          },
+          {
+            "time": 168.72,
+            "opacity": null,
+            "heightPx": null
+          },
+          {
+            "time": 169.004,
+            "opacity": 1,
+            "heightPx": 65
+          },
+          {
+            "time": 169.288,
+            "opacity": 1,
+            "heightPx": 65
+          },
+          {
+            "time": 169.572,
+            "opacity": 1,
+            "heightPx": 65
+          },
+          {
+            "time": 169.856,
+            "opacity": 1,
+            "heightPx": 65
+          }
+        ]
+      }
+    ],
+    "enabled": true,
+    "step": 0.2839999999999989,
+    "samples": 599
+  },
+  "audio": {
+    "ok": true,
+    "errorCount": 0,
+    "warningCount": 0,
+    "infoCount": 0,
+    "findings": []
+  },
+  "hdr": {
+    "autoPromotion": null,
+    "inspection": "available"
+  },
+  "snapshots": {
+    "enabled": false,
+    "files": [],
+    "times": [],
+    "findingFiles": []
+  }
+}
